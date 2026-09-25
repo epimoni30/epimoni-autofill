@@ -1,0 +1,97 @@
+name: release
+
+# Push a tag `v<version>` and this builds the zip the Chrome Web Store takes, then attaches
+# it to a GitHub release. Uploading to the store itself stays a manual step.
+
+on:
+  push:
+    tags: ['v*']
+
+# Read-only by default. The build job runs `npm ci` and a browser test suite, which is
+# third-party code, so it must never hold a token that can push to this repository or rewrite a release.
+# Only the last job, which runs nothing but `gh release create` on the artifact, can write.
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # The store shows manifest.json's version, so a tag that disagrees with it would ship
+      # a zip whose number nobody asked for.
+      - name: Tag matches manifest.json and package.json
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          manifest=$(node -p "require('./manifest.json').version")
+          pkg=$(node -p "require('./package.json').version")
+          echo "tag=$tag manifest=$manifest package=$pkg"
+          if [ "$tag" != "$manifest" ] || [ "$tag" != "$pkg" ]; then
+            echo "::error::tag v$tag does not match manifest.json ($manifest) and package.json ($pkg)"
+            exit 1
+          fi
+
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+
+      # The full gate, same as every pull request: nothing ships that `check` would refuse.
+      - run: npm run check
+
+      # `check` ends with e2e, which leaves a *dev* build in dist/ (localhost permissions and
+      # a URL-triggered auto-run). Rebuild, then prove the dev build did not survive.
+      - run: npm run build
+      - name: dist/ is a production build
+        run: |
+          if grep -qE '127\.0\.0\.1|localhost' dist/manifest.json; then
+            echo "::error::dist/manifest.json still grants localhost: this is a dev build"
+            exit 1
+          fi
+          grep -q 'const EPIMONI_DEV = false' dist/content.js
+          grep -q 'globalThis.EPIMONI_DEV = false' dist/background.js
+
+      - name: Zip dist/
+        run: |
+          name="epimoni-autofill-${GITHUB_REF_NAME}.zip"
+          (cd dist && zip -qr "../$name" .)
+          echo "ZIP=$name" >> "$GITHUB_ENV"
+
+      # Release notes: the CHANGELOG section for this version, if one exists.
+      - name: Release notes from CHANGELOG.md
+        run: |
+          awk -v v="${GITHUB_REF_NAME#v}" '
+            $0 ~ "^## \\[" v "\\]" { on = 1; next }
+            on && /^## \[/ { exit }
+            on { print }
+          ' CHANGELOG.md > notes.md
+          [ -s notes.md ] || echo "See CHANGELOG.md." > notes.md
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release
+          path: |
+            ${{ env.ZIP }}
+            notes.md
+          if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: release
+
+      - name: GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" "epimoni-autofill-${GITHUB_REF_NAME}.zip" --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --notes-file notes.md --verify-tag

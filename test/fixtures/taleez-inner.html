@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="fr">
+<meta charset="utf-8"><title>Formulaire</title>
+<body>
+<form id="ats-form">
+  <label for="fn">Prénom</label><input id="fn" data-controlled data-expect="given_name">
+  <label for="ln">Nom de famille</label><input id="ln" data-controlled data-expect="family_name">
+  <label for="em">E-mail</label><input id="em" type="email" data-controlled data-expect="email">
+  <label for="ct">Country</label>
+  <select id="ct" data-expect="country"><option value="">—</option><option>France</option><option>Belgique</option></select>
+  <label for="cm">Complément d'adresse</label><input id="cm" data-expect="street">
+  <div id="host"></div>
+  <label for="mot">Lettre de motivation</label><textarea id="mot" data-controlled data-expect="cover_letter"></textarea>
+</form>
+<script src="_react.js"></script>
+<script>
+  // A web-component-style control: the input lives in a shadow root, invisible to a plain
+  // document.querySelectorAll.
+  const host = document.getElementById('host');
+  const root = host.attachShadow({ mode: 'open' });
+  root.innerHTML = '<label for="tel">Téléphone mobile</label><input id="tel" type="tel" data-controlled data-expect="phone">';
+  window.__controlAll(document);
+  window.__controlAll(root);
+</script>
+</body></html>

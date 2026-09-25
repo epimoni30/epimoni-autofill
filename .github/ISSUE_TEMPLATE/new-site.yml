@@ -1,0 +1,51 @@
+name: A job board, ATS or language to support
+description: A site whose application form the extension reads badly, or a language it does not speak yet.
+title: "[site] "
+labels: ["site"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you! The fastest route is a pull request (see "Recipes" in CONTRIBUTING.md): a
+        language is one file, a job board is usually phrases and at most a small filler.
+        **Do not paste your real CV data or a raw capture of the page.**
+  - type: input
+    id: url
+    attributes:
+      label: Application page
+      description: The URL of an application form on this site. Remove any personal token.
+      placeholder: https://…
+    validations:
+      required: true
+  - type: input
+    id: country
+    attributes:
+      label: Country and language
+      placeholder: Germany, German
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What goes wrong
+      options:
+        - Fields are left empty (labels the extension does not recognise)
+        - Custom dropdowns or date pickers are never filled
+        - Experience or education blocks are not recognised
+        - The language is not supported at all
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: markup
+    attributes:
+      label: The form's markup, reduced by hand
+      description: |
+        One or two fields with their labels and wrappers, trimmed to what matters. Replace any
+        personal value with a placeholder. This is what a fixture is made from.
+      render: html
+  - type: textarea
+    id: labels
+    attributes:
+      label: How the form words its questions
+      description: The labels exactly as shown, one per line, like "Vorname", "Berufserfahrung", "Beginn".

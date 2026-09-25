@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="fr">
+<!-- Radio groups and the checkbox line.
+     The consent checkbox must stay unticked no matter how well it matches: consent has to be
+     an affirmative act by the person. The pre-answered group must stay as the user left it.
+     A group we have no answer for must stay empty rather than pick something plausible. -->
+<meta charset="utf-8"><title>Questions fermées</title>
+<body>
+<form id="q">
+  <fieldset id="fs-auth">
+    <legend>Avez-vous l'autorisation de travailler en France ?</legend>
+    <label for="a1">Oui</label><input type="radio" id="a1" name="autorisation" value="oui" data-controlled data-expect="work_authorization">
+    <label for="a2">Non</label><input type="radio" id="a2" name="autorisation" value="non" data-expect="none">
+  </fieldset>
+
+  <fieldset id="fs-source">
+    <legend>Comment avez-vous connu cette offre ?</legend>
+    <label for="s1">France Travail</label><input type="radio" id="s1" name="source" value="ft" data-expect="none">
+    <label for="s2">LinkedIn</label><input type="radio" id="s2" name="source" value="li" data-expect="none">
+  </fieldset>
+
+  <fieldset id="fs-remote">
+    <legend>Acceptez-vous le télétravail partiel ?</legend>
+    <label for="r1">Oui</label><input type="radio" id="r1" name="teletravail" value="oui" checked data-expect="none">
+    <label for="r2">Non</label><input type="radio" id="r2" name="teletravail" value="non" data-expect="none">
+  </fieldset>
+
+  <label for="cgu">J'accepte les conditions générales</label>
+  <input type="checkbox" id="cgu" name="cgu" data-expect="none">
+  <label for="news">Je souhaite recevoir des offres par e-mail</label>
+  <input type="checkbox" id="news" name="newsletter" data-expect="none">
+</form>
+<script src="_react.js"></script><script>window.__controlAll()</script>
+</body></html>

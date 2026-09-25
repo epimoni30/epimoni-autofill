@@ -1,0 +1,19 @@
+version: 2
+updates:
+  # Dev dependencies only: the extension itself has none at runtime. Grouped so that
+  # Playwright and Biome arrive as one weekly pull request rather than a trickle.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      dev-tooling:
+        patterns: ["*"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]

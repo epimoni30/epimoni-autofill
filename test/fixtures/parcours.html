@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="fr">
+<!-- Reconstruction of a French ATS application that asks for the career block by block:
+     two experience blocks, one education block, language rows, a certificate and a project.
+     Labelled by position, as French boards are. The traps are the ones blocks create:
+     a "Ville" inside a job (that job's city, never the user's home), a referee's phone and
+     e-mail in a references block, "poste souhaité" outside any block, and the "poste actuel"
+     checkbox, which is never ticked. The CV has two degrees and the page one block, so the
+     second is a leftover the panel reports. -->
+<meta charset="utf-8"><title>Candidature — parcours</title>
+<body>
+<h1>Candidature : Chef de projet — Expérience client</h1>
+<form id="apply" onsubmit="window.__submitted = true; return false">
+  <section>
+    <h2>Informations personnelles</h2>
+    <div class="row"><span>Prénom</span><input name="prenom" data-controlled data-expect="given_name"></div>
+    <div class="row"><span>Nom</span><input name="nom" data-controlled data-expect="family_name"></div>
+    <div class="row"><span>Adresse e-mail</span><input type="email" name="mail" data-controlled data-expect="email"></div>
+    <div class="row"><span>Ville</span><input name="ville" data-controlled data-expect="city"></div>
+  </section>
+
+  <section>
+    <h2>Poste souhaité</h2>
+    <div class="row"><span>Poste souhaité</span><input name="souhait" data-expect="none"></div>
+    <div class="row"><span>Entreprise ciblée</span><input name="cible" data-expect="none"></div>
+  </section>
+
+  <section>
+    <h2>Expériences professionnelles</h2>
+    <div class="row"><span>Nombre d'années d'expérience</span><input name="yoe" data-expect="years_experience"></div>
+
+    <div class="exp">
+      <h4>Expérience 1</h4>
+      <div class="row"><span>Poste</span><input name="exp_a_poste" data-controlled data-expect="work[0].position"></div>
+      <div class="row"><span>Entreprise</span><input name="exp_a_entreprise" data-controlled data-expect="work[0].company"></div>
+      <div class="row"><span>Ville</span><input name="exp_a_ville" data-controlled data-expect="work[0].location"></div>
+      <div class="row"><span>Date de début</span>
+        <select name="exp_a_debut_m" aria-label="Mois de début" data-controlled data-expect="work[0].start">
+          <option value="">Mois</option><option value="1">Janvier</option><option value="2">Février</option><option value="3">Mars</option><option value="4">Avril</option><option value="5">Mai</option><option value="6">Juin</option><option value="7">Juillet</option><option value="8">Août</option><option value="9">Septembre</option><option value="10">Octobre</option><option value="11">Novembre</option><option value="12">Décembre</option>
+        </select>
+        <select name="exp_a_debut_y" aria-label="Année de début" data-controlled data-expect="work[0].start">
+          <option value="">Année</option><option>2024</option><option>2023</option><option>2022</option><option>2021</option><option>2020</option><option>2019</option><option>2018</option><option>2017</option>
+        </select>
+      </div>
+      <div class="row"><span>Date de fin</span>
+        <select name="exp_a_fin_m" aria-label="Mois de fin" data-expect="work[0].end">
+          <option value="">Mois</option><option value="1">Janvier</option><option value="2">Février</option><option value="3">Mars</option><option value="4">Avril</option><option value="5">Mai</option><option value="6">Juin</option><option value="7">Juillet</option><option value="8">Août</option><option value="9">Septembre</option><option value="10">Octobre</option><option value="11">Novembre</option><option value="12">Décembre</option>
+        </select>
+        <select name="exp_a_fin_y" aria-label="Année de fin" data-expect="work[0].end">
+          <option value="">Année</option><option>2024</option><option>2023</option><option>2022</option><option>2021</option><option>2020</option><option>2019</option><option>2018</option><option>2017</option>
+        </select>
+      </div>
+      <div class="row"><label><input type="checkbox" name="exp_a_actuel" data-expect="none"> Poste actuel</label></div>
+      <div class="row"><span>Description des missions</span><textarea name="exp_a_desc" data-controlled data-expect="work[0].description"></textarea></div>
+    </div>
+
+    <div class="exp">
+      <h4>Expérience 2</h4>
+      <div class="row"><span>Poste</span><input name="exp_b_poste" data-controlled data-expect="work[1].position"></div>
+      <div class="row"><span>Entreprise</span><input name="exp_b_entreprise" data-controlled data-expect="work[1].company"></div>
+      <div class="row"><span>Ville</span><input name="exp_b_ville" data-expect="work[1].location"></div>
+      <div class="row"><span>Date de début</span>
+        <select name="exp_b_debut_m" aria-label="Mois de début" data-controlled data-expect="work[1].start">
+          <option value="">Mois</option><option value="1">Janvier</option><option value="2">Février</option><option value="3">Mars</option><option value="4">Avril</option><option value="5">Mai</option><option value="6">Juin</option><option value="7">Juillet</option><option value="8">Août</option><option value="9">Septembre</option><option value="10">Octobre</option><option value="11">Novembre</option><option value="12">Décembre</option>
+        </select>
+        <select name="exp_b_debut_y" aria-label="Année de début" data-controlled data-expect="work[1].start">
+          <option value="">Année</option><option>2024</option><option>2023</option><option>2022</option><option>2021</option><option>2020</option><option>2019</option><option>2018</option><option>2017</option>
+        </select>
+      </div>
+      <div class="row"><span>Date de fin</span>
+        <select name="exp_b_fin_m" aria-label="Mois de fin" data-controlled data-expect="work[1].end">
+          <option value="">Mois</option><option value="1">Janvier</option><option value="2">Février</option><option value="3">Mars</option><option value="4">Avril</option><option value="5">Mai</option><option value="6">Juin</option><option value="7">Juillet</option><option value="8">Août</option><option value="9">Septembre</option><option value="10">Octobre</option><option value="11">Novembre</option><option value="12">Décembre</option>
+        </select>
+        <select name="exp_b_fin_y" aria-label="Année de fin" data-controlled data-expect="work[1].end">
+          <option value="">Année</option><option>2024</option><option>2023</option><option>2022</option><option>2021</option><option>2020</option><option>2019</option><option>2018</option><option>2017</option>
+        </select>
+      </div>
+      <div class="row"><label><input type="checkbox" name="exp_b_actuel" data-expect="none"> Poste actuel</label></div>
+      <div class="row"><span>Description des missions</span><textarea name="exp_b_desc" data-expect="work[1].description"></textarea></div>
+    </div>
+    <button type="button">Ajouter une expérience</button>
+  </section>
+
+  <section>
+    <h2>Formation</h2>
+    <div class="row"><label for="edu-diplome">Diplôme</label><input id="edu-diplome" name="edu_diplome" data-controlled data-expect="education[0].degree"></div>
+    <div class="row"><label for="edu-ecole">Établissement</label><input id="edu-ecole" name="edu_ecole" data-controlled data-expect="education[0].institution"></div>
+    <div class="row"><label for="edu-domaine">Domaine d'études</label><input id="edu-domaine" name="edu_domaine" data-expect="education[0].field"></div>
+    <div class="row"><label for="edu-annee">Année d'obtention</label><input id="edu-annee" name="edu_annee" placeholder="AAAA" data-controlled data-expect="education[0].end"></div>
+    <button type="button">Ajouter une formation</button>
+  </section>
+
+  <section>
+    <h2>Langues</h2>
+    <div class="lang"><input name="lang_a" aria-label="Langue" data-controlled data-expect="languages[0].language">
+      <select name="lang_a_niveau" aria-label="Niveau" data-controlled data-expect="languages[0].fluency">
+        <option value="">—</option><option>Débutant</option><option>Intermédiaire</option><option>Courant</option><option>Langue maternelle</option>
+      </select></div>
+    <div class="lang"><input name="lang_b" aria-label="Langue" data-controlled data-expect="languages[1].language">
+      <select name="lang_b_niveau" aria-label="Niveau" data-expect="languages[1].fluency">
+        <option value="">—</option><option>Débutant</option><option>Intermédiaire</option><option>Courant</option><option>Langue maternelle</option>
+      </select></div>
+  </section>
+
+  <section>
+    <h2>Certifications</h2>
+    <div class="row"><span>Certification</span><input name="cert_nom" data-controlled data-expect="certificates[0].name"></div>
+    <div class="row"><span>Organisme</span><input name="cert_org" data-controlled data-expect="certificates[0].issuer"></div>
+    <div class="row"><span>Date d'obtention</span><input type="month" name="cert_date" data-controlled data-expect="certificates[0].date"></div>
+  </section>
+
+  <section>
+    <h2>Projets personnels</h2>
+    <div class="row"><span>Nom du projet</span><input name="projet_nom" data-controlled data-expect="projects[0].name"></div>
+    <div class="row"><span>Description</span><textarea name="projet_desc" data-controlled data-expect="projects[0].description"></textarea></div>
+  </section>
+
+  <section>
+    <h2>Références</h2>
+    <div class="row"><span>Nom</span><input name="ref_nom" data-expect="none"></div>
+    <div class="row"><span>Entreprise</span><input name="ref_entreprise" data-expect="none"></div>
+    <div class="row"><span>Téléphone</span><input type="tel" name="ref_tel" data-expect="none"></div>
+    <div class="row"><span>E-mail</span><input type="email" name="ref_mail" data-expect="none"></div>
+  </section>
+
+  <button type="submit">Envoyer ma candidature</button>
+</form>
+<script src="_react.js"></script><script>window.__controlAll()</script>
+</body></html>

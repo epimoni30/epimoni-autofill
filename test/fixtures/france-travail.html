@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr">
+<!-- Reconstruction, not a capture: francetravail.fr's apply form is behind a login, so the
+     field set here follows its published flow (select a CV, a mandatory cover letter of at
+     most 1500 characters, confirm contact details). Shapes and traps are faithful; markup
+     is ours. data-expect is the ground truth the harness scores against. -->
+<meta charset="utf-8"><title>France Travail — postuler</title>
+<body>
+<form id="apply">
+  <fieldset>
+    <legend>Vos coordonnées</legend>
+    <label for="p">Prénom</label>
+    <input id="p" name="prenom" data-controlled data-expect="given_name">
+    <label for="n">Nom</label>
+    <input id="n" name="nom" data-controlled data-expect="family_name">
+    <label for="e">Adresse électronique</label>
+    <input id="e" name="courriel" type="email" data-controlled data-expect="email">
+    <label for="t">Téléphone</label>
+    <input id="t" name="telephone" type="tel" data-controlled data-expect="phone">
+    <label for="cp">Code postal</label>
+    <input id="cp" name="code_postal" data-controlled data-expect="postal_code">
+    <label for="v">Ville</label>
+    <input id="v" name="ville" data-controlled data-expect="city">
+  </fieldset>
+  <fieldset>
+    <legend>Votre candidature</legend>
+    <label for="cv">Sélectionnez un CV</label>
+    <select id="cv" name="cv_id" data-expect="none"><option value="">Choisir…</option><option value="1">CV principal</option></select>
+    <label for="lm">Lettre de motivation (1500 caractères maximum)</label>
+    <textarea id="lm" name="lettre_motivation" maxlength="1500" data-controlled data-expect="cover_letter"></textarea>
+  </fieldset>
+  <button type="submit">Envoyer ma candidature</button>
+</form>
+<script src="_react.js"></script><script>window.__controlAll()</script>
+</body></html>

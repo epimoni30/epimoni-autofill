@@ -1,0 +1,25 @@
+name: Feature request
+description: A new job board, a new kind of field, or something the extension should do.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Some things are out of scope by design: submitting forms, ticking checkboxes, and
+        filling password or payment fields. CONTRIBUTING.md explains why.
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you trying to do, and what gets in the way?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What you would like
+  - type: input
+    id: site
+    attributes:
+      label: Job board or ATS concerned (if any)
+      placeholder: https://…

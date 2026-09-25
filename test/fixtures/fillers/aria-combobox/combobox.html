@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<!-- Reconstruction of an application form built with custom dropdowns, for the `aria-combobox`
+     widget filler. Three shapes of the WAI-ARIA combobox pattern:
+     - a <div role="combobox"> whose options are only rendered once it is opened (Country);
+     - <div role="combobox"> rows whose options are already in the page (Languages, Degree);
+     - an <input role="combobox"> typeahead that filters as you type (City).
+     Each is "controlled": the selection lives in window.__state, as a React component's would.
+     Traps: a birth-country combobox (the country key refuses "birth"), and an "Apply now"
+     submit button rendered inside the Country listbox, which a careless picker would press. -->
+<meta charset="utf-8"><title>Application</title>
+<style>[role="listbox"][hidden] { display: none; } [role="combobox"] { display: inline-block; min-width: 120px; min-height: 20px; border: 1px solid #999; }</style>
+<body>
+<form id="apply" onsubmit="window.__submitted = true; return false">
+  <section>
+    <h3>Your details</h3>
+    <div class="row">
+      <span id="country-label">Country</span>
+      <div role="combobox" tabindex="0" aria-labelledby="country-label" aria-controls="country-list" aria-expanded="false"
+           data-state="country" data-controlled data-expect="country" data-lazy="Select One|Belgique|France|Suisse" data-trap><span class="v">Select One</span></div>
+      <ul role="listbox" id="country-list" hidden></ul>
+    </div>
+    <div class="row">
+      <span id="birth-label">Country of birth</span>
+      <div role="combobox" tabindex="0" aria-labelledby="birth-label" aria-controls="birth-list" aria-expanded="false"
+           data-state="birth" data-expect="none"><span class="v">Select One</span></div>
+      <ul role="listbox" id="birth-list" hidden><li role="option">Select One</li><li role="option">Belgique</li><li role="option">France</li></ul>
+    </div>
+    <div class="row">
+      <label for="city">City</label>
+      <input id="city" role="combobox" aria-autocomplete="list" aria-controls="city-list" aria-expanded="false"
+             data-state="city" data-controlled data-expect="city" data-typeahead="Nanterre|Nantes|Nancy|Paris">
+      <ul role="listbox" id="city-list" hidden></ul>
+    </div>
+  </section>
+
+  <section>
+    <h3>Education</h3>
+    <div class="row"><label for="school">School</label><input id="school" data-expect="education[0].institution"></div>
+    <div class="row">
+      <span id="degree-label">Degree</span>
+      <div role="combobox" tabindex="0" aria-labelledby="degree-label" aria-controls="degree-list" aria-expanded="false"
+           data-state="degree" data-expect="education[0].degree"><span class="v">Select One</span></div>
+      <ul role="listbox" id="degree-list" hidden><li role="option">Select One</li><li role="option">Licence</li><li role="option">Master's degree</li><li role="option">Doctorat</li></ul>
+    </div>
+  </section>
+
+  <section>
+    <h3>Languages</h3>
+    <div class="lang">
+      <div role="combobox" tabindex="0" aria-label="Language" aria-controls="lang-a-list" aria-expanded="false"
+           data-state="lang_a" data-controlled data-expect="languages[0].language"><span class="v">—</span></div>
+      <ul role="listbox" id="lang-a-list" hidden><li role="option">—</li><li role="option">Français</li><li role="option">English</li><li role="option">Español</li></ul>
+      <select name="lang_a_level" aria-label="Level" data-expect="languages[0].fluency"><option value="">—</option><option>Native</option><option>Fluent</option></select>
+    </div>
+    <div class="lang">
+      <div role="combobox" tabindex="0" aria-label="Language" aria-controls="lang-b-list" aria-expanded="false"
+           data-state="lang_b" data-expect="languages[1].language"><span class="v">—</span></div>
+      <ul role="listbox" id="lang-b-list" hidden><li role="option">—</li><li role="option">Français</li><li role="option">English</li><li role="option">Español</li></ul>
+      <select name="lang_b_level" aria-label="Level" data-expect="languages[1].fluency"><option value="">—</option><option>Native</option><option>Fluent</option></select>
+    </div>
+  </section>
+  <button type="submit">Submit application</button>
+</form>
+<script>
+window.__state = {};
+window.__submitted = false;
+// A minimal controlled combobox: clicking toggles the list, clicking an option selects it.
+// The selection is state, not DOM — what a React form would submit.
+for (const box of document.querySelectorAll('[role="combobox"]')) {
+  const list = document.getElementById(box.getAttribute('aria-controls'));
+  const key = box.getAttribute('data-state');
+  const isInput = box.tagName === 'INPUT';
+  const setOpen = (on) => { list.hidden = !on; box.setAttribute('aria-expanded', String(on)); };
+  const select = (li) => {
+    for (const o of list.querySelectorAll('[role="option"]')) o.setAttribute('aria-selected', String(o === li));
+    const text = li.textContent;
+    const prompt = /^(select|—)/i.test(text);
+    if (isInput) Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(box, prompt ? '' : text);
+    else box.querySelector('.v').textContent = text;
+    window.__state[key] = prompt ? '' : text;
+    setOpen(false);
+  };
+  const render = (items) => {
+    list.replaceChildren();
+    for (const t of items) {
+      const li = document.createElement('li');
+      li.setAttribute('role', 'option');
+      li.textContent = t;
+      list.appendChild(li);
+    }
+    // The trap: an action button inside the popup. It submits the form if pressed.
+    if (box.hasAttribute('data-trap')) {
+      const b = document.createElement('button');
+      b.textContent = 'Apply now';
+      list.appendChild(b);
+    }
+  };
+  list.addEventListener('click', (e) => { const li = e.target.closest('[role="option"]'); if (li) select(li); });
+  if (isInput) {
+    const all = box.getAttribute('data-typeahead').split('|');
+    box.addEventListener('input', () => {
+      const q = box.value.toLowerCase();
+      render(all.filter((t) => t.toLowerCase().startsWith(q)));
+      setOpen(true);
+    });
+  } else {
+    box.addEventListener('click', () => {
+      const lazy = box.getAttribute('data-lazy');
+      if (lazy && !list.children.length) render(lazy.split('|'));
+      setOpen(list.hidden);
+    });
+  }
+}
+</script>
+</body></html>

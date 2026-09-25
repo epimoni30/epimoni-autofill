@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="fr">
+<!-- Reconstruction of a French job-board form that labels by placeholder and position
+     only — no <label for>. Carries the two collisions that matter in French: a company
+     name field ("Nom de l'entreprise") and a birth city, neither of which may be filled. -->
+<meta charset="utf-8"><title>HelloWork — candidature</title>
+<body>
+<div id="form">
+  <div class="row"><span>Nom complet</span><input name="fullname" data-controlled data-expect="full_name"></div>
+  <div class="row"><input placeholder="Adresse e-mail" name="mail" data-controlled data-expect="email"></div>
+  <div class="row"><input placeholder="Téléphone portable" name="mob" data-controlled data-expect="phone"></div>
+  <div class="row"><span>Poste actuel</span><input name="job" data-controlled data-expect="current_title"></div>
+  <div class="row"><span>Employeur actuel</span><input name="emp" data-controlled data-expect="current_employer"></div>
+  <div class="row"><span>Nom de l'entreprise que vous souhaitez éviter</span><input name="avoid" data-expect="none"></div>
+  <div class="row"><span>Ville de naissance</span><input name="birthcity" data-expect="none"></div>
+  <div class="row"><span>Profil LinkedIn</span><input name="li" data-controlled data-expect="linkedin_url"></div>
+  <div class="row"><span>Nombre d'années d'expérience</span><input name="yoe" data-controlled data-expect="years_experience"></div>
+  <div class="row"><span>Prétentions salariales</span><input name="sal" data-expect="salary_expectation"></div>
+  <div class="row"><span>Salaire actuel</span><input name="cursal" data-expect="none"></div>
+  <div class="row"><span>Parlez-nous de vous</span><textarea name="about" data-controlled data-expect="summary"></textarea></div>
+  <div class="row"><span>Pourquoi souhaitez-vous rejoindre notre entreprise ?</span><textarea name="why" data-expect="ai-candidate"></textarea></div>
+</div>
+<script src="_react.js"></script><script>window.__controlAll()</script>
+</body></html>

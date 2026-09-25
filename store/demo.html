@@ -1,0 +1,70 @@
+<!doctype html>
+<!-- The page the store screenshots are taken on: an ordinary careers-site application form for
+     a fictional company, styled so a listing does not show a bare test fixture. Labels come in
+     French or English (?lang=en) and are the plain <label for> kind every ATS has; there is no
+     test data in it, and nothing on it is measured. The fixtures under test/ are for that. -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Candidature · Atelier Nord</title>
+<style>
+  :root { --ink: #18181b; --muted: #71717a; --line: #e4e4e7; --bg: #f4f4f5; --brand: #0f766e; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); background: var(--bg); }
+  header { background: #fff; border-bottom: 1px solid var(--line); padding: 14px 40px; display: flex; align-items: center; gap: 10px; }
+  .logo { width: 28px; height: 28px; border-radius: 7px; background: var(--brand); }
+  header b { font-size: 15px; }
+  header span { color: var(--muted); margin-left: auto; }
+  main { max-width: 820px; margin: 22px 40px; }
+  h1 { font-size: 22px; margin: 0 0 2px; }
+  .sub { color: var(--muted); margin: 0 0 16px; }
+  section { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 16px 20px; margin-bottom: 14px; }
+  h2 { font-size: 14px; margin: 0 0 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
+  .f { display: flex; flex-direction: column; gap: 4px; }
+  label { font-size: 12.5px; font-weight: 600; }
+  input, select, textarea { font: inherit; padding: 8px 10px; border: 1px solid #d4d4d8; border-radius: 7px; background: #fff; width: 100%; }
+  textarea { min-height: 54px; resize: none; }
+  .wide { grid-column: 1 / -1; }
+  button { font: inherit; font-weight: 600; background: var(--brand); color: #fff; border: 0; border-radius: 8px; padding: 10px 18px; }
+</style>
+<header><div class="logo"></div><b>Atelier Nord</b><span data-t="careers"></span></header>
+<main>
+  <h1 data-t="title"></h1>
+  <p class="sub" data-t="where"></p>
+  <form onsubmit="return false">
+    <section>
+      <h2 data-t="you"></h2>
+      <div class="grid">
+        <div class="f"><label for="fn" data-t="fn"></label><input id="fn" name="first_name"></div>
+        <div class="f"><label for="ln" data-t="ln"></label><input id="ln" name="last_name"></div>
+        <div class="f"><label for="em" data-t="em"></label><input id="em" type="email" name="email"></div>
+        <div class="f"><label for="ph" data-t="ph"></label><input id="ph" type="tel" name="phone"></div>
+        <div class="f"><label for="ci" data-t="ci"></label><input id="ci" name="city"></div>
+        <div class="f"><label for="li" data-t="li"></label><input id="li" name="linkedin"></div>
+      </div>
+    </section>
+    <section>
+      <h2 data-t="exp"></h2>
+      <div class="grid">
+        <div class="f"><label for="jt" data-t="jt"></label><input id="jt" name="current_title"></div>
+        <div class="f"><label for="co" data-t="co"></label><input id="co" name="current_company"></div>
+        <div class="f wide"><label for="sk" data-t="sk"></label><input id="sk" name="skills"></div>
+        <div class="f wide"><label for="mo" data-t="mo"></label><textarea id="mo" name="motivation"></textarea></div>
+      </div>
+    </section>
+    <button type="submit" data-t="send"></button>
+  </form>
+</main>
+<script>
+  const T = {
+    fr: { careers: 'Carrières', title: 'Chargé·e de projet digital (CDI)', where: 'Nantes · Hybride · Publiée il y a 2 jours',
+      you: 'Vos informations', fn: 'Prénom', ln: 'Nom', em: 'Adresse e-mail', ph: 'Téléphone', ci: 'Ville', li: 'Profil LinkedIn',
+      exp: 'Votre parcours', jt: 'Poste actuel', co: 'Employeur actuel', sk: 'Compétences', mo: 'Pourquoi nous rejoindre ?', send: 'Envoyer ma candidature' },
+    en: { careers: 'Careers', title: 'Digital Project Manager (Full-time)', where: 'Nantes · Hybrid · Posted 2 days ago',
+      you: 'About you', fn: 'First name', ln: 'Last name', em: 'Email address', ph: 'Phone number', ci: 'City', li: 'LinkedIn profile',
+      exp: 'Your background', jt: 'Current job title', co: 'Current employer', sk: 'Skills', mo: 'Why do you want to join us?', send: 'Submit application' },
+  };
+  const lang = new URLSearchParams(location.search).get('lang') === 'en' ? 'en' : 'fr';
+  document.documentElement.lang = lang;
+  for (const el of document.querySelectorAll('[data-t]')) el.textContent = T[lang][el.dataset.t];
+</script>

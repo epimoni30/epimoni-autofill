@@ -1,0 +1,40 @@
+name: Other bug
+description: Something else is broken: the popup, the CV editor, import or export, pairing, or the analysis panel.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For a wrong or missed field, use the **Wrong or missed field** form instead.
+        For anything exploitable, see SECURITY.md and do not open a public issue.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what you expected
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. …
+        2. …
+    validations:
+      required: true
+  - type: textarea
+    id: console
+    attributes:
+      label: Errors (optional)
+      description: chrome://extensions → Epimoni Autofill → "Errors", or the service worker's console.
+      render: text
+  - type: input
+    id: version
+    attributes:
+      label: Extension version
+    validations:
+      required: true
+  - type: input
+    id: chrome
+    attributes:
+      label: Chrome version and OS

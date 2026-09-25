@@ -1,0 +1,63 @@
+<!doctype html>
+<!-- RECONSTRUCTION, not a capture. Written for this test suite.
+
+     It reproduces the two things the extractor is measured on for this board: there is no
+     JobPosting JSON-LD anywhere on the page, and the advert sits in `main#contents` with the
+     job title restated on four separate controls. Both are facts about the page's structure,
+     established by `npm run probe`; none of the text below is the board's.
+-->
+<html lang="fr">
+<head><meta charset="utf-8"><title>Technicien / Technicienne de maintenance industrielle (H/F) - Offre n°000XXXX</title></head>
+<body>
+<header><nav><a href="/">Accueil</a> <a href="/offres">Rechercher une offre</a></nav></header>
+
+<!-- Outside `main`, so the heuristic must not start here. -->
+<div id="consent"><p>Politique de cookies : nous utilisons des cookies pour mesurer l'audience.</p>
+<button type="button">Accepter les cookies</button></div>
+
+<main id="contents">
+  <h1>Technicien / Technicienne de maintenance industrielle (H/F)</h1>
+  <a href="#postuler">Technicien / Technicienne de maintenance industrielle (H/F)</a>
+  <a href="#imprimer">Technicien / Technicienne de maintenance industrielle (H/F)</a>
+  <a href="#localiser">Technicien / Technicienne de maintenance industrielle (H/F)</a>
+  <p>Mécanor Industries · Limoges (87) · CDI · Publiée le 15 septembre 2026</p>
+  <p>Mécanor Industries, spécialiste de l'usinage de précision pour l'aéronautique, renforce
+son équipe maintenance sur son site de Limoges (87). Vous rejoignez un atelier de 120 personnes
+organisé en trois équipes, et vous intervenez sur un parc de machines à commande numérique
+récent.</p>
+
+<h2>Vos missions</h2>
+<ul>
+  <li>Assurer la maintenance préventive et curative des machines-outils à commande numérique.</li>
+  <li>Diagnostiquer les pannes mécaniques, électriques, pneumatiques et hydrauliques.</li>
+  <li>Réaliser les interventions de dépannage dans le respect des consignes de sécurité.</li>
+  <li>Participer à l'amélioration continue de la fiabilité du parc machines.</li>
+  <li>Renseigner la GMAO et rédiger les comptes rendus d'intervention.</li>
+  <li>Accompagner les opérateurs sur les bonnes pratiques d'utilisation.</li>
+</ul>
+
+<h2>Profil recherché</h2>
+<p>Vous êtes titulaire d'un BTS Maintenance des systèmes ou d'un DUT Génie industriel, et vous
+justifiez d'une première expérience réussie de deux ans minimum en environnement industriel.
+La lecture de schémas électriques et de plans mécaniques ne vous pose pas de difficulté. Vous
+êtes reconnu pour votre rigueur, votre autonomie et votre sens du travail en équipe. Une
+habilitation électrique B2V BR serait un plus apprécié, mais nous pouvons la financer à votre
+arrivée.</p>
+
+<h2>Conditions</h2>
+<p>Contrat à durée indéterminée, temps plein, 35 heures hebdomadaires en horaires postés
+2x8 du lundi au vendredi. Rémunération entre 28 000 et 34 000 euros bruts annuels selon
+expérience, complétée par une prime d'équipe, une prime de transport et un accord
+d'intéressement. Mutuelle familiale prise en charge à 70 pour cent par l'employeur. Comité
+social et économique actif. Le site est accessible en transports en commun et dispose d'un
+parking gratuit.</p>
+
+<p>Le processus de recrutement comprend un entretien téléphonique, une visite de l'atelier et
+un entretien technique avec le responsable maintenance. Nous nous engageons à répondre à
+chaque candidature sous quinze jours. Ce poste est ouvert aux personnes en situation de
+handicap.</p>
+</main>
+
+<aside><h2>Offres similaires</h2><ul><li>Mécanicien outilleur (H/F)</li></ul></aside>
+<footer><p>Mentions légales</p></footer>
+</body></html>

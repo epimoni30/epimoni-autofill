@@ -1,0 +1,61 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": {
+    "includes": [
+      "src/**",
+      "test/**",
+      "tools/**",
+      "build.mjs",
+      "manifest.json",
+      "package.json",
+      "biome.jsonc",
+      "_locales/**",
+      // Captured and hand-built pages the tests measure against: they must stay byte-for-byte.
+      "!test/fixtures"
+    ]
+  },
+  // Mirrors the hand style the code was written in, so formatting moves line breaks only.
+  "formatter": {
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 110
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "semicolons": "always",
+      "trailingCommas": "all",
+      "arrowParentheses": "always"
+    },
+    // `build.mjs` injects the three EPIMONI_* constants into the scripts it assembles.
+    "globals": ["chrome", "EPIMONI_DEV", "EPIMONI_LEXICONS", "EPIMONI_AUTOCOMPLETE"]
+  },
+  // Linted, not formatted: the pages are short and hand-laid-out, and Biome's HTML
+  // formatter is younger than its JS one.
+  "html": { "formatter": { "enabled": false } },
+  "linter": {
+    "rules": { "preset": "recommended" }
+  },
+  "overrides": [
+    {
+      // Extension pages are translated at runtime. Headings, labels and links are empty in
+      // source and filled from _locales/ through `data-i18n`, and `<html lang>` is set from
+      // chrome.i18n.getUILanguage(). These four rules read the source, so they would fire on
+      // every translated element. e2e covers the real concern: it renders each page and fails
+      // if any `data-i18n` element is left empty.
+      "includes": ["src/**/*.html"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "useHeadingContent": "off",
+            "useAnchorContent": "off",
+            "noLabelWithoutControl": "off",
+            "useHtmlLang": "off"
+          }
+        }
+      }
+    }
+  ],
+  "assist": { "enabled": false }
+}

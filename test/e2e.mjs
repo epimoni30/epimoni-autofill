@@ -1,0 +1,1040 @@
+// End-to-end against the *built* extension in a real Chromium: service worker, message
+// passing, the bundled content script, chrome.storage, and the review panel.
+//
+// It drives the same path `chrome.action.onClicked` does, executeScript into the tab, then
+// a `fill` message, rather than injecting the script from the page, because a content
+// script needs the isolated world to have `chrome.runtime` at all.
+//
+// The one thing it cannot exercise is the `externally_connectable` handshake: that listener
+// only accepts https://www.epimoni30.com, which would need a local TLS origin to fake. Its
+// allowlist is covered by test/pair.test.mjs instead.
+
+import { createServer } from 'node:http';
+import { readFile, mkdtemp } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { extname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
+import { loadChromium } from '../tools/chromium.mjs';
+import { toProfile } from '../src/shared/cvdoc.js';
+
+const chromium = await loadChromium();
+
+/**
+ * An unpacked extension's id is derived from the SHA-256 of its absolute path, with each hex
+ * digit mapped onto a: p. Computing it beats waiting for a `serviceworker` event: an MV3
+ * worker is not guaranteed to have started when the context opens, so waiting for it hangs:
+ * and knowing the id lets us open an extension page, which wakes the worker on purpose.
+ */
+const extensionIdFor = (absPath) =>
+  [...createHash('sha256').update(absPath).digest('hex').slice(0, 32)]
+    .map((c) => 'abcdefghijklmnop'[parseInt(c, 16)])
+    .join('');
+
+// A stuck browser should fail the run, not hold the terminal.
+const watchdog = setTimeout(() => {
+  console.log('\nFAILED: timed out after 90s');
+  process.exit(1);
+}, 90000);
+watchdog.unref?.();
+
+const HERE = fileURLToPath(new URL('.', import.meta.url));
+const DIST = join(HERE, '..', 'dist');
+
+const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8' };
+const server = createServer(async (req, res) => {
+  try {
+    const body = await readFile(join(HERE, 'fixtures', req.url.split('?')[0].replace(/^\//, '')));
+    res.writeHead(200, { 'content-type': MIME[extname(req.url)] || 'text/plain' });
+    res.end(body);
+  } catch {
+    res.writeHead(404);
+    res.end();
+  }
+});
+await new Promise((r) => server.listen(0, r));
+const base = `http://127.0.0.1:${server.address().port}`;
+
+const profile = toProfile(JSON.parse(readFileSync(join(HERE, 'cv.fixture.json'), 'utf8')), {
+  postal_code: '44000',
+  street: '12 rue du Calvaire',
+  country: 'France',
+  work_authorization: 'Oui, ressortissant UE',
+});
+
+// `channel: 'chromium'` rather than `headless: false`.
+//
+// Since Playwright 1.49 the default headless browser is `chromium_headless_shell`, which
+// cannot load extensions at all; the documented path for extension testing is the full
+// Chromium build, which this selects and which runs in new-headless mode. It also happens to
+// fix the hang this test had with `headless: false` on macOS: it opens no window, starts the
+// service worker in under two seconds, and so is usable in CI.
+const ctx = await chromium.launchPersistentContext(await mkdtemp(join(tmpdir(), 'epimoni-ext-')), {
+  channel: 'chromium',
+  args: [
+    `--disable-extensions-except=${DIST}`,
+    `--load-extension=${DIST}`,
+    '--no-first-run',
+    '--no-default-browser-check',
+  ],
+  timeout: 30000,
+});
+
+{
+  const built = JSON.parse(readFileSync(join(DIST, 'manifest.json'), 'utf8'));
+  const local = (built.host_permissions || []).some((h) => h.includes('127.0.0.1'));
+  if (!local) {
+    console.log(
+      'FAILED: dist/ is not a dev build: run `node build.mjs --dev`.\n' +
+        'Without localhost host permissions Chrome redacts tab.url and refuses executeScript,\n' +
+        'so the test cannot reach its own fixture tab.',
+    );
+    await new Promise((r) => server.close(r));
+    process.exit(1);
+  }
+}
+
+const extId = extensionIdFor(DIST);
+// Opening a page from the extension starts its service worker deterministically.
+const waker = await ctx.newPage();
+await waker.goto(`chrome-extension://${extId}/popup.html`).catch(() => {});
+let sw = null;
+for (let i = 0; i < 40 && !sw; i += 1) {
+  sw = ctx.serviceWorkers().find((w) => w.url().includes(extId)) || null;
+  if (!sw) await waker.waitForTimeout(250);
+}
+if (!sw) {
+  console.log(`FAILED: service worker never started for ${extId}`);
+  await ctx.close();
+  server.close();
+  process.exit(1);
+}
+await waker.close();
+
+const fails = [];
+const check = (name, ok, detail = '') => {
+  console.log(`${ok ? '  ok  ' : ' FAIL '} ${name}${detail ? `: ${detail}` : ''}`);
+  if (!ok) fails.push(name);
+};
+console.log(`extension loaded: ${extId}\n`);
+
+// Pairing state as the service worker would have stored it after a hand-off from the site.
+await sw.evaluate(async (payload) => {
+  await chrome.storage.local.set({
+    epimoni: {
+      paired: true,
+      paired_at: Date.now(),
+      taken_at: Date.now(),
+      jwt: '',
+      user_id: 'test-user',
+      user_type: 'google',
+      given_name: 'Camille',
+      family_name: 'Dupont-Mercier',
+      cv_label: 'CV principal',
+      profile: payload,
+      extras: {},
+    },
+  });
+}, profile);
+
+const page = await ctx.newPage();
+await page.goto(`${base}/france-travail.html`, { waitUntil: 'load' });
+// A careers site's own button styles, as most of them have. The panel lives in the page's
+// DOM, so any property it leaves unset is the page's to decide: white-on-white "undo" was
+// what a real-looking form made of it.
+await page.addStyleTag({ content: 'button { color: #fff; background: #0f766e; }' });
+
+const tabId = await sw.evaluate(async (url) => {
+  const tabs = await chrome.tabs.query({});
+  const byUrl = tabs.find((t) => t.url?.includes(url));
+  if (byUrl) return byUrl.id;
+  const [active] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  return active?.id ?? null;
+}, 'france-travail.html');
+check('the tab is visible to the service worker', tabId !== null, `tabId=${tabId}`);
+
+const injected = await sw.evaluate(async (id) => {
+  await chrome.scripting.executeScript({ target: { tabId: id, allFrames: true }, files: ['content.js'] });
+  const res = await chrome.tabs.sendMessage(id, { type: 'fill' });
+  return res?.ok === true;
+}, tabId);
+check('content script injected and answered the fill message', injected);
+
+await page
+  .waitForFunction(() => document.getElementById('epimoni-panel') !== null, { timeout: 5000 })
+  .catch(() => {});
+
+const result = await page.evaluate(() => {
+  const val = (id) => document.getElementById(id).value;
+  const panel = document.getElementById('epimoni-panel')?.shadowRoot?.firstElementChild;
+  return {
+    prenom: val('p'),
+    nom: val('n'),
+    email: val('e'),
+    tel: val('t'),
+    cp: val('cp'),
+    ville: val('v'),
+    letter: val('lm'),
+    cvSelect: val('cv'),
+    // The component state, not the DOM: this is what a React form would actually submit.
+    state: window.__state,
+    panelText: panel ? panel.textContent : null,
+    undoColor: panel ? getComputedStyle([...panel.querySelectorAll('button')].at(-2) || panel).color : null,
+    outlined: document.querySelectorAll('[data-epimoni-filled]').length,
+    submitted: window.__submitted === true,
+  };
+});
+
+check('given name filled', result.prenom === 'Camille', result.prenom);
+check(
+  "the panel's buttons keep their own colour on a page that styles every button",
+  result.undoColor && result.undoColor !== 'rgb(255, 255, 255)',
+  result.undoColor,
+);
+check('family name filled', result.nom === 'Dupont-Mercier', result.nom);
+check('email filled', result.email === profile.email, result.email);
+check('phone filled', result.tel === profile.phone, result.tel);
+check('postal code filled from the local extras', result.cp === '44000', result.cp);
+check('city filled', result.ville === 'Nantes', result.ville);
+check(
+  'React state received the values, not just the DOM',
+  result.state.prenom === 'Camille' && result.state.courriel === profile.email,
+  JSON.stringify(result.state),
+);
+check('the cover letter is left empty for the AI tier', result.letter === '', JSON.stringify(result.letter));
+check('the CV dropdown is untouched', result.cvSelect === '', result.cvSelect);
+// The panel is written in whatever language Chrome resolves, so matching French text here
+// passes on a machine running in French and fails anywhere else: the trap the popup checks
+// below are careful about. Ask the extension for the strings it would render: the service
+// worker's `chrome.i18n` is the one the content script's `t()` calls.
+const say = await sw.evaluate(() => ({
+  filled: chrome.i18n.getMessage('panel_filled_many', ['6']),
+  undo: chrome.i18n.getMessage('panel_undo'),
+}));
+check(
+  'the review panel is shown',
+  !!result.panelText && result.panelText.includes(say.filled),
+  (result.panelText || '').slice(0, 60),
+);
+check('the panel offers an undo', !!result.panelText && result.panelText.includes(say.undo), say.undo);
+check('nothing was submitted', result.submitted === false);
+check('filled fields are marked', result.outlined === 6, String(result.outlined));
+
+// Radio groups: one question answered, the neighbouring ones and both checkboxes left alone.
+const radioPage = await ctx.newPage();
+await radioPage.goto(`${base}/radios.html`, { waitUntil: 'load' });
+const radioTabId = await sw.evaluate(async () => {
+  const tabs = await chrome.tabs.query({});
+  const byUrl = tabs.find((t) => t.url?.includes('radios.html'));
+  if (byUrl) return byUrl.id;
+  const [active] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  return active?.id ?? null;
+});
+await sw.evaluate(async (id) => {
+  await chrome.scripting.executeScript({ target: { tabId: id, allFrames: true }, files: ['content.js'] });
+  await chrome.tabs.sendMessage(id, { type: 'fill' });
+}, radioTabId);
+await radioPage
+  .waitForFunction(() => document.getElementById('epimoni-panel') !== null, { timeout: 5000 })
+  .catch(() => {});
+const radioResult = await radioPage.evaluate(() => ({
+  authYes: document.getElementById('a1').checked,
+  authNo: document.getElementById('a2').checked,
+  sourceAny: document.getElementById('s1').checked || document.getElementById('s2').checked,
+  remoteUntouched: document.getElementById('r1').checked && !document.getElementById('r2').checked,
+  consent: document.getElementById('cgu').checked,
+  newsletter: document.getElementById('news').checked,
+  state: window.__state,
+}));
+check(
+  'the work-authorisation radio is answered',
+  radioResult.authYes === true && radioResult.authNo === false,
+  JSON.stringify({ yes: radioResult.authYes, no: radioResult.authNo }),
+);
+check(
+  'controlled radio state received the option value',
+  radioResult.state?.autorisation === 'oui',
+  JSON.stringify(radioResult.state),
+);
+check('a question we have no answer for is left empty', radioResult.sourceAny === false);
+check('a group the user already answered is not changed', radioResult.remoteUntouched === true);
+check('the consent checkbox is never ticked', radioResult.consent === false);
+check('the newsletter checkbox is never ticked', radioResult.newsletter === false);
+
+// The trap page: every control must survive untouched, including the login form's email.
+const traps = await ctx.newPage();
+await traps.goto(`${base}/traps.html`, { waitUntil: 'load' });
+const trapTabId = await sw.evaluate(async () => {
+  const tabs = await chrome.tabs.query({});
+  const byUrl = tabs.find((t) => t.url?.includes('traps.html'));
+  if (byUrl) return byUrl.id;
+  const [active] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  return active?.id ?? null;
+});
+await sw.evaluate(async (id) => {
+  await chrome.scripting.executeScript({ target: { tabId: id, allFrames: true }, files: ['content.js'] });
+  await chrome.tabs.sendMessage(id, { type: 'fill' });
+}, trapTabId);
+await traps.waitForTimeout(600);
+const touched = await traps.evaluate(() =>
+  Array.from(document.querySelectorAll('input'))
+    .filter((i) => i.value && i.value !== 'REF-2026-118')
+    .map((i) => i.id),
+);
+check('no trap field was filled', touched.length === 0, touched.join(', '));
+
+// ── Repeated sections: the career block by block ──────────────────────────────────────────
+//
+// The seed above stores a profile and no document, which is the shape an old bag migrates
+// from. Blocks are filled from the document itself, so this seeds a library entry holding
+// the whole CV, the way every current install stores one.
+const cvDoc = JSON.parse(readFileSync(join(HERE, 'cv.fixture.json'), 'utf8'));
+await sw.evaluate(
+  async ({ cv, payload }) => {
+    const bag = await chrome.storage.local.get('epimoni');
+    await chrome.storage.local.set({
+      epimoni: {
+        ...bag.epimoni,
+        cvs: [
+          {
+            id: 'cv-parcours',
+            label: 'CV principal',
+            source: 'local',
+            cv,
+            profile: payload,
+            taken_at: Date.now(),
+            updated_at: Date.now(),
+          },
+        ],
+        active_cv_id: 'cv-parcours',
+      },
+    });
+  },
+  { cv: cvDoc, payload: profile },
+);
+
+const fillPage = async (file) => {
+  const p = await ctx.newPage();
+  await p.goto(`${base}/${file}`, { waitUntil: 'load' });
+  const id = await sw.evaluate(async (f) => {
+    const tabs = await chrome.tabs.query({});
+    return tabs.find((t) => t.url?.includes(f))?.id ?? null;
+  }, file);
+  await sw.evaluate(async (tab) => {
+    await chrome.scripting.executeScript({ target: { tabId: tab, allFrames: true }, files: ['content.js'] });
+    await chrome.tabs.sendMessage(tab, { type: 'fill' });
+  }, id);
+  await p
+    .waitForFunction(() => document.getElementById('epimoni-panel') !== null, { timeout: 5000 })
+    .catch(() => {});
+  return p;
+};
+
+const parcours = await fillPage('parcours.html');
+const blockResult = await parcours.evaluate(() => ({
+  state: window.__state,
+  refs: ['ref_nom', 'ref_entreprise', 'ref_tel', 'ref_mail'].map(
+    (n) => document.querySelector(`[name="${n}"]`).value,
+  ),
+  wanted: document.querySelector('[name="souhait"]').value,
+  current: document.querySelector('[name="exp_a_actuel"]').checked,
+  endMonth: document.querySelector('[name="exp_a_fin_m"]').value,
+  panelText: document.getElementById('epimoni-panel')?.shadowRoot?.textContent || '',
+  submitted: window.__submitted === true,
+}));
+const st = blockResult.state || {};
+check(
+  'each experience block got its own entry, in React state',
+  st.exp_a_entreprise === 'Groupe Ouest Média' && st.exp_b_entreprise === 'Studio Kerlan',
+  `${st.exp_a_entreprise} / ${st.exp_b_entreprise}`,
+);
+check(
+  "a job's city is that job's, not the user's home",
+  st.exp_a_ville === 'Rennes' && st.ville === 'Nantes',
+  `${st.exp_a_ville} / ${st.ville}`,
+);
+check(
+  'a split start date fills the month and the year dropdowns',
+  st.exp_a_debut_m === '3' && st.exp_a_debut_y === '2021' && st.exp_b_debut_m === '9',
+  `${st.exp_a_debut_m}/${st.exp_a_debut_y}, ${st.exp_b_debut_m}`,
+);
+check(
+  'a bare year fills a year field and nothing more precise',
+  st.edu_annee === '2018' && st.cert_date === '2022-05',
+  `${st.edu_annee}, ${st.cert_date}`,
+);
+check(
+  'a role still in progress leaves its end date empty and the box unticked',
+  blockResult.endMonth === '' && blockResult.current === false,
+);
+check(
+  'the references block is left alone',
+  blockResult.refs.every((v) => v === ''),
+  blockResult.refs.join('|'),
+);
+check('a field outside every block takes no entry', blockResult.wanted === '', blockResult.wanted);
+check('nothing was submitted on the block form', blockResult.submitted === false);
+const blockSay = await sw.evaluate(() => ({
+  current: chrome.i18n.getMessage('panel_tick_current'),
+  eduLeft: chrome.i18n.getMessage('panel_leftover', ['1', chrome.i18n.getMessage('cvsection_education')]),
+  workLeft: chrome.i18n.getMessage('panel_leftover', ['1', chrome.i18n.getMessage('cvsection_work')]),
+}));
+check('the panel says to tick "poste actuel" by hand', blockResult.panelText.includes(blockSay.current));
+check(
+  'the panel names the degree the page has no block for',
+  blockResult.panelText.includes(blockSay.eduLeft),
+  blockResult.panelText.slice(0, 120),
+);
+
+const indexed = await fillPage('fillers/workday/my-experience.html');
+const indexedResult = await indexed.evaluate(() => ({
+  state: window.__state,
+  panelText: document.getElementById('epimoni-panel')?.shadowRoot?.textContent || '',
+}));
+check(
+  'ids numbered from 1 fill the first entry',
+  indexedResult.state?.['workExperience-1--companyName'] === 'Groupe Ouest Média' &&
+    indexedResult.state?.['workExperience-1--startDate'] === '2021-03',
+  JSON.stringify(indexedResult.state).slice(0, 120),
+);
+check(
+  'one job block against two jobs: the panel says one is left, and clicks nothing',
+  indexedResult.panelText.includes(blockSay.workLeft) &&
+    (await indexed.evaluate(
+      () => document.querySelectorAll('[data-automation-id^="workExperience-"]').length,
+    )) === 1,
+);
+
+// A filler end to end: the aria-combobox widget filler operating custom dropdowns in the real
+// extension, through the guarded API, and undone by the panel, the filler's way.
+const combo = await fillPage('fillers/aria-combobox/combobox.html');
+const comboResult = await combo.evaluate(() => ({
+  state: { ...window.__state },
+  submitted: window.__submitted,
+}));
+check(
+  'a custom dropdown is filled through the widget filler, in component state',
+  comboResult.state.country === 'France' &&
+    comboResult.state.city === 'Nantes' &&
+    comboResult.state.lang_a === 'Français',
+  JSON.stringify(comboResult.state),
+);
+check('the birth-country dropdown is left alone', !comboResult.state.birth, String(comboResult.state.birth));
+check('the submit button inside a dropdown was never pressed', comboResult.submitted === false);
+const undoLabel = await sw.evaluate(() => chrome.i18n.getMessage('panel_undo'));
+await combo.getByRole('button', { name: undoLabel }).click();
+await combo.waitForFunction(() => window.__state.country === '', { timeout: 3000 }).catch(() => {});
+const afterUndo = await combo.evaluate(() => ({ ...window.__state }));
+check(
+  'undo reverts a widget the filler filled',
+  afterUndo.country === '' && afterUndo.lang_a === '',
+  JSON.stringify(afterUndo),
+);
+await combo.close();
+await parcours.close();
+await indexed.close();
+
+// ── The offer analysis, and the rule the whole design exists to keep ──────────────────────
+//
+// `/ml/analyse/cvVSoffer-doc` is metered: one free call an hour, then the paid passes. The
+// teaser and the "voir l'analyse complète" link must therefore cost **one** call between
+// them, not two: the trap recorded in project_quota_follow_ups, where a memo hit is still
+// charged. `fetch` is stubbed inside the service worker rather than intercepted at the
+// network layer, so the count is of calls the worker actually decided to make.
+//
+// The message is sent from an extension page, not from the worker: `chrome.runtime.sendMessage`
+// does not deliver to a listener in the *same* context, so a worker messaging itself silently
+// resolves to undefined. An extension page is also the honest shape: in production the sender
+// is the content script, and either way the worker is on the receiving end.
+const extPage = await ctx.newPage();
+await extPage.goto(`chrome-extension://${extId}/popup.html`);
+
+const stubWorker = async (reply) =>
+  sw.evaluate(async (r) => {
+    globalThis.__calls = [];
+    await chrome.storage.session.remove('analysis_cache');
+    const bag = await chrome.storage.local.get('epimoni');
+    // Written as a library entry, because that is where a CV lives. A `cv` at top level is
+    // stripped on the way in and shadowed on the way out, which is the invariant that stops a
+    // stale copy disagreeing with the list, and it applies to a test seed like anything else.
+    // Enough of a CV to clear the analysable floor: a name alone is refused before anything is
+    // spent, which is a rule the unit tests own and this stub must not trip over.
+    await chrome.storage.local.set({
+      epimoni: {
+        ...bag.epimoni,
+        stale: false,
+        jwt: 'test-jwt',
+        cvs: [
+          {
+            id: 'cv-test',
+            label: 'CV principal',
+            source: 'account',
+            builder_id: 'b-77',
+            cv: {
+              basics: { name: 'Camille Dupont' },
+              work: [{ name: 'Acme' }],
+              skills: [{ name: 'Python' }],
+            },
+            profile: null,
+            taken_at: Date.now(),
+            updated_at: Date.now(),
+          },
+        ],
+        active_cv_id: 'cv-test',
+      },
+    });
+    globalThis.fetch = async (url) => {
+      globalThis.__calls.push(String(url));
+      if (r.status !== 200) return { ok: false, status: r.status, json: async () => r.body };
+      return { ok: true, status: 200, json: async () => r.body };
+    };
+  }, reply);
+
+const sendAnalyse = (text) =>
+  extPage.evaluate(
+    (t) =>
+      new Promise((r) =>
+        chrome.runtime.sendMessage(
+          {
+            type: 'analyse',
+            posting: { text: t, ok: true, via: 'heuristic', words: 200 },
+            host: 'candidat.francetravail.fr',
+          },
+          (res) => r(res),
+        ),
+      ),
+    text,
+  );
+
+const meteredCalls = () =>
+  sw.evaluate(() => (globalThis.__calls || []).filter((u) => u.includes('cvVSoffer-doc')).length);
+
+const OK_BODY = {
+  ml: {
+    ml_id: 'ml-1',
+    content: {
+      global_score: 72,
+      section_scores: { profil: 90, experience: 55, competences: 40 },
+    },
+  },
+};
+
+const analyse = async ({ text, reset }) => {
+  if (reset) await stubWorker({ status: 200, body: OK_BODY });
+  const res = await sendAnalyse(text);
+  return { res, calls: await meteredCalls() };
+};
+
+const advert = 'Developpeur .NET H/F. '.repeat(30);
+const first = await analyse({ text: advert, reset: true });
+check(
+  'the offer analysis returns a score and an ml id',
+  first.res?.ok === true && first.res?.ml_id === 'ml-1',
+  JSON.stringify(first.res?.teaser || first.res),
+);
+check(
+  'the teaser names the weakest sections',
+  first.res?.teaser?.weakest?.[0]?.name === 'competences',
+  JSON.stringify(first.res?.teaser?.weakest),
+);
+check(
+  'the teaser carries the builder id, so the link lands on the right document',
+  first.res?.builder_id === 'b-77',
+);
+check(
+  'a paired account gets the link back to the site',
+  first.res?.linkable === true && first.res?.mode === 'account',
+);
+
+const second = await analyse({ text: advert });
+check('a second look at the same advert is served from cache', second.res?.cached === true);
+check('ONE metered call for one advert, not two', second.calls === 1, `calls=${second.calls}`);
+
+const other = await analyse({ text: `Autre offre. ${advert}` });
+check('a different advert is a new analysis', other.calls === 2, `calls=${other.calls}`);
+
+// The paywall path: a 429 must reach the user as a wait, not as a silent failure.
+await stubWorker({ status: 429, body: { detail: '1842' } });
+const quota = await sendAnalyse('x '.repeat(80));
+check(
+  'a spent quota surfaces as the paywall with a wait',
+  quota?.kind === 'quota' && quota?.seconds === 1842,
+  JSON.stringify(quota),
+);
+
+// Once the hour is spent, both surfaces say where the plans are *before* another click is
+// refused: the popup, and the panel's analysis section.
+await sw.evaluate(() => {
+  globalThis.fetch = async (url) => ({
+    ok: true,
+    status: 200,
+    json: async () =>
+      String(url).includes('/users/me')
+        ? {
+            user: { preference: { account_type: 'gratuit' } },
+            rate_limit: { rate_limited: true, reset_time_seconds: 1200 },
+          }
+        : {},
+  });
+});
+await extPage.reload();
+const popupPlans = await extPage
+  .waitForSelector('#links a[href*="#pricing"]', { timeout: 5000 })
+  .then((a) => a.getAttribute('href'))
+  .catch(() => null);
+check('a spent hour shows the plans link in the popup', !!popupPlans, popupPlans || 'no link');
+const spentPanel = await fillPage('parcours.html');
+const panelPlans = await spentPanel
+  .waitForSelector('#epimoni-panel a[href*="#pricing"]', { timeout: 5000 })
+  .then((a) => a.getAttribute('href'))
+  .catch(() => null);
+check('and in the panel, beside the analyse button', !!panelPlans, panelPlans || 'no link');
+await spentPanel.close();
+
+// An expired 31-day token: flagged for the popup, and filling must keep working. The profile
+// is local, so losing the token costs the analysis and nothing else.
+await stubWorker({ status: 401, body: {} });
+const expiredRes = await sendAnalyse('y '.repeat(80));
+const after = await extPage.evaluate(async () => ({
+  state: await new Promise((r) => chrome.runtime.sendMessage({ type: 'state' }, r)),
+  profile: await new Promise((r) => chrome.runtime.sendMessage({ type: 'profile' }, r)),
+}));
+check('an expired token is reported as expired', expiredRes?.kind === 'expired');
+check('an expired token marks the pairing stale', after.state?.stale === true);
+check(
+  'filling still works with an expired token',
+  Object.keys(after.profile?.profile || {}).length > 0,
+  `${Object.keys(after.profile?.profile || {}).length} fields`,
+);
+
+// `ext_session_end`: declared on both sides for months and emitted by neither. It reports
+// what became of one application page, and the field that justifies it is `unanswered`: how
+// many suggestions the user left without answering, which no per-run event can know.
+//
+// Driven by actually leaving the page, not by a synthetic event: the content script runs in
+// the isolated world, so a `visibilityState` overridden from the page's main world is not the
+// one it reads. Navigating away fires the real `pagehide`, which is also the case worth
+// proving: an event sent during teardown is exactly the kind that quietly never arrives.
+await sw.evaluate(async () => {
+  globalThis.__events = [];
+  await chrome.storage.session.remove('telemetry_budget');
+  globalThis.fetch = async (url, init) => {
+    if (String(url).includes('/api/v1/events')) {
+      try {
+        globalThis.__events.push(JSON.parse(init.body));
+      } catch {
+        /* ignore */
+      }
+    }
+    return { ok: true, status: 200, json: async () => ({}) };
+  };
+});
+await page.goto('about:blank');
+await extPage.waitForTimeout(600);
+const ended = await sw.evaluate(() =>
+  (globalThis.__events || []).filter((e) => e.name === 'ext_session_end'),
+);
+
+check(
+  'leaving the page reports how the application ended',
+  ended.length >= 1,
+  JSON.stringify(ended[0]?.meta || null),
+);
+check(
+  'the page outcome is reported once, not once per teardown event',
+  ended.length === 1,
+  `${ended.length} sent`,
+);
+check(
+  'the outcome carries counts and no field values',
+  !!ended[0] && !JSON.stringify(ended[0].meta).includes('Camille'),
+  JSON.stringify(ended[0]?.meta || {}),
+);
+
+// ── No account at all ────────────────────────────────────────────────────────────────────
+//
+// The extension has to work for somebody who has never signed in: the CV lives here, the
+// worker opens its own anonymous session, and the backend meters it at one call an hour on
+// the same window as the website. This is that path end to end, in a real browser, with the
+// pairing removed rather than simulated.
+await sw.evaluate(async () => {
+  globalThis.__calls = [];
+  await chrome.storage.session.clear();
+  // Deliberately the *old* one-slot shape: reading it here exercises the migration in a real
+  // browser, which is the path every existing install takes on upgrade.
+  await chrome.storage.local.set({
+    epimoni: {
+      paired: false,
+      cv_source: 'local',
+      cv: {
+        basics: { name: 'Alex Martin', email: 'alex@example.org' },
+        work: [{ name: 'Beta' }],
+        skills: [{ name: 'Go' }],
+      },
+      profile: { full_name: 'Alex Martin', email: 'alex@example.org' },
+      extras: {},
+    },
+  });
+  globalThis.fetch = async (url) => {
+    globalThis.__calls.push(String(url));
+    if (String(url).includes('anonymous-login')) {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({ jwt: 'anon-jwt', user_id: 'anon-1', user_type: 'anonymous' }),
+      };
+    }
+    if (String(url).includes('/users/me')) {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          user: { preference: { account_type: 'gratuit' } },
+          rate_limit: { rate_limited: false },
+        }),
+      };
+    }
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({
+        ml: {
+          ml_id: 'ml-anon',
+          content: { global_score: 58, section_scores: { experience: 30, profil: 80 } },
+        },
+      }),
+    };
+  };
+});
+
+const anonState = await extPage.evaluate(
+  () => new Promise((r) => chrome.runtime.sendMessage({ type: 'state' }, r)),
+);
+check(
+  'an unpaired install still reports a usable CV',
+  anonState?.has_cv === true && anonState?.mode === 'anonymous',
+  JSON.stringify({ has_cv: anonState?.has_cv, mode: anonState?.mode }),
+);
+
+const anonRes = await sendAnalyse('Recherche developpeur Go. '.repeat(30));
+const anonCalls = await sw.evaluate(() => globalThis.__calls || []);
+check(
+  'an anonymous user gets the offer analysis',
+  anonRes?.ok === true && anonRes?.teaser?.score === 58,
+  JSON.stringify(anonRes?.teaser || anonRes),
+);
+check(
+  'the anonymous session is opened exactly once',
+  anonCalls.filter((u) => u.includes('anonymous-login')).length === 1,
+  anonCalls.join(' '),
+);
+check(
+  'and costs exactly one metered call',
+  anonCalls.filter((u) => u.includes('cvVSoffer-doc')).length === 1,
+);
+check(
+  'no link to the site is offered for a run the site cannot open',
+  anonRes?.linkable === false && anonRes?.mode === 'anonymous',
+);
+
+const anonTier = await extPage.evaluate(
+  () => new Promise((r) => chrome.runtime.sendMessage({ type: 'tier' }, r)),
+);
+check(
+  'the anonymous tier is reported as metered and free',
+  anonTier?.paid === false && anonTier?.mode === 'anonymous',
+  JSON.stringify(anonTier),
+);
+
+// ── The CV editor ────────────────────────────────────────────────────────────────────────
+//
+// The surface that makes the extension usable with no Epimoni account. It is the only place a
+// CV can be created, so a key that fails to resolve or a save that does not round-trip breaks
+// the whole standalone path, and neither throws.
+const options = await ctx.newPage();
+await options.goto(`chrome-extension://${extId}/options.html`);
+await options.waitForTimeout(500);
+
+const opt = await options.evaluate(() => {
+  const tagged = [...document.querySelectorAll('[data-i18n]')];
+  return {
+    tagged: tagged.length,
+    unresolved: tagged
+      .filter((n) => !n.textContent.trim() || n.textContent === n.dataset.i18n)
+      .map((n) => n.dataset.i18n),
+    raw: (document.body.innerText.match(/__MSG_\w+__|\bopt_\w+|\bfield_\w+/g) || []).slice(0, 5),
+    lang: document.documentElement.lang,
+    name: document.getElementById('b_name').value,
+    email: document.getElementById('b_email').value,
+    entries: document.querySelectorAll('.entry').length,
+  };
+});
+check(
+  'the CV editor resolves every i18n key',
+  opt.tagged > 0 && opt.unresolved.length === 0,
+  opt.unresolved.join(', ') || `${opt.tagged} keys`,
+);
+check('the CV editor leaks no raw message keys', opt.raw.length === 0, opt.raw.join(', '));
+check(
+  'the CV editor loads the stored document',
+  opt.name === 'Alex Martin' && opt.email === 'alex@example.org',
+  `${opt.name} / ${opt.email}`,
+);
+check(
+  'the CV editor draws a row per section, so a blank CV is still a form',
+  opt.entries >= 3,
+  String(opt.entries),
+);
+
+// Typed in, saved, and read back through the worker, which is the only writer, and which
+// derives the flat profile that fills forms from the document rather than being handed one.
+await options.fill('#b_name', 'Manon Leroy');
+await options.fill('#b_phone', '0612345678');
+await options.fill('#skills', 'Rust, Kubernetes');
+const workPosition = await options.$('.entry input');
+await workPosition.fill('Ingénieure SRE');
+await options.click('#save');
+await options.waitForTimeout(400);
+
+const saved = await options.evaluate(async () => ({
+  state: await new Promise((r) => chrome.runtime.sendMessage({ type: 'state' }, r)),
+  profile: await new Promise((r) => chrome.runtime.sendMessage({ type: 'profile' }, r)),
+  cv: await new Promise((r) => chrome.runtime.sendMessage({ type: 'cv:get' }, r)),
+}));
+check(
+  'a CV typed into the editor is stored',
+  saved.cv?.cv?.basics?.name === 'Manon Leroy',
+  saved.cv?.cv?.basics?.name,
+);
+check(
+  'the open CV structure is what is stored',
+  Array.isArray(saved.cv?.cv?.work) && Array.isArray(saved.cv?.cv?.skills) && !!saved.cv?.cv?.basics,
+  Object.keys(saved.cv?.cv || {}).join(','),
+);
+check(
+  'the form profile is derived from it, so filling works immediately',
+  saved.profile?.profile?.full_name === 'Manon Leroy' &&
+    saved.profile?.profile?.phone === '0612345678' &&
+    saved.profile?.profile?.skills === 'Rust, Kubernetes',
+  JSON.stringify(saved.profile?.profile || {}),
+);
+check(
+  'the editor reports the CV as analysable once it holds a role and skills',
+  saved.state?.cv_analysable === true,
+);
+
+// ── The CV library ───────────────────────────────────────────────────────────────────────
+//
+// Several documents, one active. The assertions below are the three ways the old one-slot
+// design lost somebody's work: saving twice, adding a CV, and switching between them.
+const listOf = () =>
+  options.evaluate(() => new Promise((r) => chrome.runtime.sendMessage({ type: 'cv:list' }, r)));
+
+await options.click('#save');
+await options.waitForTimeout(300);
+const afterTwoSaves = await listOf();
+check(
+  'saving twice edits the same document rather than adding one',
+  afterTwoSaves.cvs?.length === 1,
+  `${afterTwoSaves.cvs?.length} in the library`,
+);
+
+await options.click('#new-cv');
+await options.waitForTimeout(400);
+const afterNew = await listOf();
+const blankName = await options.inputValue('#b_name');
+check(
+  'a new CV is added and opened blank, and the first one is untouched',
+  afterNew.cvs?.length === 2 && blankName === '',
+  `${afterNew.cvs?.length} CVs, name "${blankName}"`,
+);
+
+await options.fill('#b_name', 'Second Document');
+await options.click('#save');
+await options.waitForTimeout(400);
+
+// The row that is not active carries the "use" button; clicking it switches back.
+await options.click('.cv-row:not(.active) button.link');
+await options.waitForTimeout(500);
+const backName = await options.inputValue('#b_name');
+const finalList = await listOf();
+check(
+  'switching back restores the other document, with both still stored',
+  backName === 'Manon Leroy' && finalList.cvs?.length === 2,
+  `${backName}, ${finalList.cvs?.length} CVs`,
+);
+check('exactly one document is active at a time', finalList.cvs?.filter((c) => c.active).length === 1);
+
+// The export path, run against the module the build actually shipped rather than the source.
+const exported = await options.evaluate(async () => {
+  const m = await import('./src/shared/cvdoc.js');
+  const cv = await new Promise((r) => chrome.runtime.sendMessage({ type: 'cv:get' }, r));
+  const resume = m.toJsonResume(cv.cv);
+  return {
+    problems: m.jsonResumeProblems(resume),
+    label: resume.basics?.label,
+    position: resume.work?.[0]?.position,
+  };
+});
+check(
+  'an exported CV is valid JSON Résumé, with our wrappers unwrapped',
+  exported.problems?.length === 0 && typeof exported.position === 'string',
+  exported.problems?.join('; ') || `position=${JSON.stringify(exported.position)}`,
+);
+
+await options.close();
+
+// ── Filling with nothing stored ──────────────────────────────────────────────────────────
+//
+// The one state where the extension cannot do its job. It used to say "connect your Epimoni
+// account", which is now advice about one of three ways out of it.
+await sw.evaluate(async () => {
+  await chrome.storage.local.remove('epimoni');
+});
+const bare = await ctx.newPage();
+await bare.goto(`${base}/france-travail.html`, { waitUntil: 'load' });
+const bareTabId = await sw.evaluate(async () => {
+  const tabs = await chrome.tabs.query({});
+  return tabs.find((t) => t.url?.includes('france-travail.html'))?.id ?? null;
+});
+await sw.evaluate(async (id) => {
+  await chrome.scripting.executeScript({ target: { tabId: id, allFrames: true }, files: ['content.js'] });
+  await chrome.tabs.sendMessage(id, { type: 'fill' });
+}, bareTabId);
+await bare
+  .waitForFunction(() => document.getElementById('epimoni-panel') !== null, { timeout: 5000 })
+  .catch(() => {});
+const barePanel = await bare.evaluate(() => {
+  const panel = document.getElementById('epimoni-panel')?.shadowRoot?.firstElementChild;
+  return {
+    text: panel ? panel.textContent : null,
+    hasButton: !!panel?.querySelector('button'),
+    filled: [...document.querySelectorAll('input')].filter((i) => i.value).length,
+  };
+});
+check(
+  'with no CV the panel explains rather than filling',
+  barePanel.filled === 0 && !!barePanel.text,
+  (barePanel.text || '').slice(0, 70),
+);
+check('and offers the CV editor as the way out', barePanel.hasButton === true);
+await bare.close();
+
+// The popup: every key must resolve, in **both** of the states it can open in. A missing one
+// renders as an empty element or as the raw key, and only for whichever language is missing
+// it: exactly the kind of thing that ships unnoticed from a machine running in French.
+//
+// Most of this popup is built at runtime rather than tagged in the markup, so a `data-i18n`
+// sweep alone would now check one element. The text of the rendered panel is what is read.
+const readPopup = () =>
+  extPage.evaluate(() => {
+    const tagged = [...document.querySelectorAll('[data-i18n]')];
+    const text = document.body.innerText;
+    return {
+      unresolved: tagged
+        .filter((n) => !n.textContent.trim() || n.textContent === n.dataset.i18n)
+        .map((n) => n.dataset.i18n),
+      raw: (text.match(/__MSG_\w+__|\bpopup_\w+|\bfield_\w+/g) || []).slice(0, 5),
+      words: text.trim().split(/\s+/).length,
+      buttons: [...document.querySelectorAll('button')].map((b) => b.textContent).join('|'),
+      lang: document.documentElement.lang,
+    };
+  });
+
+// Storage is empty at this point: the state somebody meets on the day they install.
+await extPage.reload();
+await extPage.waitForTimeout(400);
+const empty = await readPopup();
+check(
+  'the popup with no CV says so in real words',
+  empty.unresolved.length === 0 && empty.words >= 4,
+  `${empty.words} words, ${empty.unresolved.join(', ')}`,
+);
+check(
+  'and offers the editor rather than only naming an account it lacks',
+  /CV/i.test(empty.buttons),
+  empty.buttons,
+);
+check('the popup leaks no raw message keys when empty', empty.raw.length === 0, empty.raw.join(', '));
+
+await sw.evaluate(async () => {
+  await chrome.storage.local.set({
+    epimoni: {
+      paired: false,
+      cv_source: 'local',
+      taken_at: Date.now(),
+      cv: { basics: { name: 'Manon Leroy' }, work: [{ name: 'Beta' }], skills: [{ name: 'Go' }] },
+      profile: { full_name: 'Manon Leroy' },
+      extras: {},
+    },
+  });
+});
+await extPage.reload();
+await extPage.waitForTimeout(500);
+const ready = await readPopup();
+check(
+  'the popup with a CV resolves every key',
+  ready.unresolved.length === 0 && ready.raw.length === 0,
+  [...ready.unresolved, ...ready.raw].join(', ') || `${ready.words} words`,
+);
+check('the popup sets a document language', !!ready.lang, ready.lang);
+
+// The pairing confirmation page, in a real browser. The listener that parks a request is
+// covered by pair.test.mjs (the site's origin cannot be faked here); what only a browser can
+// show is that the page renders the request, ignores a scripted click, and applies the request
+// on a real one, and that nothing reaches storage before that click.
+const pairId = await sw.evaluate(async () => {
+  await chrome.storage.local.remove('epimoni');
+  const id = crypto.randomUUID();
+  await chrome.storage.session.set({
+    pair_pending: {
+      id,
+      at: Date.now(),
+      kind: 'cv-only',
+      picked: { cv: { basics: { name: 'Inès Garnier', email: 'ines@example.org' } }, cv_label: 'CV du site' },
+      shown: { email: null, cv_name: 'Inès Garnier', cv_label: 'CV du site' },
+    },
+  });
+  return id;
+});
+const pairPage = await ctx.newPage();
+await pairPage.goto(`chrome-extension://${extId}/src/epimoni/pair.html#${pairId}`);
+await pairPage
+  .waitForFunction(() => !document.getElementById('actions').hidden, { timeout: 5000 })
+  .catch(() => {});
+const shownPair = await pairPage.evaluate(() => ({
+  text: document.body.innerText,
+  acceptDisabled: document.getElementById('accept').disabled,
+}));
+check(
+  'the pairing page names the CV it is asked to add',
+  /Inès Garnier/.test(shownPair.text),
+  shownPair.text.slice(0, 80),
+);
+check('and Accept is not live the instant the page appears', shownPair.acceptDisabled === true);
+await pairPage.waitForTimeout(1000);
+await pairPage.evaluate(() => document.getElementById('accept').click());
+await pairPage.waitForTimeout(300);
+const afterScripted = await sw.evaluate(
+  async () => (await chrome.storage.local.get('epimoni')).epimoni || null,
+);
+check('a scripted click on Accept does nothing', afterScripted === null);
+await pairPage.click('#accept');
+await pairPage.waitForTimeout(500);
+const afterAccept = await sw.evaluate(async () => {
+  const bag = (await chrome.storage.local.get('epimoni')).epimoni || {};
+  return (bag.cvs || []).map((c) => ({ name: c.cv?.basics?.name, source: c.source }));
+});
+check(
+  'a real click adds the CV, marked as coming from the site',
+  afterAccept.length === 1 && afterAccept[0].name === 'Inès Garnier' && afterAccept[0].source === 'site',
+  JSON.stringify(afterAccept),
+);
+await pairPage.close();
+
+await ctx.close();
+server.close();
+clearTimeout(watchdog);
+console.log(`\n${fails.length ? `FAILED: ${fails.join(', ')}` : 'all end-to-end checks passed'}`);
+process.exit(fails.length ? 1 : 0);

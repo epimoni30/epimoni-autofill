@@ -1,0 +1,30 @@
+<!doctype html>
+<!-- `lang` is set at runtime from chrome.i18n.getUILanguage(): this file used to be hardcoded
+     `fr`, which told a screen reader to read English and Spanish text with a French voice. -->
+<html>
+<meta charset="utf-8">
+<title>Epimoni</title>
+<style>
+  :root { color-scheme: light dark; --fg: #111; --muted: #71717a; --line: #e4e4e7; --bg: #fff; --accent: #7c5cff; --ok: #15803d; }
+  @media (prefers-color-scheme: dark) { :root { --fg: #f4f4f5; --muted: #a1a1aa; --line: #3f3f46; --bg: #18181b; --ok: #4ade80; } }
+  body { width: 300px; margin: 0; padding: 14px; font: 13px/1.5 system-ui, -apple-system, sans-serif; color: var(--fg); background: var(--bg); }
+  h1 { font-size: 14px; margin: 0 0 10px; }
+  .muted { color: var(--muted); }
+  .warn { color: #b45309; }
+  .ok { color: var(--ok); }
+  button { font: inherit; border: 1px solid var(--line); background: transparent; color: var(--fg); border-radius: 8px; padding: 6px 10px; cursor: pointer; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  a { color: var(--accent); }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
+</style>
+<body>
+  <!-- Every string carries `data-i18n`, applied by popup.js. `chrome.i18n` cannot substitute
+       into HTML the way it does in the manifest, so the markup names the key and the script
+       resolves it. -->
+  <h1 data-i18n="popup_title"></h1>
+  <div id="status" class="muted">…</div>
+  <div id="actions" style="margin-top:10px"></div>
+  <div id="links" style="margin-top:10px"></div>
+  <script src="popup.js"></script>
+</body>
+</html>

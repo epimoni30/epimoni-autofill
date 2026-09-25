@@ -1,0 +1,30 @@
+<!doctype html>
+<!-- The store's small promo tile, 440×280, rendered by tools/screenshots.mjs. ?lang=en for the
+     English listing. -->
+<meta charset="utf-8">
+<title>Promo tile</title>
+<style>
+  html, body { margin: 0; width: 440px; height: 280px; overflow: hidden; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: linear-gradient(140deg, #7c5cff 0%, #5b3fd6 100%);
+    color: #fff; display: flex; flex-direction: column; justify-content: center; padding: 0 34px;
+    box-sizing: border-box;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+  .brand img { width: 44px; height: 44px; border-radius: 10px; box-shadow: 0 4px 14px rgba(0,0,0,.2); }
+  .brand span { font-weight: 700; font-size: 20px; letter-spacing: -.01em; }
+  h1 { font-size: 27px; line-height: 1.15; margin: 0 0 12px; letter-spacing: -.02em; }
+  p { margin: 0; font-size: 15px; opacity: .9; }
+</style>
+<div class="brand"><img src="../icons/128.png" alt=""><span>Epimoni Autofill</span></div>
+<h1 data-t="h"></h1>
+<p data-t="p"></p>
+<script>
+  const T = {
+    fr: { h: 'Vos candidatures remplies depuis votre CV', p: 'Saisi une fois. Relu par vous. Jamais envoyé à votre place.' },
+    en: { h: 'Job applications filled from your CV', p: 'Entered once. Reviewed by you. Never sent for you.' },
+  };
+  const lang = new URLSearchParams(location.search).get('lang') === 'en' ? 'en' : 'fr';
+  for (const el of document.querySelectorAll('[data-t]')) el.textContent = T[lang][el.dataset.t];
+</script>

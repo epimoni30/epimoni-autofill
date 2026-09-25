@@ -1,0 +1,159 @@
+<!doctype html>
+<!-- The CV the extension fills from, and the only surface that can create one.
+     `lang` is set at runtime from chrome.i18n.getUILanguage(). -->
+<html>
+<meta charset="utf-8">
+<title>Epimoni</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --fg: #18181b; --muted: #71717a; --line: #e4e4e7; --bg: #fafafa; --card: #fff;
+    --accent: #7c5cff; --warn: #b45309; --ok: #15803d;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --fg: #f4f4f5; --muted: #a1a1aa; --line: #3f3f46; --bg: #121214; --card: #18181b; --warn: #fbbf24; --ok: #4ade80; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 28px 16px 80px; font: 14px/1.55 system-ui, -apple-system, sans-serif; color: var(--fg); background: var(--bg); }
+  main { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  h2 { font-size: 15px; margin: 0 0 10px; }
+  .muted { color: var(--muted); }
+  .warn { color: var(--warn); }
+  .ok { color: var(--ok); }
+  section { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; margin-top: 14px; }
+  .row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 12px; }
+  .row.one { grid-template-columns: 1fr; }
+  .row.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  @media (max-width: 560px) { .row, .row.three { grid-template-columns: 1fr; } }
+  label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 3px; }
+  input, textarea, select { width: 100%; padding: 7px 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); font: inherit; }
+  textarea { min-height: 70px; resize: vertical; }
+  button { font: inherit; border: 1px solid var(--line); background: var(--card); color: var(--fg); border-radius: 8px; padding: 7px 12px; cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  button.link { border: 0; background: none; color: var(--accent); padding: 2px 4px; }
+  button.danger { color: #b91c1c; }
+  a { color: var(--accent); }
+  .entry { border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+  .entry-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .entry-head b { font-size: 12px; color: var(--muted); font-weight: 600; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .bar { position: fixed; left: 0; right: 0; bottom: 0; background: var(--card); border-top: 1px solid var(--line); padding: 10px 16px; }
+  .bar-inner { max-width: 760px; margin: 0 auto; display: flex; gap: 10px; align-items: center; }
+  .badge { display: inline-block; font-size: 12px; border: 1px solid var(--line); border-radius: 999px; padding: 1px 9px; color: var(--muted); }
+  .grow { flex: 1; min-width: 0; }
+  .cv-list { list-style: none; margin: 0; padding: 0; }
+  .cv-row { display: flex; gap: 10px; align-items: center; border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; margin-bottom: 8px; }
+  .cv-row.active { border-color: var(--accent); }
+  .cv-row b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .cv-row .meta { font-size: 12px; color: var(--muted); }
+  .cv-row input { max-width: 260px; }
+  /* Narrow: the name takes the whole row and the buttons wrap underneath, rather than the
+     text being squeezed into a four-line column beside them. */
+  @media (max-width: 560px) {
+    .cv-row { flex-wrap: wrap; }
+    .cv-row .grow { flex: 1 0 100%; }
+  }
+</style>
+<body>
+<main>
+  <h1 data-i18n="opt_title"></h1>
+  <p class="muted" data-i18n="opt_intro" style="margin-top:0"></p>
+
+  <section id="status-card">
+    <h2 data-i18n="opt_status_heading"></h2>
+    <div id="status"></div>
+    <div class="actions" style="margin-top:10px">
+      <a id="site-link" class="badge" href="https://www.epimoni30.com/extension-chrome" target="_blank" rel="noopener" data-i18n="opt_from_account"></a>
+      <button type="button" id="import" data-i18n="opt_import"></button>
+      <button type="button" id="export" data-i18n="opt_export"></button>
+      <input id="file" type="file" accept="application/json,.json" hidden>
+    </div>
+    <div id="import-msg" class="muted" style="margin-top:6px"></div>
+    <div class="muted" style="margin-top:6px; font-size:12px" data-i18n="opt_export_hint"></div>
+  </section>
+
+  <section id="library-card">
+    <h2 data-i18n="opt_library_heading"></h2>
+    <p class="muted" style="margin:-4px 0 10px" data-i18n="opt_library_intro"></p>
+    <ul id="cv-list" class="cv-list"></ul>
+    <div class="actions">
+      <button type="button" id="new-cv" data-i18n="opt_library_new"></button>
+      <span id="library-msg" class="muted"></span>
+    </div>
+  </section>
+
+  <section>
+    <h2 data-i18n="opt_basics"></h2>
+    <div class="row">
+      <div><label for="b_name" data-i18n="field_full_name"></label><input id="b_name" autocomplete="off"></div>
+      <div><label for="b_label" data-i18n="field_current_title"></label><input id="b_label" autocomplete="off"></div>
+      <div><label for="b_email" data-i18n="field_email"></label><input id="b_email" type="email" autocomplete="off"></div>
+      <div><label for="b_phone" data-i18n="field_phone"></label><input id="b_phone" autocomplete="off"></div>
+      <div><label for="b_city" data-i18n="field_city"></label><input id="b_city" autocomplete="off"></div>
+      <div><label for="b_linkedin" data-i18n="field_linkedin_url"></label><input id="b_linkedin" autocomplete="off"></div>
+      <div><label for="b_portfolio" data-i18n="field_portfolio_url"></label><input id="b_portfolio" autocomplete="off"></div>
+      <div><label for="b_github" data-i18n="field_github_url"></label><input id="b_github" autocomplete="off"></div>
+    </div>
+    <div class="row one" style="margin-top:10px">
+      <div><label for="b_summary" data-i18n="field_summary"></label><textarea id="b_summary"></textarea></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 data-i18n="opt_work"></h2>
+    <div id="work"></div>
+    <button type="button" id="add-work" data-i18n="opt_add_work"></button>
+  </section>
+
+  <section>
+    <h2 data-i18n="opt_education"></h2>
+    <div id="education"></div>
+    <button type="button" id="add-education" data-i18n="opt_add_education"></button>
+  </section>
+
+  <section>
+    <h2 data-i18n="opt_skills"></h2>
+    <label for="skills" data-i18n="opt_skills_help"></label>
+    <textarea id="skills"></textarea>
+    <div style="margin-top:12px">
+      <h2 data-i18n="opt_languages" style="margin-bottom:6px"></h2>
+      <div id="languages"></div>
+      <button type="button" id="add-language" data-i18n="opt_add_language"></button>
+    </div>
+  </section>
+
+  <section>
+    <h2 data-i18n="opt_extras"></h2>
+    <p class="muted" style="margin-top:0" data-i18n="opt_extras_help"></p>
+    <div class="row">
+      <div><label for="x_street" data-i18n="field_street"></label><input id="x_street" autocomplete="off"></div>
+      <div><label for="x_postal_code" data-i18n="field_postal_code"></label><input id="x_postal_code" autocomplete="off"></div>
+      <div><label for="x_country" data-i18n="field_country"></label><input id="x_country" autocomplete="off"></div>
+      <div><label for="x_work_authorization" data-i18n="field_work_authorization"></label><input id="x_work_authorization" autocomplete="off"></div>
+      <div><label for="x_salary_expectation" data-i18n="field_salary_expectation"></label><input id="x_salary_expectation" autocomplete="off"></div>
+      <div><label for="x_notice_period" data-i18n="field_notice_period"></label><input id="x_notice_period" autocomplete="off"></div>
+      <div><label for="x_availability_date" data-i18n="field_availability_date"></label><input id="x_availability_date" autocomplete="off"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 data-i18n="opt_privacy_heading"></h2>
+    <p class="muted" style="margin:0" data-i18n="opt_privacy"></p>
+    <div class="actions" style="margin-top:10px">
+      <button type="button" id="unpair" class="link" data-i18n="opt_unpair" hidden></button>
+      <button type="button" id="forget" class="danger" data-i18n="opt_forget"></button>
+    </div>
+  </section>
+</main>
+
+<div class="bar">
+  <div class="bar-inner">
+    <span id="saved" class="muted grow"></span>
+    <button type="button" id="save" class="primary" data-i18n="opt_save"></button>
+  </div>
+</div>
+<script type="module" src="options.js"></script>
+</body>
+</html>

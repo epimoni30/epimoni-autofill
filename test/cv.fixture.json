@@ -1,0 +1,93 @@
+{
+  "_comment": "A CvDoc as the builder stores it. basics.label is a {text} wrapper, work[0].position is a legacy {diff} block and education[0].area a reverted one. Both shapes are still on disk and both must read correctly. work[0].location is Rennes, not the home city Nantes, so a job's \"Ville\" filled from the wrong source shows. education[1] has a studyType and education[0] does not; both shapes are live.",
+  "basics": {
+    "name": "Camille Dupont-Mercier",
+    "label": { "text": "Cheffe de projet digital" },
+    "email": "camille.dupont@example.org",
+    "phone": "+33 6 12 34 56 78",
+    "location": { "city": "Nantes" },
+    "profiles": [
+      { "network": "LinkedIn", "url": "https://www.linkedin.com/in/camilledupont" },
+      { "network": "Portfolio", "url": "https://camille.example.org" }
+    ],
+    "summary": {
+      "text": "Cheffe de projet digital avec huit ans d'expérience en refonte de plateformes e-commerce."
+    }
+  },
+  "work": [
+    {
+      "id": "w0",
+      "name": "Groupe Ouest Média",
+      "position": {
+        "diff": {
+          "tokens": [
+            { "t": "eq", "s": "Cheffe de projet " },
+            { "t": "add", "s": "digital " },
+            { "t": "del", "s": "web " },
+            { "t": "eq", "s": "senior" }
+          ]
+        }
+      },
+      "startDate": "Mars 2021",
+      "endDate": "en cours",
+      "location": "Rennes",
+      "highlights": [{ "id": "h0", "text": "Refonte du tunnel d'achat, +18 % de conversion." }]
+    },
+    {
+      "id": "w1",
+      "name": "Studio Kerlan",
+      "position": "Chargée de projet",
+      "startDate": "09/2018",
+      "endDate": "02/2021",
+      "highlights": []
+    }
+  ],
+  "education": [
+    {
+      "id": "e0",
+      "institution": "Université de Nantes",
+      "area": {
+        "diff": {
+          "reverted": true,
+          "tokens": [
+            { "t": "eq", "s": "Master " },
+            { "t": "del", "s": "Marketing digital" },
+            { "t": "add", "s": "Communication" }
+          ]
+        }
+      },
+      "startDate": "2016",
+      "endDate": "2018"
+    },
+    {
+      "id": "e1",
+      "institution": "IUT de Nantes",
+      "studyType": "DUT",
+      "area": "Information-communication",
+      "startDate": "2014",
+      "endDate": "2016",
+      "score": "Mention bien"
+    }
+  ],
+  "skills": [
+    { "id": "s0", "name": "Gestion de projet" },
+    { "id": "s1", "name": "SEO" },
+    { "id": "s2", "name": "Figma" }
+  ],
+  "languages": [
+    { "id": "l0", "language": "Français", "fluency": "langue maternelle" },
+    { "id": "l1", "language": "Anglais", "fluency": "C1" }
+  ],
+  "certificates": [
+    { "id": "c0", "name": "Google Analytics Individual Qualification", "issuer": "Google", "date": "2022-05" }
+  ],
+  "projects": [
+    {
+      "id": "p0",
+      "name": "Site de l'association Kerlan Vélo",
+      "description": "Refonte bénévole du site et de la billetterie.",
+      "startDate": "2019"
+    }
+  ],
+  "meta": { "template": "classic" }
+}

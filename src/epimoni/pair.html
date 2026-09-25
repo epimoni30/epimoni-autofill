@@ -1,0 +1,37 @@
+<!doctype html>
+<!-- The one place a pairing is accepted. An extension page: the site that asked cannot script
+     it, frame it or click on it, which is the whole reason the decision is made here.
+     `lang` is set at runtime from chrome.i18n.getUILanguage(). -->
+<html>
+<meta charset="utf-8">
+<title>Epimoni</title>
+<style>
+  :root { color-scheme: light dark; --fg: #18181b; --muted: #71717a; --line: #e4e4e7; --bg: #fafafa; --card: #fff; --accent: #7c5cff; --warn: #b45309; --ok: #15803d; }
+  @media (prefers-color-scheme: dark) { :root { --fg: #f4f4f5; --muted: #a1a1aa; --line: #3f3f46; --bg: #121214; --card: #18181b; --warn: #fbbf24; --ok: #4ade80; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 48px 16px; font: 14px/1.55 system-ui, -apple-system, sans-serif; color: var(--fg); background: var(--bg); }
+  main { max-width: 480px; margin: 0 auto; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px 22px; }
+  h1 { font-size: 18px; margin: 0 0 12px; }
+  dl { margin: 12px 0; display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; }
+  dt { color: var(--muted); }
+  dd { margin: 0; overflow-wrap: anywhere; font-weight: 600; }
+  .muted { color: var(--muted); }
+  .warn { color: var(--warn); }
+  .ok { color: var(--ok); }
+  .actions { display: flex; gap: 10px; margin-top: 16px; }
+  button { font: inherit; border: 1px solid var(--line); background: var(--card); color: var(--fg); border-radius: 8px; padding: 8px 14px; cursor: pointer; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  button:disabled { opacity: .5; cursor: default; }
+</style>
+<body>
+<main>
+  <h1 id="title"></h1>
+  <div id="body"></div>
+  <div class="actions" id="actions" hidden>
+    <button type="button" class="primary" id="accept" data-i18n="pair_accept" disabled></button>
+    <button type="button" id="refuse" data-i18n="pair_refuse"></button>
+  </div>
+</main>
+<script src="pair.js"></script>
+</body>
+</html>

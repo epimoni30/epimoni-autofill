@@ -1,0 +1,41 @@
+name: check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # Format and lint first, on its own step: it needs no browser, fails in seconds, and
+      # `biome ci` annotates the offending lines on the pull request.
+      - run: npx biome ci .
+
+      # The e2e suite loads the built extension in a real browser. It must be the full
+      # Chromium build: since Playwright 1.49 the default headless browser is
+      # chromium_headless_shell, which cannot load extensions at all.
+      - run: npx playwright install --with-deps chromium
+
+      # Unit tests, then the fill-rate measurement, then the build, then e2e.
+      #
+      # `measure` is the step that earns this workflow. test/fixtures/traps.html is a
+      # false-positive gauntlet in which every control must be left untouched, and a
+      # wrong fill in a job application is unrecoverable. A change that breaks that
+      # floor must go red here rather than in somebody's application.
+      - run: npm run check

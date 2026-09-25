@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<!-- Reconstruction of a Workday "My Experience" step, for the `workday` site filler. Not a
+     capture of a live tenant.
+     What it exercises:
+     - `data-automation-id="formField-…"` wrappers. The company field has *no* visible label,
+       so it can only be named through the filler's `describe`.
+     - rows numbered from 1 (`workExperience-1`), read both from the ids and from the filler's
+       `hint`, which must agree.
+     - `type=month` dates, and a degree dropdown whose options do not include the CV's wording.
+     - one block per section against a CV with two jobs and two degrees: the leftovers the
+       panel reports.
+     Trap: a referrer's company outside any block, described by the same `formField-companyName`
+     id as the real one. It must stay empty. -->
+<meta charset="utf-8"><title>My Experience</title>
+<body>
+<div id="app">
+  <div class="contact">
+    <label for="email">Email Address</label><input id="email" type="email" autocomplete="email" data-controlled data-expect="email">
+    <label for="phone">Phone Number</label><input id="phone" type="tel" data-controlled data-expect="phone">
+  </div>
+
+  <div data-automation-id="workExperienceSection">
+    <h3>Work Experience</h3>
+    <div data-automation-id="workExperience-1">
+      <div data-automation-id="formField-jobTitle">
+        <label for="workExperience-1--jobTitle">Job Title</label>
+        <input id="workExperience-1--jobTitle" data-controlled data-expect="work[0].position">
+      </div>
+      <div data-automation-id="formField-companyName">
+        <input id="workExperience-1--companyName" data-controlled data-expect="work[0].company">
+      </div>
+      <div data-automation-id="formField-location">
+        <label for="workExperience-1--location">Location</label>
+        <input id="workExperience-1--location" data-controlled data-expect="work[0].location">
+      </div>
+      <label><input type="checkbox" id="workExperience-1--currentlyWorkHere" data-expect="none"> I currently work here</label>
+      <div data-automation-id="formField-startDate">
+        <label for="workExperience-1--startDate">From</label>
+        <input type="month" id="workExperience-1--startDate" data-controlled data-expect="work[0].start">
+      </div>
+      <div data-automation-id="formField-endDate">
+        <label for="workExperience-1--endDate">To</label>
+        <input type="month" id="workExperience-1--endDate" data-expect="work[0].end">
+      </div>
+      <div data-automation-id="formField-roleDescription">
+        <label for="workExperience-1--roleDescription">Role Description</label>
+        <textarea id="workExperience-1--roleDescription" data-controlled data-expect="work[0].description"></textarea>
+      </div>
+    </div>
+    <button type="button">Add Another</button>
+  </div>
+
+  <div data-automation-id="educationSection">
+    <h3>Education</h3>
+    <div data-automation-id="education-1">
+      <div data-automation-id="formField-schoolName">
+        <label for="education-1--school">School or University</label>
+        <input id="education-1--school" data-controlled data-expect="education[0].institution">
+      </div>
+      <div data-automation-id="formField-degree">
+        <label for="education-1--degree">Degree</label>
+        <select id="education-1--degree" data-expect="education[0].degree">
+          <option value="">Select One</option><option>Bachelor's Degree</option><option>Master's Degree</option><option>Doctorate</option>
+        </select>
+      </div>
+      <div data-automation-id="formField-fieldOfStudy">
+        <label for="education-1--fieldOfStudy">Field of Study</label>
+        <input id="education-1--fieldOfStudy" data-expect="education[0].field">
+      </div>
+      <div data-automation-id="formField-firstYearAttended">
+        <label for="education-1--firstYearAttended">From</label>
+        <input id="education-1--firstYearAttended" placeholder="YYYY" data-controlled data-expect="education[0].start">
+      </div>
+      <div data-automation-id="formField-lastYearAttended">
+        <label for="education-1--lastYearAttended">To (Actual or Expected)</label>
+        <input id="education-1--lastYearAttended" placeholder="YYYY" data-controlled data-expect="education[0].end">
+      </div>
+    </div>
+    <button type="button">Add Another</button>
+  </div>
+
+  <div data-automation-id="referralSection">
+    <h3>How did you hear about us?</h3>
+    <div data-automation-id="formField-companyName">
+      <label for="referrer-company">Referrer's company</label>
+      <input id="referrer-company" data-expect="none">
+    </div>
+  </div>
+</div>
+<script src="../../_react.js"></script><script>window.__controlAll()</script>
+</body></html>

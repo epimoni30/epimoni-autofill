@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="fr">
+<!-- The false-positive gauntlet. Every control here must be left alone. If the engine
+     touches one of these, the Phase 0 gate fails — a wrong value in a submitted
+     application is the one unrecoverable failure mode. -->
+<meta charset="utf-8"><title>Pièges</title>
+<body>
+<form id="login">
+  <legend>Connexion à votre espace</legend>
+  <label for="le">Adresse e-mail</label><input id="le" name="email" type="email" data-expect="none">
+  <label for="lp">Mot de passe</label><input id="lp" name="password" type="password" data-expect="none">
+</form>
+<form id="pay">
+  <label for="ccn">Nom sur la carte</label><input id="ccn" name="ccname" autocomplete="cc-name" data-expect="none">
+  <label for="ccno">Numéro de carte</label><input id="ccno" autocomplete="cc-number" data-expect="none">
+</form>
+<form id="misc">
+  <label for="ss">Numéro de sécurité sociale</label><input id="ss" data-expect="none">
+  <label for="urg">Nom du contact d'urgence</label><input id="urg" data-expect="none">
+  <label for="urgt">Téléphone du contact d'urgence</label><input id="urgt" type="tel" data-expect="none">
+  <label for="ref">Adresse e-mail de votre recruteur</label><input id="ref" type="email" data-expect="none">
+  <label for="fich">Nom du fichier</label><input id="fich" data-expect="none">
+  <label for="ecole">Nom de l'école de votre enfant</label><input id="ecole" data-expect="none">
+  <label for="poste">Poste recherché</label><input id="poste" data-expect="none">
+  <label for="hidden">Champ masqué</label><input id="hidden" style="display:none" data-expect="none">
+  <label for="ro">Référence de l'offre</label><input id="ro" value="REF-2026-118" readonly data-expect="none">
+</form>
+<!-- Concealed from the user but not from the page's own script: the classic autofill
+     exfiltration shapes. Each would be filled with a CV value by a naive visibility check. -->
+<form id="concealed">
+  <div style="opacity:0"><label for="hx1">Adresse e-mail</label><input id="hx1" type="email" data-expect="none"></div>
+  <div style="position:absolute;left:-9999px;top:0"><label for="hx2">Téléphone</label><input id="hx2" type="tel" data-expect="none"></div>
+  <div><label for="hx3">Ville</label><input id="hx3" style="position:absolute;width:40px;height:20px;clip:rect(0,0,0,0);overflow:hidden" data-expect="none"></div>
+  <div style="visibility:hidden"><label for="hx4">Nom</label><input id="hx4" data-expect="none"></div>
+</form>
+</body></html>

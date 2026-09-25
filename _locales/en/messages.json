@@ -1,0 +1,824 @@
+{
+  "ext_name": {
+    "message": "Epimoni: Job Application Autofill"
+  },
+  "ext_description": {
+    "message": "Fills your job applications and analyses job ads: France Travail, HelloWork, APEC, LinkedIn. With or without an Epimoni account."
+  },
+  "action_title": {
+    "message": "Fill this application"
+  },
+  "field_given_name": {
+    "message": "First name"
+  },
+  "field_family_name": {
+    "message": "Last name"
+  },
+  "field_full_name": {
+    "message": "Full name"
+  },
+  "field_email": {
+    "message": "Email"
+  },
+  "field_email_confirm": {
+    "message": "Confirm email"
+  },
+  "field_phone": {
+    "message": "Phone"
+  },
+  "field_street": {
+    "message": "Address"
+  },
+  "field_postal_code": {
+    "message": "Postal code"
+  },
+  "field_city": {
+    "message": "City"
+  },
+  "field_country": {
+    "message": "Country"
+  },
+  "field_linkedin_url": {
+    "message": "LinkedIn"
+  },
+  "field_github_url": {
+    "message": "GitHub"
+  },
+  "field_portfolio_url": {
+    "message": "Website"
+  },
+  "field_current_title": {
+    "message": "Current title"
+  },
+  "field_current_employer": {
+    "message": "Current employer"
+  },
+  "field_summary": {
+    "message": "About you"
+  },
+  "field_cover_letter": {
+    "message": "Cover letter"
+  },
+  "field_years_experience": {
+    "message": "Years of experience"
+  },
+  "field_salary_expectation": {
+    "message": "Salary expectation"
+  },
+  "field_notice_period": {
+    "message": "Notice period"
+  },
+  "field_availability_date": {
+    "message": "Availability"
+  },
+  "field_work_authorization": {
+    "message": "Work authorisation"
+  },
+  "field_education_degree": {
+    "message": "Degree"
+  },
+  "field_education_institution": {
+    "message": "Institution"
+  },
+  "field_skills": {
+    "message": "Skills"
+  },
+  "field_languages": {
+    "message": "Languages"
+  },
+  "field_awards_awarder": {
+    "message": "Awarded by"
+  },
+  "field_awards_date": {
+    "message": "Date"
+  },
+  "field_awards_description": {
+    "message": "Description"
+  },
+  "field_awards_title": {
+    "message": "Title"
+  },
+  "field_certificates_date": {
+    "message": "Date"
+  },
+  "field_certificates_issuer": {
+    "message": "Issuer"
+  },
+  "field_certificates_name": {
+    "message": "Name"
+  },
+  "field_certificates_url": {
+    "message": "Link"
+  },
+  "field_education_details": {
+    "message": "Details"
+  },
+  "field_education_end": {
+    "message": "End"
+  },
+  "field_education_field": {
+    "message": "Field of study"
+  },
+  "field_education_score": {
+    "message": "Grade"
+  },
+  "field_education_start": {
+    "message": "Start"
+  },
+  "field_interests_keywords": {
+    "message": "Keywords"
+  },
+  "field_interests_name": {
+    "message": "Name"
+  },
+  "field_languages_fluency": {
+    "message": "Level"
+  },
+  "field_languages_language": {
+    "message": "Language"
+  },
+  "field_projects_description": {
+    "message": "Description"
+  },
+  "field_projects_end": {
+    "message": "End"
+  },
+  "field_projects_name": {
+    "message": "Name"
+  },
+  "field_projects_start": {
+    "message": "Start"
+  },
+  "field_projects_url": {
+    "message": "Link"
+  },
+  "field_publications_date": {
+    "message": "Date"
+  },
+  "field_publications_description": {
+    "message": "Description"
+  },
+  "field_publications_name": {
+    "message": "Name"
+  },
+  "field_publications_publisher": {
+    "message": "Publisher"
+  },
+  "field_publications_url": {
+    "message": "Link"
+  },
+  "field_references_name": {
+    "message": "Name"
+  },
+  "field_references_reference": {
+    "message": "Recommendation"
+  },
+  "field_skills_keywords": {
+    "message": "Keywords"
+  },
+  "field_skills_level": {
+    "message": "Level"
+  },
+  "field_skills_name": {
+    "message": "Name"
+  },
+  "field_volunteer_description": {
+    "message": "Description"
+  },
+  "field_volunteer_end": {
+    "message": "End"
+  },
+  "field_volunteer_organization": {
+    "message": "Organisation"
+  },
+  "field_volunteer_position": {
+    "message": "Job title"
+  },
+  "field_volunteer_start": {
+    "message": "Start"
+  },
+  "field_work_company": {
+    "message": "Company"
+  },
+  "field_work_description": {
+    "message": "Description"
+  },
+  "field_work_end": {
+    "message": "End"
+  },
+  "field_work_location": {
+    "message": "Location"
+  },
+  "field_work_position": {
+    "message": "Job title"
+  },
+  "field_work_start": {
+    "message": "Start"
+  },
+  "field_work_url": {
+    "message": "Link"
+  },
+  "cvsection_work": {
+    "message": "Experience"
+  },
+  "cvsection_volunteer": {
+    "message": "Volunteering"
+  },
+  "cvsection_education": {
+    "message": "Education"
+  },
+  "cvsection_awards": {
+    "message": "Award"
+  },
+  "cvsection_certificates": {
+    "message": "Certification"
+  },
+  "cvsection_publications": {
+    "message": "Publication"
+  },
+  "cvsection_skills": {
+    "message": "Skill"
+  },
+  "cvsection_languages": {
+    "message": "Language"
+  },
+  "cvsection_interests": {
+    "message": "Interest"
+  },
+  "cvsection_references": {
+    "message": "Reference"
+  },
+  "cvsection_projects": {
+    "message": "Project"
+  },
+  "panel_leftover": {
+    "message": "$COUNT$ more × “$SECTION$” in your CV with no block on this page: click “Add” on the page, then run the extension again.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "section": {
+        "content": "$2"
+      }
+    }
+  },
+  "panel_tick_current": {
+    "message": "Current role: the end date is left empty. Tick “I currently work here” yourself if the form asks."
+  },
+  "panel_filled_one": {
+    "message": "1 field filled"
+  },
+  "panel_filled_many": {
+    "message": "$COUNT$ fields filled",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_to_check": {
+    "message": "$COUNT$ to check",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_open_questions": {
+    "message": "$COUNT$ open question(s)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_review": {
+    "message": "Check everything before you send it. Nothing is submitted for you."
+  },
+  "panel_undo": {
+    "message": "Undo all"
+  },
+  "panel_close": {
+    "message": "Close"
+  },
+  "panel_open_epimoni": {
+    "message": "Open Epimoni"
+  },
+  "panel_offer_found": {
+    "message": "A job posting was detected on this page."
+  },
+  "panel_analyse_cta": {
+    "message": "Analyse this posting"
+  },
+  "panel_analysing": {
+    "message": "Analysing…"
+  },
+  "panel_match": {
+    "message": "Match: $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_weakest": {
+    "message": "Weakest areas:"
+  },
+  "panel_see_full": {
+    "message": "See the full analysis →"
+  },
+  "panel_quota": {
+    "message": "No analysis left this hour. Try again in $MINUTES$ min.",
+    "placeholders": {
+      "minutes": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_quota_cta": {
+    "message": "See the plans"
+  },
+  "panel_stale": {
+    "message": "Your session has expired. Reconnect the extension from Epimoni."
+  },
+  "panel_no_cv": {
+    "message": "Add your CV to analyse this job ad."
+  },
+  "panel_too_long": {
+    "message": "This posting is too long to analyse."
+  },
+  "panel_analyse_failed": {
+    "message": "The analysis did not complete. Try again."
+  },
+  "section_profil": {
+    "message": "Profile"
+  },
+  "section_experience": {
+    "message": "Experience"
+  },
+  "section_formation": {
+    "message": "Education"
+  },
+  "section_competences": {
+    "message": "Skills"
+  },
+  "section_certification": {
+    "message": "Certifications"
+  },
+  "section_culture": {
+    "message": "Culture"
+  },
+  "panel_accept": {
+    "message": "Accept this value"
+  },
+  "panel_dismiss": {
+    "message": "Dismiss"
+  },
+  "popup_title": {
+    "message": "Epimoni applications"
+  },
+  "popup_connect_link": {
+    "message": "Import my CV from Epimoni →"
+  },
+  "popup_reconnect": {
+    "message": "Reconnect the extension →"
+  },
+  "popup_ready_fields": {
+    "message": "$COUNT$ details ready",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_cv": {
+    "message": "CV: $LABEL$",
+    "placeholders": {
+      "label": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_synced": {
+    "message": "Synced $WHEN$",
+    "placeholders": {
+      "when": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_today": {
+    "message": "today"
+  },
+  "popup_yesterday": {
+    "message": "yesterday"
+  },
+  "popup_days_ago": {
+    "message": "$DAYS$ days ago",
+    "placeholders": {
+      "days": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_fill": {
+    "message": "Fill this page"
+  },
+  "popup_stale": {
+    "message": "Your session has expired. Filling still works, but reconnect the extension to analyse postings."
+  },
+  "panel_no_profile": {
+    "message": "No CV yet. Add one here, or import it from your Epimoni account."
+  },
+  "panel_add_cv": {
+    "message": "Add my CV"
+  },
+  "panel_tier_paid": {
+    "message": "Unlimited analyses on your plan."
+  },
+  "panel_tier_free": {
+    "message": "1 analysis per hour on the free account."
+  },
+  "panel_tier_anon": {
+    "message": "1 analysis per hour, no account needed. No CV is kept on our servers."
+  },
+  "panel_tier_spent": {
+    "message": "Analysis already used. Next one in $MINUTES$ min.",
+    "placeholders": {
+      "minutes": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_stale_degraded": {
+    "message": "Session expired: this analysis used the free allowance."
+  },
+  "panel_keep_analysis": {
+    "message": "Create an account to keep your analyses →"
+  },
+  "panel_offline": {
+    "message": "Could not connect. Check your network and try again."
+  },
+  "popup_no_profile": {
+    "message": "No CV saved yet."
+  },
+  "popup_add_cv": {
+    "message": "Add my CV"
+  },
+  "popup_edit_cv": {
+    "message": "My CV"
+  },
+  "popup_cv_local": {
+    "message": "CV saved in this extension"
+  },
+  "popup_cv_site": {
+    "message": "CV imported from Epimoni"
+  },
+  "popup_thin": {
+    "message": "Incomplete CV: add an experience or some skills to analyse a job ad."
+  },
+  "popup_tier_paid": {
+    "message": "Unlimited analyses"
+  },
+  "popup_tier_free": {
+    "message": "1 analysis per hour (free account)"
+  },
+  "popup_tier_anon": {
+    "message": "1 analysis per hour, no account"
+  },
+  "popup_tier_spent": {
+    "message": "Analysis used. Next one in $MINUTES$ min.",
+    "placeholders": {
+      "minutes": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_title": {
+    "message": "My CV"
+  },
+  "opt_intro": {
+    "message": "This stays on this computer. It is what your applications are filled from."
+  },
+  "opt_status_heading": {
+    "message": "Status"
+  },
+  "opt_from_account": {
+    "message": "Import from my Epimoni account"
+  },
+  "opt_import": {
+    "message": "Import a JSON file"
+  },
+  "opt_export": {
+    "message": "Export"
+  },
+  "opt_import_ok": {
+    "message": "CV imported."
+  },
+  "opt_import_failed": {
+    "message": "Could not read that file. Expected a CV in JSON format."
+  },
+  "opt_import_empty": {
+    "message": "That file holds no CV information."
+  },
+  "opt_basics": {
+    "message": "Details"
+  },
+  "opt_work": {
+    "message": "Experience"
+  },
+  "opt_add_work": {
+    "message": "Add an experience"
+  },
+  "opt_work_n": {
+    "message": "Experience $N$",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_work_empty": {
+    "message": "No experience yet."
+  },
+  "opt_education": {
+    "message": "Education"
+  },
+  "opt_add_education": {
+    "message": "Add a diploma"
+  },
+  "opt_education_n": {
+    "message": "Education $N$",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_education_empty": {
+    "message": "No education yet."
+  },
+  "opt_skills": {
+    "message": "Skills and languages"
+  },
+  "opt_skills_help": {
+    "message": "Skills, separated by commas or one per line."
+  },
+  "opt_languages": {
+    "message": "Languages"
+  },
+  "opt_add_language": {
+    "message": "Add a language"
+  },
+  "opt_language_n": {
+    "message": "Language $N$",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_languages_empty": {
+    "message": "No languages yet."
+  },
+  "opt_language": {
+    "message": "Language"
+  },
+  "opt_fluency": {
+    "message": "Level"
+  },
+  "opt_start": {
+    "message": "From"
+  },
+  "opt_end": {
+    "message": "To"
+  },
+  "opt_details": {
+    "message": "Honours, specialisation"
+  },
+  "opt_highlights": {
+    "message": "Responsibilities, one per line"
+  },
+  "opt_remove": {
+    "message": "Remove"
+  },
+  "opt_extras": {
+    "message": "What your CV does not hold"
+  },
+  "opt_extras_help": {
+    "message": "Often asked on forms, never on a CV. Stays on this computer."
+  },
+  "opt_privacy_heading": {
+    "message": "Your data"
+  },
+  "opt_privacy": {
+    "message": "Your CV is stored in this extension, on this computer. It is sent to Epimoni only when you ask for a job ad to be analysed."
+  },
+  "opt_unpair": {
+    "message": "Disconnect my account (the CV is kept)"
+  },
+  "opt_forget": {
+    "message": "Erase everything"
+  },
+  "opt_forget_confirm": {
+    "message": "Confirm erasing"
+  },
+  "opt_save": {
+    "message": "Save"
+  },
+  "opt_saved": {
+    "message": "Saved."
+  },
+  "opt_saved_thin": {
+    "message": "Saved. Add an experience or some skills to analyse a job ad."
+  },
+  "opt_unsaved": {
+    "message": "Unsaved changes."
+  },
+  "opt_cv_untitled": {
+    "message": "Untitled CV"
+  },
+  "opt_from_account_on": {
+    "message": "Connected to your Epimoni account ($LABEL$)",
+    "placeholders": {
+      "label": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_source_site": {
+    "message": "CV imported from Epimoni, no account connected."
+  },
+  "opt_source_local": {
+    "message": "CV written in this extension."
+  },
+  "opt_source_none": {
+    "message": "No CV saved: filling will do nothing."
+  },
+  "opt_counts": {
+    "message": "$FIELDS$ details · $WORK$ experience(s) · $SKILLS$ skill(s)",
+    "placeholders": {
+      "fields": {
+        "content": "$1"
+      },
+      "work": {
+        "content": "$2"
+      },
+      "skills": {
+        "content": "$3"
+      }
+    }
+  },
+  "opt_thin": {
+    "message": "Not enough yet to analyse a job ad: add an experience or some skills."
+  },
+  "opt_stale": {
+    "message": "Your Epimoni session has expired. Filling still works."
+  },
+  "opt_tier_paid": {
+    "message": "Unlimited job-ad analyses on your plan."
+  },
+  "opt_tier_free": {
+    "message": "1 job-ad analysis per hour on the free account."
+  },
+  "opt_tier_anon": {
+    "message": "1 job-ad analysis per hour, no account."
+  },
+  "opt_tier_spent": {
+    "message": "Analysis used. Next one in $MINUTES$ min.",
+    "placeholders": {
+      "minutes": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_empty": {
+    "message": "This job ad could not be compared with your CV. Your allowance was not used."
+  },
+  "panel_retry": {
+    "message": "Try again"
+  },
+  "opt_position": {
+    "message": "Job title"
+  },
+  "opt_employer": {
+    "message": "Company"
+  },
+  "opt_library_heading": {
+    "message": "My CVs"
+  },
+  "opt_library_intro": {
+    "message": "Keep a few, say a short one and a detailed one, and pick the one that fills your applications."
+  },
+  "opt_library_empty": {
+    "message": "No CV yet."
+  },
+  "opt_library_new": {
+    "message": "New CV"
+  },
+  "opt_library_use": {
+    "message": "Use"
+  },
+  "opt_library_active": {
+    "message": "Active"
+  },
+  "opt_library_rename": {
+    "message": "Rename"
+  },
+  "opt_library_delete": {
+    "message": "Delete"
+  },
+  "opt_library_delete_confirm": {
+    "message": "Confirm deletion"
+  },
+  "opt_library_full": {
+    "message": "Limit of $COUNT$ CVs reached. Delete one to add another.",
+    "placeholders": {
+      "COUNT": {
+        "content": "$1",
+        "example": "20"
+      }
+    }
+  },
+  "opt_library_switched": {
+    "message": "Active CV: $NAME$.",
+    "placeholders": {
+      "NAME": {
+        "content": "$1",
+        "example": "CV court"
+      }
+    }
+  },
+  "opt_library_saved_first": {
+    "message": "Your changes were saved before switching."
+  },
+  "opt_library_deleted": {
+    "message": "CV deleted."
+  },
+  "opt_source_account_badge": {
+    "message": "Epimoni account"
+  },
+  "opt_source_site_badge": {
+    "message": "From Epimoni"
+  },
+  "opt_source_local_badge": {
+    "message": "Written here"
+  },
+  "opt_export_hint": {
+    "message": "Exported as JSON Resume: readable by other CV tools, and re-importable here."
+  },
+  "pair_title_account": {
+    "message": "Connect this Epimoni account?"
+  },
+  "pair_title_cv": {
+    "message": "Add this CV to the extension?"
+  },
+  "pair_from_site": {
+    "message": "This request comes from www.epimoni30.com."
+  },
+  "pair_account": {
+    "message": "Account"
+  },
+  "pair_cv": {
+    "message": "CV"
+  },
+  "pair_warning_account": {
+    "message": "Only accept if you just clicked \"Connect\" on the site and the address above is yours. Job-offer analyses will run on this account."
+  },
+  "pair_warning_cv": {
+    "message": "Only accept if you just clicked \"Connect\" on the site and this CV is yours. It will be used to fill in your application forms."
+  },
+  "pair_accept": {
+    "message": "Accept"
+  },
+  "pair_refuse": {
+    "message": "Decline"
+  },
+  "pair_done_title": {
+    "message": "Done"
+  },
+  "pair_done_account": {
+    "message": "Your account and CV are connected. You can close this tab."
+  },
+  "pair_done_cv": {
+    "message": "The CV was added to your library. You can close this tab."
+  },
+  "pair_refused_title": {
+    "message": "Request declined"
+  },
+  "pair_refused": {
+    "message": "Nothing was changed. You can close this tab."
+  },
+  "pair_expired_title": {
+    "message": "Request expired"
+  },
+  "pair_expired": {
+    "message": "This request is no longer valid. Start the connection again from the site if needed."
+  },
+  "pair_failed_title": {
+    "message": "Could not connect"
+  },
+  "pair_library_full": {
+    "message": "Your CV library is full. Delete a CV in the extension, then connect again."
+  }
+}

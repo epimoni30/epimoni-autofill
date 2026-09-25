@@ -1,0 +1,17 @@
+node_modules/
+
+# Built output. Reproducible from source with `npm run build`, and shipped through
+# releases rather than the tree, so that what is reviewed is the source and not a bundle.
+dist/
+epimoni-autofill-v*.zip
+# The playground, built by `npm run playground` and deployed by .github/workflows/pages.yml.
+/site/
+
+# Real captures of live job boards, pulled by `npm run probe`. They carry third-party
+# page markup and are kept out of version control for that reason; the committed
+# fixtures under test/fixtures/postings/ are the reduced, redistributable ones.
+test/fixtures/postings/.private/
+
+# Local credentials and OS metadata.
+.secrets
+.DS_Store

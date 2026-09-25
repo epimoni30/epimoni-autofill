@@ -1,0 +1,140 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: Apache-2.0
+     The playground: type a CV once, fill the test fixtures with the extension's real engine, and
+     see each field scored against the fixture's ground truth. Built into site/ by
+     tools/playground.mjs. Nothing here makes a network call; the CV stays in this browser. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Autofill Playground</title>
+<meta name="description" content="Try Epimoni Autofill's form-filling engine in your browser: write a CV once, fill real application-form fixtures, and see every field scored.">
+<link rel="stylesheet" href="playground.css">
+</head>
+<body>
+<header class="top">
+  <div>
+    <h1>Autofill playground</h1>
+    <p class="lede">Write a CV once, pick an application form, press <b>Fill</b>. This runs the
+      extension's own engine, the one that ships, and scores every field against the form's
+      ground truth. <b>Wrong fills must stay at zero.</b> A missed field costs you a keystroke;
+      a wrong value in a job application can't be taken back.</p>
+  </div>
+  <nav>
+    <a href="https://github.com/epimoni30/epimoni-autofill">Source</a>
+    <a href="https://github.com/epimoni30/epimoni-autofill/blob/main/ARCHITECTURE.md">How it works</a>
+  </nav>
+</header>
+
+<main class="layout">
+  <section class="pane cv" aria-labelledby="cv-h">
+    <div class="pane-head">
+      <h2 id="cv-h">Your CV</h2>
+      <div class="actions">
+        <button type="button" id="sample" class="ghost">Load sample</button>
+        <button type="button" id="clear" class="ghost">Clear</button>
+      </div>
+    </div>
+    <p class="note">Stored only in this browser. It's standard
+      <a href="https://jsonresume.org/schema">JSON Résumé</a>, the same format the extension uses.</p>
+
+    <form id="cv-form" autocomplete="off" onsubmit="return false">
+      <fieldset>
+        <legend>Basics</legend>
+        <label>Full name <input data-path="basics.name"></label>
+        <label>Headline <input data-path="basics.label" placeholder="e.g. Product manager"></label>
+        <label>E-mail <input type="email" data-path="basics.email"></label>
+        <label>Phone <input type="tel" data-path="basics.phone"></label>
+        <label>City <input data-path="basics.location.city"></label>
+        <label>Skills <input data-path="skills" placeholder="comma-separated"></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Experience</legend>
+        <div id="work" class="blocks"></div>
+        <button type="button" class="ghost add" data-add="work">Add a job</button>
+      </fieldset>
+
+      <fieldset>
+        <legend>Education</legend>
+        <div id="education" class="blocks"></div>
+        <button type="button" class="ghost add" data-add="education">Add a degree</button>
+      </fieldset>
+
+      <fieldset>
+        <legend>Not in a CV</legend>
+        <p class="note">Things forms ask for that JSON Résumé has no place for. The extension asks
+          for these once, too.</p>
+        <div id="extras" class="grid"></div>
+      </fieldset>
+    </form>
+
+    <details class="json">
+      <summary>JSON Résumé</summary>
+      <textarea id="json" spellcheck="false" aria-label="JSON Résumé document"></textarea>
+      <div class="actions">
+        <button type="button" id="json-apply">Apply</button>
+        <label class="ghost file">Import resume.json <input type="file" id="json-import" accept=".json,application/json"></label>
+        <button type="button" id="json-export" class="ghost">Export</button>
+      </div>
+      <p id="json-error" class="error" role="alert"></p>
+    </details>
+  </section>
+
+  <section class="pane run" aria-labelledby="run-h">
+    <div class="pane-head">
+      <h2 id="run-h">Application form</h2>
+      <div class="actions">
+        <select id="fixture" aria-label="Form to fill"></select>
+        <button type="button" id="fill">Fill</button>
+        <button type="button" id="reset" class="ghost">Reset</button>
+        <a id="open" class="ghost button" target="_blank" rel="noopener">Open in a tab ↗</a>
+      </div>
+    </div>
+    <p id="fixture-meta" class="note"></p>
+    <iframe id="frame" title="Application form fixture"></iframe>
+    <p class="note ext">Have the extension installed? Open the form in a tab and click its toolbar
+      icon. It fills from the CV stored <i>in the extension</i>, not this one, and it never
+      submits.</p>
+  </section>
+
+  <section class="pane results" aria-labelledby="res-h" aria-live="polite">
+    <h2 id="res-h">Result</h2>
+    <div id="totals" class="totals"><p class="note">Press <b>Fill</b> to score this form.</p></div>
+    <div class="legend" id="legend"></div>
+    <div class="table-wrap"><table id="rows" hidden>
+      <thead><tr><th>Field</th><th>Value written</th><th>Verdict</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </section>
+</main>
+
+<template id="work-tpl">
+  <div class="block">
+    <div class="grid">
+      <label>Position <input data-k="position"></label>
+      <label>Company <input data-k="name"></label>
+      <label>Location <input data-k="location"></label>
+      <label>Start <input data-k="startDate" placeholder="2021-06"></label>
+      <label>End <input data-k="endDate" placeholder="empty = current"></label>
+    </div>
+    <label>Summary <textarea data-k="summary" rows="2"></textarea></label>
+    <button type="button" class="ghost remove">Remove</button>
+  </div>
+</template>
+<template id="education-tpl">
+  <div class="block">
+    <div class="grid">
+      <label>Institution <input data-k="institution"></label>
+      <label>Degree <input data-k="studyType" placeholder="e.g. Master"></label>
+      <label>Field <input data-k="area"></label>
+      <label>Start <input data-k="startDate"></label>
+      <label>End <input data-k="endDate"></label>
+    </div>
+    <button type="button" class="ghost remove">Remove</button>
+  </div>
+</template>
+
+<script type="module" src="playground.js"></script>
+</body>
+</html>
