@@ -34,6 +34,96 @@
     send({ type: 'report', name: 'ext_seen', meta: { host: location.hostname, ...extra } });
 
   let lastRun = [];
+  // Which CV of the library this page is filled from. Null is the active one; the panel's
+  // picker sets it for this page only, and the offer analysis follows it.
+  let pageCvId = null;
+  let choices = [];
+  // This page's entry in the local application tracker, once a fill has recorded it.
+  let tracked = null;
+  // The form's cover-letter box, when it has one: `{el, max}`. Filled by the AI tier only,
+  // and only through the panel, never by the fill itself.
+  let letterTarget = null;
+  // The CV entries this page was filled from, for the free skills line.
+  let pageEntries = {};
+  // Whether this browser has a paired Epimoni account with a live token, which is what the
+  // AI features (the analysis, the letter) need. Everything else in the panel is free.
+  let pageAi = false;
+  let pageStale = false;
+  // Paired, but the browser still needs the user's consent to send the CV (Firefox).
+  let pageConsent = false;
+
+  /**
+   * In place of an AI button, for somebody without a paired account: what it needs and where
+   * to get it. The button itself is shown disabled above, so the feature stays visible.
+   */
+  function needsAccount(parent) {
+    const note = document.createElement('div');
+    note.style.cssText = 'margin-top:7px;color:#71717a;font-size:12px';
+    if (pageConsent) {
+      // The grant is asked on an extension page, inside a click there: the panel only opens it.
+      note.textContent = t('ai_consent_note');
+      const b = document.createElement('button');
+      b.textContent = t('ai_consent_cta');
+      b.style.cssText =
+        'display:block;margin-top:4px;border:0;background:none;padding:0;color:#7c5cff;font-weight:600;cursor:pointer;font:inherit';
+      b.addEventListener(
+        'click',
+        byUser(() => send({ type: 'consent:open' })),
+      );
+      note.appendChild(b);
+      parent.appendChild(note);
+      return;
+    }
+    note.textContent = t(pageStale ? 'panel_ai_reconnect' : 'panel_ai_needs_account');
+    const a = document.createElement('a');
+    a.href = 'https://www.epimoni30.com/extension-chrome';
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.textContent = t(pageStale ? 'panel_ai_reconnect_cta' : 'panel_ai_connect');
+    a.style.cssText = 'display:block;margin-top:4px;color:#7c5cff;font-weight:600';
+    note.appendChild(a);
+    parent.appendChild(note);
+  }
+  let highlighted = false;
+
+  /**
+   * The letter's character limit: the box's own `maxlength`, else what its label says
+   * ("1500 caractères maximum", "max. 1 500 caractères"). Null when neither says.
+   */
+  function letterLimit(el, bundle) {
+    if (el.maxLength > 0) return el.maxLength;
+    for (const src of bundle.sources) {
+      const m = /\b(\d{1,2} \d{3}|\d{3,5}) (caracteres|characters|signes|caractere)\b/.exec(src.text);
+      if (m) return Number(m[1].replace(' ', ''));
+    }
+    return null;
+  }
+
+  /** The cover-letter box among a run's controls, if it is empty and in view. */
+  function findLetter(run) {
+    const row = run.rows.find(
+      (r) => r.decision.key === 'cover_letter' && r.el.tagName === 'TEXTAREA' && !hasUserValue(r.el),
+    );
+    return row ? { el: row.el, max: letterLimit(row.el, row.bundle) } : null;
+  }
+
+  /**
+   * Record this page in the tracker. The worker keys it on the tab's address, so all a page
+   * says is what the job is: from the advert when there is one, else the page's title.
+   */
+  async function track(fields) {
+    if (!fields) return;
+    if (!posting) posting = extractPosting(document, location.href);
+    const res = await send({
+      type: 'app:record',
+      title: posting.ok ? posting.title : document.title,
+      company: posting.ok ? posting.organisation : '',
+      from_advert: Boolean(posting.ok),
+      fields,
+      cv_id: pageCvId,
+    });
+    if (res.ok) tracked = res;
+  }
   let lastSuggestions = [];
   let dismissed = 0;
   // The advert on this page, extracted once. Extraction is free; the analysis is not, so the
@@ -42,14 +132,18 @@
   const EDITOR = 'https://www.epimoni30.com/editeur';
 
   // The panel is appended to the host page's DOM, so the page's own script can reach it. It can
-  // read what the panel says, which is why nothing from the network is ever parsed as markup
-  // (`esc`), and it can call `.click()` on its buttons, which is why every button that spends,
-  // writes or opens something acts only on a click the user made (`byUser`).
-  const esc = (v) =>
-    String(v).replace(
-      /[&<>"']/g,
-      (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c],
-    );
+  // read what the panel says, which is why the panel is built, never parsed: every string goes
+  // in as text through `h`, and there is no `innerHTML` to forget an escape in. It can also
+  // call `.click()` on its buttons, which is why every button that spends, writes or opens
+  // something acts only on a click the user made (`byUser`).
+  const h = (tag, style, ...kids) => {
+    const n = document.createElement(tag);
+    if (style) n.style.cssText = style;
+    for (const k of kids)
+      if (k !== null && k !== undefined && k !== false && k !== '')
+        n.append(typeof k === 'object' ? k : String(k));
+    return n;
+  };
   const byUser = (fn) => (e) => {
     if (e?.isTrusted) return fn(e);
   };
@@ -70,39 +164,58 @@
     return `${EDITOR}?${params.toString()}`;
   }
 
-  async function fill() {
-    const { profile, entries = {} } = await send({ type: 'profile' });
-    if (DEV) console.log('[epimoni] profile fields:', profile ? Object.keys(profile).length : 0);
-    // Nothing to fill from. That is one state, whatever the reason: no account, no hand-off,
-    // nothing typed in. It used to say "connect your Epimoni account", which is now advice
-    // about only one of the three ways out of it.
-    if (!profile || !Object.keys(profile).length) {
-      banner('no-profile');
-      return;
-    }
+  // Controls this page has already been through. A re-fill (below) writes and offers only what
+  // is not in here, so a field the user emptied on purpose is not filled again behind them.
+  const handled = new WeakSet();
+  // CV uploads this page has been given the PDF in. Many ATS upload on `change` and then empty
+  // the input, which would make it look unanswered to the next click: attaching again would
+  // send the employer the same CV twice. Undo releases them.
+  const attached = new WeakSet();
+  // How long after a fill the page is watched for new questions: a multi-step form (LinkedIn
+  // Easy Apply, most ATS wizards) renders its next step after the user presses "Suivant".
+  const WATCH_MS = 2 * 60 * 1000;
+  let watcher = null;
+  // The panel's live parts, kept here because in a shipped build its shadow root is closed.
+  let ui = null;
 
-    // The engine, fillers included, is `runFill` in fill.js: the same code the measurement
-    // runs. What stays here is the part a user sees: outlines, the panel, the telemetry.
-    const run = await runFill({
+  /** The attached PDF, fetched from the worker only once a CV upload on this page asks for it. */
+  async function loadCvFile() {
+    const r = await send({ type: 'cv-file', id: pageCvId });
+    if (!r.data) return null;
+    const bin = atob(r.data);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i += 1) bytes[i] = bin.charCodeAt(i);
+    return new File([bytes], r.name, { type: r.type });
+  }
+
+  const engine = (ctx, skip) =>
+    runFill({
       root: document,
       url: location.href,
-      profile,
-      entries,
+      profile: ctx.profile,
+      entries: ctx.entries,
+      files: ctx.files,
       resolver,
       fillers: EPIMONI_FILLERS,
+      skip,
     });
-    if (DEV && run.errors.length) console.warn('[epimoni] fillers:', run.errors);
-    const { filled, suggestions, blocks } = run;
+
+  function remember(run) {
+    for (const f of run.filled) if (f.key === 'cv_file') attached.add(f.el);
+    for (const r of run.rows) handled.add(r.el);
+    for (const { group } of run.radioRows) for (const r of group.inputs) handled.add(r);
+  }
+
+  function outline(filled) {
     for (const f of filled) {
       f.outline = f.el.style.outline;
       f.el.style.outline = '2px solid #7c5cff';
       if (!f.radio) f.el.style.outlineOffset = '1px';
     }
+  }
 
-    const left = leftovers(blocks, entries);
-    lastRun = filled;
-    lastSuggestions = suggestions;
-    dismissed = 0;
+  function reportRun(run, extra = {}) {
+    const { filled, suggestions, blocks } = run;
     report('fill_run', {
       filled: filled.length,
       suggested: suggestions.length,
@@ -110,6 +223,7 @@
       unknown: run.unknown,
       controls: run.els.length,
       radios: run.radios,
+      files: run.files,
       // Which fillers applied here, by id. The per-host fill rate is how a filler proves it
       // earns its place.
       fillers: run.fillers.join(','),
@@ -120,14 +234,132 @@
       blocks: new Set(
         blocks.filter((b) => b?.section && b.index !== null).map((b) => `${b.section}#${b.index}`),
       ).size,
-      leftover: left.reduce((n, l) => n + l.count, 0),
+      leftover: leftovers(blocks, run.entries).reduce((n, l) => n + l.count, 0),
+      ...extra,
     });
-    banner('filled', filled, {
-      suggested: suggestions.length,
+  }
+
+  async function fill() {
+    watcher?.stop();
+    const {
+      profile,
+      entries = {},
+      cv_file: cvFile,
+      cv_id: cvId,
+      ai,
+      stale,
+      consent,
+    } = await send({ type: 'profile', id: pageCvId });
+    pageAi = Boolean(ai);
+    pageStale = Boolean(stale);
+    pageConsent = Boolean(consent);
+    pageCvId = cvId || pageCvId;
+    pageEntries = entries;
+    // The names of the other CVs, for the picker. Only when there is more than one.
+    choices = (await send({ type: 'cv:choices' })).cvs || [];
+    if (DEV) console.log('[epimoni] profile fields:', profile ? Object.keys(profile).length : 0);
+    // Nothing to fill from. That is one state, whatever the reason: no account, no hand-off,
+    // nothing typed in. It used to say "connect your Epimoni account", which is now advice
+    // about only one of the three ways out of it.
+    if (!profile || !Object.keys(profile).length) {
+      banner('no-profile');
+      return;
+    }
+    const ctx = {
+      profile,
+      entries,
+      files: cvFile ? { cv_file: { name: cvFile.name, load: loadCvFile } } : {},
+    };
+
+    // The engine, fillers included, is `runFill` in fill.js: the same code the measurement
+    // runs. What stays here is the part a user sees: outlines, the panel, the telemetry.
+    // A click goes over the whole page again (a block the user added since is filled, and
+    // anything answered is left alone), except a CV upload already given the PDF; only the
+    // automatic re-fill skips everything it has seen.
+    const run = await engine(ctx, attached);
+    run.entries = entries;
+    if (DEV && run.errors.length) console.warn('[epimoni] fillers:', run.errors);
+    remember(run);
+    letterTarget = findLetter(run);
+    outline(run.filled);
+    lastRun = run.filled;
+    lastSuggestions = run.suggestions;
+    dismissed = 0;
+    reportRun(run);
+    await track(lastRun.length);
+    banner('filled', lastRun, {
+      suggested: run.suggestions.length,
       ai: run.ai,
       ongoing: run.ongoing,
-      leftovers: left,
+      leftovers: leftovers(run.blocks, entries),
     });
+    watch(ctx);
+  }
+
+  /**
+   * Keep filling as the form grows, for a while after a fill.
+   *
+   * The next step of a wizard, a section rendered late, a block the user added: each used to
+   * need another toolbar click. Now new controls are filled the same way, with the same
+   * resolver and the same refusals, and only new ones (`handled`). It stops after
+   * `WATCH_MS`, on "tout annuler", and on the next click, which starts it again.
+   *
+   * Only added nodes wake it, and only when they hold a form control: the page's own
+   * animations, and this panel, never trigger a scan.
+   */
+  function watch(ctx) {
+    let timer = null;
+    let running = false;
+    const CONTROLS = 'input, textarea, select, [role="combobox"]';
+    const obs = new MutationObserver((muts) => {
+      const grew = muts.some((m) =>
+        Array.from(m.addedNodes).some(
+          (n) =>
+            n.nodeType === 1 &&
+            n.id !== 'epimoni-panel' &&
+            (n.matches(CONTROLS) || n.querySelector(CONTROLS)),
+        ),
+      );
+      if (!grew) return;
+      clearTimeout(timer);
+      timer = setTimeout(refill, 400);
+    });
+    const stop = () => {
+      obs.disconnect();
+      clearTimeout(timer);
+      clearTimeout(idle);
+      if (watcher === self) watcher = null;
+    };
+    const idle = setTimeout(stop, WATCH_MS);
+    const self = { stop };
+    watcher = self;
+    obs.observe(document.documentElement, { childList: true, subtree: true });
+
+    async function refill() {
+      if (running || watcher !== self) return;
+      running = true;
+      try {
+        const run = await engine(ctx, handled);
+        run.entries = ctx.entries;
+        remember(run);
+        const letterAppeared = !letterTarget && findLetter(run);
+        if (letterAppeared) letterTarget = letterAppeared;
+        if (letterAppeared && ui?.host.isConnected) ui.letter?.();
+        if (watcher !== self || (!run.filled.length && !run.suggestions.length)) return;
+        outline(run.filled);
+        lastRun.push(...run.filled);
+        lastSuggestions.push(...run.suggestions);
+        reportRun(run, { refill: 1 });
+        track(lastRun.length);
+        if (ui?.host.isConnected) {
+          ui.update(lastRun, run.suggestions, { ai: run.ai, leftovers: leftovers(run.blocks, ctx.entries) });
+        } else {
+          banner('filled', lastRun, { ai: run.ai, leftovers: leftovers(run.blocks, ctx.entries) });
+        }
+      } finally {
+        running = false;
+      }
+    }
   }
 
   /**
@@ -149,7 +381,8 @@
       .filter((l) => l.count > 0);
   }
 
-  async function undoAll() {
+  async function undoAll({ quiet = false } = {}) {
+    watcher?.stop();
     for (const { el, outline, radio, undo } of lastRun) {
       // `clearValue` goes through the same native-setter-plus-events path as filling.
       // Assigning `selectedIndex = 0` directly (which this did) clears the DOM while
@@ -162,12 +395,82 @@
       else if (radio) clearRadio(el);
       else clearValue(el);
       el.removeAttribute('data-epimoni-filled');
+      attached.delete(el);
       // Restore whatever outline the page had, rather than assuming there was none.
       el.style.outline = outline || '';
-      report('field_rejected', {});
+      // Switching CV undoes to refill: not the user rejecting what was filled.
+      if (!quiet) report('field_rejected', {});
     }
     lastRun = [];
     document.getElementById('epimoni-panel')?.remove();
+  }
+
+  /**
+   * "Ajoutée à vos candidatures", and the one thing the extension cannot know by itself:
+   * whether the user sent it. It never submits, so the user says so, in one click.
+   */
+  function trackerLine() {
+    const box = document.createElement('div');
+    box.style.cssText = 'margin-top:10px;color:#3f3f46';
+    const say = document.createElement('div');
+    const render = () => {
+      say.textContent = t(tracked.status === 'filled' ? 'panel_tracked' : 'panel_tracked_applied');
+      sent.hidden = tracked.status !== 'filled';
+    };
+    const sent = document.createElement('button');
+    sent.textContent = t('panel_mark_applied');
+    sent.style.cssText =
+      'margin:6px 6px 0 0;border:1px solid #e4e4e7;background:#fafafa;border-radius:8px;padding:5px 10px;cursor:pointer;font:inherit;color:#18181b';
+    sent.addEventListener(
+      'click',
+      byUser(async () => {
+        const res = await send({ type: 'app:applied' });
+        if (res.ok) tracked = { ...tracked, status: res.status };
+        render();
+      }),
+    );
+    const open = document.createElement('button');
+    open.textContent = t('panel_open_tracker');
+    open.style.cssText =
+      'margin-top:6px;border:0;background:none;padding:0;cursor:pointer;font:inherit;color:#7c5cff;font-weight:600';
+    open.addEventListener(
+      'click',
+      byUser(() => send({ type: 'open-tracker' })),
+    );
+    box.append(say, sent, open);
+    render();
+    return box;
+  }
+
+  /**
+   * "Rempli avec [CV court ▾]": which CV of the library filled this page, and another one in
+   * one step. Choosing undoes this fill and fills again from the other CV, for this page only:
+   * the one the extension uses everywhere else is chosen in the popup or on the CV page.
+   */
+  function picker() {
+    const row = document.createElement('label');
+    row.style.cssText = 'display:flex;align-items:center;gap:6px;margin:0 22px 8px 0;color:#71717a';
+    row.append(t('panel_filled_with'));
+    const select = document.createElement('select');
+    select.style.cssText =
+      'flex:1;min-width:0;font:inherit;color:#18181b;background:#fff;border:1px solid #e4e4e7;border-radius:6px;padding:2px 4px';
+    for (const c of choices) {
+      const o = document.createElement('option');
+      o.value = c.id;
+      o.textContent = c.label || t('opt_cv_untitled');
+      o.selected = c.id === pageCvId;
+      select.appendChild(o);
+    }
+    select.addEventListener(
+      'change',
+      byUser(async () => {
+        pageCvId = select.value;
+        await undoAll({ quiet: true });
+        await fill();
+      }),
+    );
+    row.appendChild(select);
+    return row;
   }
 
   /**
@@ -178,6 +481,7 @@
    */
   function banner(kind, filled = [], counts = {}) {
     document.getElementById('epimoni-panel')?.remove();
+    ui = null;
     // The panel sits in the host page's DOM, so it lives in a closed shadow root: the page's
     // script can see that a panel exists, but not read it, and it lists CV values the user
     // has not put in any field yet (the "à vérifier" suggestions), which are not the page's to
@@ -202,7 +506,7 @@
     ].join(';');
 
     if (kind === 'no-profile') {
-      panel.innerHTML = `<b>Epimoni</b><br>${t('panel_no_profile')}`;
+      panel.replaceChildren(h('b', null, 'Epimoni'), h('br'), t('panel_no_profile'));
       // The CV editor is an extension page, which a content script cannot open itself.
       const b = document.createElement('button');
       b.textContent = t('panel_add_cv');
@@ -221,32 +525,60 @@
       a.style.cssText = 'display:inline-block;margin-top:8px;color:#7c5cff;font-weight:600';
       panel.appendChild(a);
     } else {
-      const lines = filled.map((f) => `<li>${fieldLabel(f.key, f.index)}</li>`).join('');
-      const headline =
-        filled.length === 1 ? t('panel_filled_one') : t('panel_filled_many', [String(filled.length)]);
-      panel.innerHTML =
-        `<b>${headline}</b>` +
-        (counts.ai
-          ? `<br><span style="color:#71717a">${t('panel_open_questions', [String(counts.ai)])}</span>`
-          : '') +
-        `<ul style="margin:8px 0 0;padding-left:18px;color:#3f3f46">${lines}</ul>` +
-        (counts.leftovers || [])
-          .map(
-            (l) =>
-              `<div style="margin-top:8px;color:#3f3f46">${t('panel_leftover', [String(l.count), t(`cvsection_${l.section}`)])}</div>`,
-          )
-          .join('') +
-        (counts.ongoing ? `<div style="margin-top:8px;color:#3f3f46">${t('panel_tick_current')}</div>` : '') +
-        `<div style="margin-top:10px;color:#71717a">${t('panel_review')}</div>`;
+      // Re-rendered in place when a re-fill adds to it, so an offer analysis already on screen
+      // below it is not thrown away.
+      const summary = document.createElement('div');
+      const render = (list, c) => {
+        const headline =
+          list.length === 1 ? t('panel_filled_one') : t('panel_filled_many', [String(list.length)]);
+        const line = 'margin-top:8px;color:#3f3f46';
+        summary.replaceChildren(
+          h('b', null, headline),
+          ...(c.ai ? [h('br'), h('span', 'color:#71717a', t('panel_open_questions', [String(c.ai)]))] : []),
+          h(
+            'ul',
+            'margin:8px 0 0;padding-left:18px;color:#3f3f46',
+            ...list.map((f) => h('li', null, fieldLabel(f.key, f.index))),
+          ),
+          ...(c.leftovers || []).map((l) =>
+            h('div', line, t('panel_leftover', [String(l.count), t(`cvsection_${l.section}`)])),
+          ),
+          ...(c.ongoing ? [h('div', line, t('panel_tick_current'))] : []),
+          h('div', 'margin-top:10px;color:#71717a', t('panel_review')),
+        );
+      };
+      render(filled, counts);
+      if (choices.length > 1) panel.appendChild(picker());
+      panel.appendChild(summary);
       const undo = document.createElement('button');
       undo.textContent = t('panel_undo');
       undo.style.cssText =
         'margin-top:10px;border:1px solid #e4e4e7;background:#fafafa;border-radius:8px;padding:5px 10px;cursor:pointer;font:inherit;color:#18181b';
       undo.addEventListener('click', byUser(undoAll));
       panel.appendChild(undo);
+      if (tracked) panel.appendChild(trackerLine());
+      ui = {
+        host,
+        panel,
+        update: (list, fresh, c) => {
+          render(list, { ...counts, ...c });
+          suggestionSection(panel, fresh, ui.offer);
+        },
+      };
     }
-    if (kind !== 'no-profile') suggestionSection(panel);
-    if (kind !== 'no-profile') offerSection(panel);
+    if (kind !== 'no-profile') {
+      suggestionSection(
+        panel,
+        lastSuggestions.filter((x) => !x.accepted && !x.dismissed),
+      );
+      ui.offer = offerSection(panel);
+      // The letter goes above the analysis. A box that shows up later, on a wizard's second
+      // step, gets its section then.
+      ui.letter = () => {
+        if (!ui.letterBox) ui.letterBox = letterSection(panel, ui.offer);
+      };
+      ui.letter();
+    }
 
     const close = document.createElement('button');
     close.textContent = '×';
@@ -266,22 +598,24 @@
    * submitted application is unrecoverable) but refusing silently and showing a number was
    * half a feature. Here the user gets the value and one click either way.
    */
-  function suggestionSection(panel) {
-    if (!lastSuggestions.length) return;
+  function suggestionSection(panel, list, before = null) {
+    if (!list.length) return;
 
     const box = document.createElement('div');
     box.style.cssText = 'margin-top:10px;padding-top:10px;border-top:1px solid #e4e4e7';
-    box.innerHTML = `<div style="color:#71717a;margin-bottom:6px">${t('panel_to_check', [String(lastSuggestions.length)])}</div>`;
+    box.append(h('div', 'color:#71717a;margin-bottom:6px', t('panel_to_check', [String(list.length)])));
 
-    for (const s of lastSuggestions) {
+    for (const s of list) {
       const row = document.createElement('div');
       row.style.cssText = 'display:flex;align-items:center;gap:6px;margin-top:5px';
 
       const label = document.createElement('span');
       label.style.cssText =
         'flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#3f3f46';
-      label.textContent = `${fieldLabel(s.key, s.index)} : ${s.value}`;
-      label.title = String(s.value);
+      // A file is shown by its name: the value itself is the document.
+      const shown = isFile(s.value) ? s.value.name : s.value;
+      label.textContent = `${fieldLabel(s.key, s.index)} : ${shown}`;
+      label.title = String(shown);
       // Hovering the row points at the field it is about, which is the cheapest way to answer
       // "which box is this?" without anchoring an overlay to a control inside a scrolling form.
       row.addEventListener('mouseenter', () => {
@@ -305,6 +639,7 @@
           if (!ok) return;
           s.undo = undo;
           s.accepted = true;
+          if (isFile(s.value)) attached.add(s.el);
           s.el.style.outline = '2px solid #7c5cff';
           // Joining `lastRun` is what puts it under "tout annuler": an accepted suggestion is
           // a fill, and it must be as undoable as one.
@@ -312,7 +647,7 @@
             el: s.el,
             key: s.key,
             index: s.index,
-            value: s.value,
+            value: isFile(s.value) ? s.value.name : s.value,
             via: 'suggest',
             outline: s.prevOutline,
             undo: s.undo,
@@ -332,6 +667,7 @@
         'click',
         byUser(() => {
           s.el.style.outline = s.prevOutline || '';
+          s.dismissed = true;
           dismissed += 1;
           report('field_rejected', { key: s.key });
           row.remove();
@@ -342,6 +678,192 @@
       s.prevOutline = s.el.style.outline;
       row.append(label, accept, dismiss);
       box.appendChild(row);
+    }
+    if (before?.isConnected) panel.insertBefore(box, before);
+    else panel.appendChild(box);
+  }
+
+  /**
+   * The cover letter, from the AI tier: offered when the form has a letter box and the page
+   * has an advert, written by the backend on one click, and put in the box on a second one.
+   *
+   * Never written into the form on its own. It is prose in the user's name, and the rule for
+   * the AI tier is the same as for an ambiguous field: it proposes, the user decides. A letter
+   * longer than the box accepts is not cut to fit; it is shown with the count, to shorten.
+   */
+  function letterSection(panel, before) {
+    if (!letterTarget) return null;
+    if (!posting) posting = extractPosting(document, location.href);
+    if (!posting.ok) return null;
+    const { el: box, max } = letterTarget;
+
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'margin-top:12px;padding-top:10px;border-top:1px solid #e4e4e7';
+    if (before?.isConnected) panel.insertBefore(wrap, before);
+    else panel.appendChild(wrap);
+    const button = (text, primary) => {
+      const b = document.createElement('button');
+      b.textContent = text;
+      b.style.cssText = primary
+        ? 'margin:8px 6px 0 0;border:1px solid #7c5cff;background:#7c5cff;color:#fff;font-weight:600;border-radius:8px;padding:6px 10px;cursor:pointer;font:inherit'
+        : 'margin:8px 6px 0 0;border:1px solid #e4e4e7;background:#fafafa;border-radius:8px;padding:5px 10px;cursor:pointer;font:inherit;color:#18181b';
+      return b;
+    };
+    const line = (text, color = '#3f3f46') => {
+      const d = document.createElement('div');
+      d.style.color = color;
+      d.textContent = text;
+      wrap.appendChild(d);
+      return d;
+    };
+
+    const idle = () => {
+      wrap.textContent = '';
+      line(t('panel_letter_found'));
+      if (max) line(t('panel_letter_limit', [String(max)]), '#71717a');
+      const go = button(t('panel_letter_cta'), true);
+      wrap.appendChild(go);
+      if (!pageAi) {
+        go.disabled = true;
+        go.style.opacity = '0.5';
+        go.style.cursor = 'not-allowed';
+        needsAccount(wrap);
+        return;
+      }
+      go.addEventListener('click', byUser(write));
+      const note = line('', '#71717a');
+      note.style.fontSize = '12px';
+      send({ type: 'tier' }).then((tier) => {
+        if (tier.paid) note.textContent = t('panel_tier_paid');
+        else if (tier.rate_limited)
+          note.textContent = t('panel_tier_spent', [String(Math.ceil((tier.reset_seconds || 0) / 60))]);
+        else note.textContent = t(tier.mode === 'account' ? 'panel_tier_free' : 'panel_tier_anon');
+      });
+    };
+
+    async function write() {
+      wrap.textContent = '';
+      line(t('panel_letter_writing'), '#71717a');
+      const res = await send({
+        type: 'letter',
+        posting,
+        cv_id: pageCvId,
+        max_chars: max,
+        host: location.hostname,
+        lang: chrome.i18n.getUILanguage().slice(0, 2),
+      });
+      wrap.textContent = '';
+      if (!res.ok) {
+        const WHY = {
+          quota: () => t('panel_quota', [String(Math.ceil((res.seconds || 0) / 60))]),
+          expired: () => t('panel_stale'),
+          'no-cv': () => t('panel_no_cv'),
+          'too-long': () => t('panel_too_long'),
+          network: () => t('panel_offline'),
+          empty: () => t('panel_letter_empty'),
+        };
+        line((WHY[res.kind] || (() => t('panel_analyse_failed')))());
+        const retry = button(t('panel_retry'));
+        retry.addEventListener('click', byUser(write));
+        wrap.appendChild(retry);
+        return;
+      }
+      const fits = !(box.maxLength > 0 && res.text.length > box.maxLength);
+      line(
+        max
+          ? t('panel_letter_count_limit', [String(res.chars), String(max)])
+          : t('panel_letter_count', [String(res.chars)]),
+        fits && res.within !== false ? '#71717a' : '#b45309',
+      );
+      const preview = document.createElement('div');
+      preview.style.cssText =
+        'margin-top:6px;max-height:160px;overflow:auto;white-space:pre-wrap;border:1px solid #e4e4e7;border-radius:8px;padding:8px;background:#fafafa;color:#18181b;font-size:12px';
+      preview.textContent = res.text;
+      wrap.appendChild(preview);
+      if (!fits) line(t('panel_letter_too_long'), '#b45309');
+      const insert = button(t('panel_letter_insert'), true);
+      insert.disabled = !fits;
+      insert.addEventListener(
+        'click',
+        byUser(async () => {
+          if (hasUserValue(box)) return; // the user started writing their own meanwhile
+          const { ok } = await writeOne(box, res.text, null);
+          if (!ok) return;
+          const prev = box.style.outline;
+          box.style.outline = '2px solid #7c5cff';
+          // Under "tout annuler" like any fill.
+          lastRun.push({
+            el: box,
+            key: 'cover_letter',
+            value: res.text,
+            via: 'letter',
+            outline: prev,
+            undo: null,
+          });
+          report('field_accepted', { key: 'cover_letter' });
+          insert.remove();
+          line(t('panel_letter_inserted'), '#15803d');
+        }),
+      );
+      const copy = button(t('panel_letter_copy'));
+      copy.addEventListener(
+        'click',
+        byUser(() =>
+          navigator.clipboard?.writeText(res.text).then(() => (copy.textContent = t('panel_letter_copied'))),
+        ),
+      );
+      wrap.append(insert, copy);
+    }
+
+    idle();
+    // The popup's "Rédiger ma lettre": the click there is the user's, so it runs from here.
+    if (ui) ui.runLetter = () => (pageAi ? write() : null);
+    return wrap;
+  }
+
+  /**
+   * "Vos compétences citées dans l'annonce": the free half of reading an advert. A plain match
+   * of the CV's skills against the advert's text, on this machine, with a button that marks
+   * them in the page. What it cannot say (what the advert asks for that the CV lacks, and how
+   * much that matters) is the paid analysis just below it.
+   */
+  function skillSection(panel) {
+    const terms = skillTerms(pageEntries);
+    if (!terms.length) return;
+    const { found } = mentions(terms, posting.text);
+    const box = document.createElement('div');
+    box.style.cssText = 'margin-top:12px;padding-top:10px;border-top:1px solid #e4e4e7;color:#3f3f46';
+    const head = document.createElement('div');
+    head.textContent = found.length
+      ? t('panel_skills_found', [String(found.length), String(terms.length)])
+      : t('panel_skills_none');
+    box.appendChild(head);
+    if (found.length) {
+      const list = document.createElement('div');
+      list.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;margin-top:6px';
+      for (const term of found) {
+        const chip = document.createElement('span');
+        chip.textContent = term;
+        chip.style.cssText =
+          'border-radius:999px;padding:1px 8px;background:#efebff;color:#4c1d95;font-size:12px;white-space:nowrap';
+        list.appendChild(chip);
+      }
+      box.appendChild(list);
+      const toggle = document.createElement('button');
+      const label = () => t(highlighted ? 'panel_skills_unmark' : 'panel_skills_mark');
+      toggle.textContent = label();
+      toggle.style.cssText =
+        'margin-top:7px;border:0;background:none;padding:0;cursor:pointer;font:inherit;color:#7c5cff;font-weight:600';
+      toggle.addEventListener(
+        'click',
+        byUser(() => {
+          highlighted = !highlighted;
+          const marked = highlightTerms(highlighted ? found : []);
+          if (highlighted && !marked) highlighted = false; // nothing drawable: say so by not toggling
+          toggle.textContent = label();
+        }),
+      );
+      box.appendChild(toggle);
     }
     panel.appendChild(box);
   }
@@ -358,15 +880,15 @@
    */
   function offerSection(panel) {
     if (!posting) posting = extractPosting(document, location.href);
-    if (!posting.ok) return; // not a posting page, or a wall, so say nothing rather than guess
+    if (!posting.ok) return null; // not a posting page, or a wall, so say nothing rather than guess
+    skillSection(panel);
 
     const box = document.createElement('div');
     box.style.cssText = 'margin-top:12px;padding-top:10px;border-top:1px solid #e4e4e7';
     panel.appendChild(box);
 
-    const say = (html) => {
-      box.innerHTML = html;
-    };
+    // Replaces what the section says; the nodes are built with `h`, never parsed.
+    const say = (...nodes) => box.replaceChildren(...nodes.filter(Boolean));
     // The plans on the site's home page, in the user's language: /#pricing, /en/#pricing…
     const lang = chrome.i18n.getUILanguage().slice(0, 2);
     const plans = `https://www.epimoni30.com/${['en', 'es'].includes(lang) ? `${lang}/` : ''}#pricing`;
@@ -382,13 +904,20 @@
     };
 
     const idle = () => {
-      say(`<div style="color:#3f3f46;margin-bottom:8px">${t('panel_offer_found')}</div>`);
+      say(h('div', 'color:#3f3f46;margin-bottom:8px', t('panel_offer_found')));
       const go = document.createElement('button');
       go.textContent = t('panel_analyse_cta');
       go.style.cssText =
         'border:1px solid #7c5cff;background:#7c5cff;color:#fff;font-weight:600;border-radius:8px;padding:6px 10px;cursor:pointer;font:inherit';
-      go.addEventListener('click', byUser(run));
       box.appendChild(go);
+      if (!pageAi) {
+        go.disabled = true;
+        go.style.opacity = '0.5';
+        go.style.cursor = 'not-allowed';
+        needsAccount(box);
+        return;
+      }
+      go.addEventListener('click', byUser(run));
 
       // What this click costs, written beside the button rather than after it. Asked
       // asynchronously so the button is live immediately: the answer only adds a line.
@@ -407,9 +936,10 @@
     };
 
     async function run() {
-      say(`<div style="color:#71717a">${t('panel_analysing')}</div>`);
+      say(h('div', 'color:#71717a', t('panel_analysing')));
       const res = await send({
         type: 'analyse',
+        cv_id: pageCvId,
         posting,
         host: location.hostname,
         lang: chrome.i18n.getUILanguage().slice(0, 2),
@@ -417,21 +947,19 @@
 
       if (res.ok) {
         const { score, weakest } = res.teaser || {};
-        const gaps = (weakest || [])
-          .map((w) => `<li>${esc(t(`section_${w.name}`))}: ${money(w.score)}</li>`)
-          .join('');
+        const gaps = (weakest || []).map((w) =>
+          h('li', null, `${t(`section_${w.name}`)}: ${money(w.score)}`),
+        );
         say(
-          (score === null || score === undefined
-            ? ''
-            : `<div style="font-size:15px;font-weight:700">${t('panel_match', [money(score)])}</div>`) +
-            (gaps
-              ? `<div style="color:#71717a;margin-top:6px">${t('panel_weakest')}</div><ul style="margin:4px 0 0;padding-left:18px;color:#3f3f46">${gaps}</ul>`
-              : '') +
-            // The account token had expired and the run went out on the free anonymous tier
-            // instead. It worked, and the user should know which allowance paid for it.
-            (res.stale
-              ? `<div style="color:#b45309;margin-top:6px;font-size:12px">${t('panel_stale_degraded')}</div>`
-              : ''),
+          score === null || score === undefined
+            ? null
+            : h('div', 'font-size:15px;font-weight:700', t('panel_match', [money(score)])),
+          ...(gaps.length
+            ? [
+                h('div', 'color:#71717a;margin-top:6px', t('panel_weakest')),
+                h('ul', 'margin:4px 0 0;padding-left:18px;color:#3f3f46', ...gaps),
+              ]
+            : []),
         );
         // `linkable` is the worker's answer, not a guess from `ml_id`: only a paired account
         // can open the run on the site, because /editeur reads it back through a session that
@@ -461,7 +989,7 @@
         // backend refunds the window when it refuses) so the one thing to offer is another go.
         empty: () => t('panel_empty'),
       };
-      say(`<div style="color:#3f3f46">${(WHY[res.kind] || (() => t('panel_analyse_failed')))()}</div>`);
+      say(h('div', 'color:#3f3f46', (WHY[res.kind] || (() => t('panel_analyse_failed')))()));
       if (res.kind === 'empty' || res.kind === 'failed' || res.kind === 'network') {
         const retry = document.createElement('button');
         retry.textContent = t('panel_retry');
@@ -493,11 +1021,31 @@
     }
 
     idle();
+    // The popup's "Analyser l'offre": the click there is the user's, so it runs from here.
+    if (ui) ui.runAnalyse = () => (pageAi ? run() : null);
+    return box;
   }
 
+  /**
+   * A line in the panel when the popup asked for something this page cannot give: no advert
+   * to analyse, no letter box to write for.
+   */
+  function panelNote(key) {
+    if (!ui?.panel) return;
+    const d = document.createElement('div');
+    d.style.cssText = 'margin-top:10px;padding-top:10px;border-top:1px solid #e4e4e7;color:#b45309';
+    d.textContent = t(key);
+    ui.panel.appendChild(d);
+  }
+
+  // `after` is the popup's AI action, run after the fill that finds the advert and the letter
+  // box: the user's click in the popup is the request, the way a click in the panel is.
   chrome.runtime.onMessage.addListener((msg, _s, respond) => {
     if (msg?.type === 'fill') {
-      fill();
+      fill().then(() => {
+        if (msg.after === 'analyse') (ui?.runAnalyse || (() => panelNote('panel_no_advert')))();
+        else if (msg.after === 'letter') (ui?.runLetter || (() => panelNote('panel_no_letter_box')))();
+      });
       respond({ ok: true });
     }
     return false;

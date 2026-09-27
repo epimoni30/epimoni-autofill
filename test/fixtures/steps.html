@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="fr">
+<!-- A form that grows after the fill: "Suivant" renders the next step below the first, the way
+     a wizard or LinkedIn Easy Apply does, and "Ajouter" renders one more question. Not in the
+     measured list: at load only the first step exists, and what is under test is what happens
+     after it, which only the end-to-end suite can drive. -->
+<meta charset="utf-8"><title>Candidature en plusieurs étapes</title>
+<body>
+<form id="wizard" onsubmit="window.__submitted = true; return false">
+  <fieldset id="step1">
+    <legend>Étape 1 sur 2</legend>
+    <label for="p">Prénom</label><input id="p" name="prenom">
+    <label for="n">Nom de famille</label><input id="n" name="nom">
+    <label for="e">Adresse e-mail</label><input id="e" name="email" type="email">
+    <button type="button" id="next">Suivant</button>
+  </fieldset>
+  <div id="later"></div>
+  <button type="button" id="more">Ajouter une question</button>
+  <button type="submit">Envoyer ma candidature</button>
+</form>
+<script>
+  // Rendered late, like a framework would: a moment after the click, not in the same task.
+  document.getElementById('next').addEventListener('click', () => {
+    setTimeout(() => {
+      const step = document.createElement('fieldset');
+      step.id = 'step2';
+      step.innerHTML =
+        '<legend>Étape 2 sur 2</legend>' +
+        '<label for="t">Téléphone portable</label><input id="t" name="tel" type="tel">' +
+        '<label for="v">Ville</label><input id="v" name="ville">';
+      document.getElementById('later').appendChild(step);
+    }, 50);
+  });
+  document.getElementById('more').addEventListener('click', () => {
+    const row = document.createElement('div');
+    row.innerHTML = '<label for="li">Profil LinkedIn</label><input id="li" name="linkedin">';
+    document.getElementById('later').appendChild(row);
+  });
+</script>
+</body></html>

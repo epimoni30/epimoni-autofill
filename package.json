@@ -15,14 +15,16 @@
     "email": "contact.epimoni30@gmail.com"
   },
   "scripts": {
-    "test": "node --test test/resolve.test.mjs test/pair.test.mjs test/posting.test.mjs test/cvdoc.test.mjs test/store.test.mjs test/identity.test.mjs test/bundle.test.mjs test/boundary.test.mjs",
+    "test": "node --test test/resolve.test.mjs test/pair.test.mjs test/posting.test.mjs test/cvdoc.test.mjs test/store.test.mjs test/identity.test.mjs test/bundle.test.mjs test/boundary.test.mjs test/pdf.test.mjs test/applications.test.mjs test/keywords.test.mjs test/platform.test.mjs test/bridge.test.mjs test/consent.test.mjs",
     "lint": "biome check .",
     "format": "biome check --write .",
     "measure": "node test/measure.mjs",
     "guard": "node test/guard.mjs",
     "check": "npm run lint && npm test && npm run measure && npm run guard && npm run playground:test && npm run build && npm run e2e",
     "build": "node build.mjs",
+    "build:firefox": "node build.mjs --target=firefox",
     "package": "node tools/package.mjs",
+    "package:firefox": "node tools/package.mjs --target=firefox",
     "playground": "node tools/playground.mjs",
     "playground:serve": "node tools/playground.mjs --serve",
     "playground:test": "node test/playground.mjs",

@@ -1,4 +1,5 @@
-// The CV the extension fills from: written here when nobody handed one over.
+// The dashboard's CV view: the CV the extension fills from, written here when nobody
+// handed one over.
 //
 // This is the page that makes the extension usable without an Epimoni account. It reads and
 // writes one document in the open CV structure the rest of the product uses (`basics`,
@@ -19,7 +20,7 @@ import {
   fromJsonResume,
   normalizeCvDoc,
   toJsonResume,
-} from './src/shared/cvdoc.js';
+} from '../shared/cvdoc.js';
 
 const send = (msg) => new Promise((r) => chrome.runtime.sendMessage(msg, (x) => r(x || {})));
 const el = (id) => document.getElementById(id);
@@ -40,6 +41,9 @@ let dirty = false;
 // rather than overwriting whichever document happened to be active.
 let activeId = null;
 let activeLabel = null;
+// The PDF a form receives for the open CV, as the library listing reports it:
+// `{name, size, origin}` where origin is 'upload' (the user's own) or 'generated', or null.
+let activeFile = null;
 
 const SOURCE_BADGE = {
   account: 'opt_source_account_badge',
@@ -54,11 +58,6 @@ const slug = (v) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
     .slice(0, 40);
-
-function localise() {
-  document.documentElement.lang = chrome.i18n.getUILanguage().slice(0, 2);
-  for (const node of document.querySelectorAll('[data-i18n]')) node.textContent = t(node.dataset.i18n);
-}
 
 /** Text, never innerHTML: every value on this page is the user's own data. */
 function line(parent, text, className) {
@@ -389,6 +388,7 @@ async function renderLibrary() {
           String(row.summary.skills || 0),
         ]),
       );
+    if (row.file) bits.push(t(row.file.origin === 'upload' ? 'opt_file_badge' : 'opt_file_badge_generated'));
     meta.textContent = bits.join(' · ');
     main.append(title, meta);
     li.append(main);
@@ -435,6 +435,38 @@ async function renderLibrary() {
 
   el('new-cv').disabled = cvs.length >= max;
   if (cvs.length >= max) el('library-msg').textContent = t('opt_library_full', [String(max)]);
+  activeFile = cvs.find((r) => r.id === activeId)?.file || null;
+  renderFile();
+}
+
+/**
+ * The PDF a form's CV upload receives for the open CV: the user's own, or one made from the
+ * document. A document that is not saved yet has none, and says so.
+ */
+function renderFile() {
+  const kb = (f) => String(Math.max(1, Math.round(f.size / 1024)));
+  const f = activeFile;
+  el('cv-file-name').textContent = !activeId
+    ? t('opt_file_save_first')
+    : !f
+      ? t('opt_file_not_printable')
+      : f.origin === 'upload'
+        ? t('opt_file_current', [f.name, kb(f)])
+        : t('opt_file_generated', [f.name, kb(f)]);
+  el('cv-file-choose').textContent = t(
+    f?.origin === 'upload' ? 'opt_file_replace' : f ? 'opt_file_own' : 'opt_file_choose',
+  );
+  el('cv-file-choose').disabled = !activeId;
+  el('cv-file-preview').hidden = !f;
+  el('cv-file-remove').hidden = f?.origin !== 'upload';
+}
+
+/** Bytes → base64, chunked: messages to the worker are JSON and carry no binary. */
+function base64(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let bin = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(bin);
 }
 
 async function renderStatus() {
@@ -504,8 +536,8 @@ async function save({ quiet = false } = {}) {
   await renderLibrary();
 }
 
-(async () => {
-  localise();
+/** Called once by the dashboard, when the page opens. */
+export async function initCv() {
   await load();
 
   for (const id of [
@@ -579,6 +611,47 @@ async function save({ quiet = false } = {}) {
     }
   });
 
+  el('cv-file-choose').addEventListener('click', () => el('cv-file-input').click());
+  el('cv-file-preview').addEventListener('click', async () => {
+    // The file as it would be sent: made from the CV as saved, so unsaved edits are saved first.
+    if (dirty) await save({ quiet: true });
+    const res = await send({ type: 'cv:file:get', id: activeId });
+    if (!res.ok) return;
+    const bytes = Uint8Array.from(atob(res.data), (c) => c.charCodeAt(0));
+    window.open(URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' })), '_blank');
+  });
+  el('cv-file-input').addEventListener('change', async () => {
+    const file = el('cv-file-input').files?.[0];
+    el('cv-file-input').value = '';
+    if (!file || !activeId) return;
+    // Checked here for a message that can say why, and again by the worker, which keeps it.
+    const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
+    if (!isPdf) {
+      el('cv-file-msg').textContent = t('opt_file_error_type');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      el('cv-file-msg').textContent = t('opt_file_error_size');
+      return;
+    }
+    const res = await send({
+      type: 'cv:file:set',
+      id: activeId,
+      name: file.name,
+      mime: 'application/pdf',
+      data: base64(await file.arrayBuffer()),
+    });
+    const why = { type: 'opt_file_error_type', size: 'opt_file_error_size' };
+    el('cv-file-msg').textContent = t(res.ok ? 'opt_file_saved' : why[res.error] || 'opt_file_error');
+    await renderLibrary();
+  });
+  el('cv-file-remove').addEventListener('click', async () => {
+    if (!activeId) return;
+    await send({ type: 'cv:file:remove', id: activeId });
+    el('cv-file-msg').textContent = t('opt_file_removed');
+    await renderLibrary();
+  });
+
   el('export').addEventListener('click', () => {
     // A valid `resume.json`, not the shape we store. The `{text}` wrappers and `{id, text}`
     // highlights are ours; exported raw they render as "[object Object]" in anybody else's
@@ -632,4 +705,4 @@ async function save({ quiet = false } = {}) {
       e.returnValue = '';
     }
   });
-})();
+}

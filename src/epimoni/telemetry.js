@@ -8,6 +8,7 @@
 // failure here is swallowed.
 
 import { API } from './api.js';
+import { USAGE_DATA, consented } from './consent.js';
 
 export const EVENTS = ['ext_paired', 'ext_fill', 'ext_seen', 'ext_session_end'];
 export const WHAT = [
@@ -63,6 +64,9 @@ async function claimBudget(what) {
 export async function track(jwt, name, meta = {}) {
   if (!jwt || !EVENTS.includes(name)) return;
   if (meta.what && !WHAT.includes(meta.what)) return;
+  // Where the browser asks (Firefox), usage events are opt-in and nothing asks for them yet:
+  // they stay off there until the user grants them.
+  if (!(await consented(USAGE_DATA))) return;
   if (!(await claimBudget(meta.what))) return;
   try {
     await fetch(`${API}/api/v1/events`, {

@@ -20,10 +20,30 @@ The site already has the CV loaded, and is the only surface that can ask *which*
 computes the profile and hands it over. The extension then calls no CV endpoint at all, which
 also keeps it clear of every metered route.
 
+## Two transports, one set of rules
+
+The site reaches the extension in one of two ways, and the worker applies the same rules to
+both (`fromSite` in `src/epimoni/worker.js`):
+
+- **The bridge**, preferred, every browser. `src/epimoni/bridge.js` is a content script on
+  `https://www.epimoni30.com/*`, top frame only. It marks `<html data-epimoni-bridge>` at
+  `document_start` so the site knows there is something to ask, then relays
+  `window.postMessage({epimoni: 'request', id, msg})` to the worker and posts back
+  `{epimoni: 'response', id, res}`. It forwards `epimoni:ping`, `epimoni:pair` and
+  `epimoni:pair-status` and nothing else. It needs no extension id, which is why it works
+  unchanged for a store build, an unpacked build on any machine, and Firefox, which has no
+  `externally_connectable` at all.
+- **`externally_connectable`**, Chrome only, kept for the site as deployed today, which pings
+  the ids in `EXTENSION_IDS`. It can go once every live site build prefers the bridge.
+
+Either way the browser, not the message, says where a request came from: `sender.origin`
+(or the URL's origin on Firefox) must be the site, and it must come from a tab, top frame
+for the bridge. A script on the site can use either transport; that is exactly why a pairing
+is a request the user confirms rather than an order.
+
 ## The message
 
-Sent from `https://www.epimoni30.com` only (`externally_connectable` enforces the origin, and
-the service worker re-checks `sender.origin` and that the sender is a tab).
+The same body travels as `msg` in a bridge request, or as the message itself externally:
 
 ```js
 chrome.runtime.sendMessage(EXTENSION_ID, {

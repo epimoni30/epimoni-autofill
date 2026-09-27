@@ -86,6 +86,9 @@
   "field_languages": {
     "message": "Languages"
   },
+  "field_cv_file": {
+    "message": "Resume (PDF file)"
+  },
   "field_awards_awarder": {
     "message": "Awarded by"
   },
@@ -820,5 +823,366 @@
   },
   "pair_library_full": {
     "message": "Your CV library is full. Delete a CV in the extension, then connect again."
+  },
+  "opt_file_heading": {
+    "message": "Resume file (PDF)"
+  },
+  "opt_file_intro": {
+    "message": "Put in the resume upload on application forms when you fill them. If you have not added your own PDF, the extension makes one from this resume. Everything stays on this computer."
+  },
+  "opt_file_none": {
+    "message": "No PDF attached to this resume."
+  },
+  "opt_file_current": {
+    "message": "$NAME$ · $SIZE$ KB",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      },
+      "size": {
+        "content": "$2"
+      }
+    }
+  },
+  "opt_file_choose": {
+    "message": "Attach a PDF"
+  },
+  "opt_file_replace": {
+    "message": "Replace"
+  },
+  "opt_file_save_first": {
+    "message": "Save this resume first to attach a PDF to it."
+  },
+  "opt_file_saved": {
+    "message": "PDF attached to this resume."
+  },
+  "opt_file_removed": {
+    "message": "Your PDF is removed: the one made from this resume takes its place."
+  },
+  "opt_file_error_type": {
+    "message": "Only PDF files are accepted."
+  },
+  "opt_file_error_size": {
+    "message": "This PDF is larger than 5 MB."
+  },
+  "opt_file_error": {
+    "message": "The PDF could not be saved."
+  },
+  "opt_file_badge": {
+    "message": "PDF attached"
+  },
+  "pdf_profile": {
+    "message": "Profile"
+  },
+  "pdf_work": {
+    "message": "Work experience"
+  },
+  "pdf_education": {
+    "message": "Education"
+  },
+  "pdf_projects": {
+    "message": "Projects"
+  },
+  "pdf_certificates": {
+    "message": "Certifications"
+  },
+  "pdf_skills": {
+    "message": "Skills"
+  },
+  "pdf_languages": {
+    "message": "Languages"
+  },
+  "pdf_present": {
+    "message": "present"
+  },
+  "panel_filled_with": {
+    "message": "Filled from"
+  },
+  "popup_cv_used": {
+    "message": "Resume in use"
+  },
+  "opt_file_generated": {
+    "message": "Made from this resume: $NAME$ · $SIZE$ KB",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      },
+      "size": {
+        "content": "$2"
+      }
+    }
+  },
+  "opt_file_not_printable": {
+    "message": "Add your name and some experience, education or skills and the PDF will be made."
+  },
+  "opt_file_own": {
+    "message": "Use my own PDF"
+  },
+  "opt_file_preview": {
+    "message": "Preview"
+  },
+  "opt_file_use_generated": {
+    "message": "Go back to the PDF made from this resume"
+  },
+  "opt_file_badge_generated": {
+    "message": "PDF made"
+  },
+  "panel_tracked": {
+    "message": "Added to your applications."
+  },
+  "panel_tracked_applied": {
+    "message": "Application marked as sent."
+  },
+  "panel_mark_applied": {
+    "message": "I sent my application"
+  },
+  "panel_open_tracker": {
+    "message": "See my applications"
+  },
+  "popup_tracker": {
+    "message": "My applications"
+  },
+  "trk_title": {
+    "message": "My applications"
+  },
+  "trk_intro": {
+    "message": "Every form the extension fills is added here. This list stays on this computer."
+  },
+  "trk_empty": {
+    "message": "No applications yet. Fill a form with the extension and it will show up here."
+  },
+  "trk_export": {
+    "message": "Export (CSV)"
+  },
+  "trk_clear": {
+    "message": "Clear the list"
+  },
+  "trk_clear_confirm": {
+    "message": "Click again to delete everything"
+  },
+  "trk_all": {
+    "message": "All"
+  },
+  "trk_status": {
+    "message": "Status"
+  },
+  "trk_status_filled": {
+    "message": "Filled"
+  },
+  "trk_status_applied": {
+    "message": "Sent"
+  },
+  "trk_status_interview": {
+    "message": "Interview"
+  },
+  "trk_status_offer": {
+    "message": "Offer"
+  },
+  "trk_status_rejected": {
+    "message": "Rejected"
+  },
+  "trk_filled_on": {
+    "message": "Filled on $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "trk_with_cv": {
+    "message": "with “$CV$”",
+    "placeholders": {
+      "cv": {
+        "content": "$1"
+      }
+    }
+  },
+  "trk_note": {
+    "message": "Add a note"
+  },
+  "trk_note_placeholder": {
+    "message": "Contact, interview date, follow-up…"
+  },
+  "trk_delete": {
+    "message": "Delete"
+  },
+  "trk_delete_confirm": {
+    "message": "Confirm"
+  },
+  "trk_file": {
+    "message": "applications"
+  },
+  "trk_col_title": {
+    "message": "Position"
+  },
+  "trk_col_company": {
+    "message": "Company"
+  },
+  "trk_col_site": {
+    "message": "Site"
+  },
+  "trk_col_url": {
+    "message": "Link"
+  },
+  "trk_col_status": {
+    "message": "Status"
+  },
+  "trk_col_filled": {
+    "message": "Filled on"
+  },
+  "trk_col_updated": {
+    "message": "Updated"
+  },
+  "trk_col_cv": {
+    "message": "Resume"
+  },
+  "trk_col_note": {
+    "message": "Note"
+  },
+  "panel_letter_found": {
+    "message": "This form asks for a cover letter."
+  },
+  "panel_letter_limit": {
+    "message": "Limit: $MAX$ characters.",
+    "placeholders": {
+      "max": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_letter_cta": {
+    "message": "Write my letter with AI"
+  },
+  "panel_letter_writing": {
+    "message": "Writing your letter…"
+  },
+  "panel_letter_count": {
+    "message": "$N$ characters",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_letter_count_limit": {
+    "message": "$N$ / $MAX$ characters",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      },
+      "max": {
+        "content": "$2"
+      }
+    }
+  },
+  "panel_letter_insert": {
+    "message": "Put it in the form"
+  },
+  "panel_letter_inserted": {
+    "message": "Letter added. Read it through before you send."
+  },
+  "panel_letter_too_long": {
+    "message": "Longer than the form accepts: copy it and shorten it."
+  },
+  "panel_letter_copy": {
+    "message": "Copy"
+  },
+  "panel_letter_copied": {
+    "message": "Copied"
+  },
+  "panel_letter_empty": {
+    "message": "The letter could not be written. Try again."
+  },
+  "dash_menu_cv": {
+    "message": "My resume"
+  },
+  "dash_menu_applications": {
+    "message": "My applications"
+  },
+  "panel_skills_found": {
+    "message": "Your skills named in the advert: $N$ of $TOTAL$",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "panel_skills_none": {
+    "message": "None of your skills appears word for word in the advert."
+  },
+  "panel_skills_mark": {
+    "message": "Highlight in the advert"
+  },
+  "panel_skills_unmark": {
+    "message": "Remove highlighting"
+  },
+  "popup_ai_heading": {
+    "message": "AI features"
+  },
+  "popup_analyse": {
+    "message": "Analyse the advert on this page"
+  },
+  "popup_letter": {
+    "message": "Write the cover letter"
+  },
+  "popup_dashboard": {
+    "message": "Open the dashboard"
+  },
+  "popup_ai_needs_account": {
+    "message": "For Epimoni accounts connected to the extension."
+  },
+  "popup_ai_connect": {
+    "message": "Connect my Epimoni account →"
+  },
+  "popup_ai_reconnect": {
+    "message": "Your Epimoni connection has expired."
+  },
+  "panel_ai_needs_account": {
+    "message": "AI feature for Epimoni accounts connected to the extension."
+  },
+  "panel_ai_connect": {
+    "message": "Connect my Epimoni account →"
+  },
+  "panel_ai_reconnect": {
+    "message": "Your Epimoni connection has expired."
+  },
+  "panel_ai_reconnect_cta": {
+    "message": "Reconnect →"
+  },
+  "panel_no_advert": {
+    "message": "No job advert was found on this page."
+  },
+  "panel_no_letter_box": {
+    "message": "This form does not ask for a cover letter."
+  },
+  "consent_title": {
+    "message": "Allow sending for the analysis and the letter"
+  },
+  "consent_body": {
+    "message": "To analyse a job ad or write a letter, Epimoni sends your CV and the ad's text to its server, at the moment you ask. Firefox asks for your consent first."
+  },
+  "consent_core": {
+    "message": "Filling in forms sends nothing and works without this consent."
+  },
+  "consent_allow": {
+    "message": "Allow"
+  },
+  "consent_done": {
+    "message": "Allowed. You can close this tab."
+  },
+  "consent_refused": {
+    "message": "Nothing was allowed. Filling still works; the analysis and the letter stay off."
+  },
+  "consent_pair_note": {
+    "message": "Firefox will also ask your permission to send your CV and the ad when you use the analysis or the letter."
+  },
+  "ai_consent_note": {
+    "message": "Firefox asks for your consent before your CV and the ad are sent to Epimoni."
+  },
+  "ai_consent_cta": {
+    "message": "Allow sending"
   }
 }

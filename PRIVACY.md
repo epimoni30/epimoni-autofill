@@ -1,6 +1,6 @@
 # Epimoni Autofill privacy policy
 
-*Last updated: 25 September 2026. [Version française plus bas.](#fr)*
+*Last updated: 27 September 2026. [Version française plus bas.](#fr)*
 
 Epimoni Autofill is a browser extension that fills job application forms from a CV you keep in
 the extension. This page says what it stores, what it sends, and to whom. It describes the
@@ -26,11 +26,17 @@ devices:
 
 - the CVs you type, import or bring over from epimoni30.com, and which one is active;
 - the suggestions you dismissed, so they are not offered again;
+- the list of applications the extension filled (the page's address, the job title and company
+  when the page shows them, the dates, the status and any note you add), which you can export
+  or delete from the extension's "My applications" page;
 - if you connected an Epimoni account: your name, account id and the sign-in token that lets
   the extension act for that account. The site can only offer to connect; the extension asks
   you on its own page first, showing the account's email address;
-- if you ran an offer analysis without an account: a temporary session token, replaced after at
-  most 31 days.
+
+If you attach a PDF to a CV, it is kept in the extension's own database in your browser
+(IndexedDB), also never synchronised, and deleted with that CV. If you have not, the extension
+makes a PDF from the CV itself, on your computer, whenever a form asks for one; that file is
+not stored.
 
 A short-lived cache of analysis results and of your remaining allowance is kept in session
 storage, which your browser clears when it closes. Uninstalling the extension deletes all of it.
@@ -43,6 +49,11 @@ the toolbar icon, the extension reads the page's form fields and labels, to know
 where, and the text of the job advert, to offer an analysis. That reading happens in your
 browser. Nothing from the page is sent unless you ask for an analysis.
 
+When you fill a form that has a CV upload, the extension puts your CV's PDF in it (the one you
+attached, or the one made from your CV), as if you had picked it yourself. The page can then read
+it, and it reaches the employer when you submit the form. Other uploads (a cover letter, a
+photo, "other documents") are left empty.
+
 ## What is sent, and when
 
 All requests go to Epimoni's own server (an AWS endpoint in the EU, Frankfurt region).
@@ -50,7 +61,7 @@ All requests go to Epimoni's own server (an AWS endpoint in the EU, Frankfurt re
 | When | What is sent | Why |
 |---|---|---|
 | You click "Analyse this offer" | your active CV, the text of the advert, a sign-in or session token | to compare the two and show a score |
-| Your first analysis without an account | a request to open a session | the free allowance is counted per session and network address |
+| You click "Write my letter with AI" | your active CV, the text of the advert, the form's character limit, a sign-in or session token | to write a cover letter, which is shown to you and goes into the form only if you click to insert it |
 | You open the extension's menu while connected | your sign-in token | to show your remaining allowance |
 | If you are connected or have run an analysis: when a supported job board shows an application form, after a fill, and when you leave that page | the site's host name; how many form fields the page has and how many were filled, accepted or dismissed; which *kinds* of field were filled (for example "email", "phone") | to find the sites where filling fails |
 
@@ -62,6 +73,14 @@ To produce an analysis, Epimoni's server sends the CV and the advert to an AI mo
 (OpenAI) acting as a processor. They are not used to train models. Analyses run while connected
 to an account are kept in that account, as on the website; see the website's policy for how
 long and how to delete them.
+
+## On Firefox
+
+Firefox keeps its own record of what an add-on may send, and the extension follows it. Your CV
+and the advert are sent for an analysis or a letter only once you have allowed it in the
+browser's prompt, which appears when you accept an account connection, or when you click
+"Allow sending" in the extension. Usage statistics are not sent on Firefox. You can withdraw
+your permission in Firefox's add-on settings.
 
 ## What the extension does not do
 
@@ -114,12 +133,18 @@ appareils :
 
 - les CV saisis, importés ou récupérés depuis epimoni30.com, et celui qui est actif ;
 - les suggestions que vous avez écartées, pour ne pas les reproposer ;
+- la liste des candidatures remplies par l'extension (l'adresse de la page, l'intitulé du poste
+  et l'entreprise quand la page les affiche, les dates, le statut et vos notes), que vous pouvez
+  exporter ou supprimer depuis la page « Mes candidatures » de l'extension ;
 - si vous avez connecté un compte Epimoni : votre nom, l'identifiant du compte et le jeton de
   connexion qui permet à l'extension d'agir pour ce compte. Le site peut seulement proposer la
   connexion ; l'extension vous la fait d'abord confirmer sur sa propre page, en affichant
   l'adresse e-mail du compte ;
-- si vous avez lancé une analyse sans compte : un jeton de session temporaire, renouvelé au plus
-  tard après 31 jours.
+
+Si vous joignez un PDF à un CV, il est conservé dans la base de données propre à l'extension,
+dans votre navigateur (IndexedDB), lui aussi jamais synchronisé, et supprimé avec ce CV. Sinon,
+l'extension crée un PDF à partir du CV, sur votre ordinateur, quand un formulaire en demande
+un ; ce fichier n'est pas conservé.
 
 Un cache de courte durée (résultats d'analyse, quota restant) est conservé en stockage de
 session, vidé à la fermeture du navigateur. Désinstaller l'extension supprime l'ensemble. Vous
@@ -132,6 +157,12 @@ uniquement quand vous cliquez sur l'icône, l'extension lit les champs et libell
 formulaire, pour savoir quoi mettre où, et le texte de l'annonce, pour proposer une analyse.
 Cette lecture se fait dans votre navigateur. Rien n'est envoyé sans demande d'analyse.
 
+Quand vous remplissez un formulaire qui demande un CV, l'extension dépose le PDF de votre CV
+dans le champ (celui que vous avez joint, ou celui créé à partir de votre CV), comme si vous
+l'aviez choisi vous-même. La page peut
+alors le lire, et il parvient à l'employeur quand vous envoyez le formulaire. Les autres pièces
+(lettre de motivation, photo, « autres documents ») restent vides.
+
 ## Ce qui est envoyé, et quand
 
 Toutes les requêtes vont au serveur d'Epimoni (un point d'accès AWS dans l'UE, région de
@@ -140,7 +171,7 @@ Francfort).
 | Quand | Quoi | Pourquoi |
 |---|---|---|
 | Vous cliquez « Analyser cette offre » | votre CV actif, le texte de l'annonce, un jeton de connexion ou de session | comparer les deux et afficher un score |
-| Première analyse sans compte | une demande d'ouverture de session | le quota gratuit est compté par session et adresse réseau |
+| Vous cliquez « Rédiger ma lettre avec l'IA » | votre CV actif, le texte de l'annonce, la limite de caractères du formulaire, un jeton de connexion ou de session | rédiger une lettre de motivation, qui vous est montrée et n'entre dans le formulaire que si vous cliquez pour l'insérer |
 | Vous ouvrez le menu de l'extension en étant connecté | votre jeton de connexion | afficher le quota restant |
 | Si vous êtes connecté ou avez lancé une analyse : quand un site d'emploi pris en charge affiche un formulaire de candidature, après un remplissage, et quand vous quittez cette page | le nom du site ; le nombre de champs du formulaire, et combien ont été remplis, acceptés ou écartés ; les *types* de champs remplis (par exemple « e-mail », « téléphone ») | repérer les sites où le remplissage échoue |
 
@@ -152,6 +183,15 @@ Pour produire une analyse, le serveur d'Epimoni transmet le CV et l'annonce à u
 modèles d'IA (OpenAI), en qualité de sous-traitant. Ils ne servent pas à entraîner de modèles.
 Les analyses faites avec un compte connecté sont conservées dans ce compte, comme sur le site ;
 voir la politique du site pour leur durée et leur suppression.
+
+## Sur Firefox
+
+Firefox tient son propre registre de ce qu'une extension peut envoyer, et l'extension s'y
+conforme. Votre CV et l'annonce ne sont envoyés pour une analyse ou une lettre qu'après votre
+accord dans la fenêtre du navigateur, qui apparaît quand vous acceptez la connexion d'un compte,
+ou quand vous cliquez sur « Autoriser l'envoi » dans l'extension. Les statistiques
+d'utilisation ne sont pas envoyées sur Firefox. Vous pouvez retirer votre accord dans les
+réglages des modules de Firefox.
 
 ## Ce que l'extension ne fait pas
 

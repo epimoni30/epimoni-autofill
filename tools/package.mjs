@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
-// The zip the Chrome Web Store takes, built locally: `npm run package`.
+// The zip a store takes, built locally: `npm run package` for the Chrome Web Store (and Edge
+// Add-ons, same package), `npm run package:firefox` for addons.mozilla.org.
 //
 // The release workflow does the same on a tag; this is for a manual upload, and it refuses
 // the one mistake that is easy to make by hand: zipping the *dev* build `npm run check`
@@ -9,12 +10,14 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { targetFrom } from '../platform/index.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
-const DIST = join(ROOT, 'dist');
+const TARGET = targetFrom(process.argv);
+const DIST = join(ROOT, TARGET.dist);
 const run = (cmd, args, cwd = ROOT) => execFileSync(cmd, args, { cwd, stdio: 'inherit' });
 
-run(process.execPath, ['build.mjs']);
+run(process.execPath, ['build.mjs', `--target=${TARGET.id}`]);
 
 const manifest = JSON.parse(readFileSync(join(DIST, 'manifest.json'), 'utf8'));
 const problems = [];
@@ -31,7 +34,9 @@ if (problems.length) {
   process.exit(1);
 }
 
-const name = `epimoni-autofill-v${manifest.version}.zip`;
+// Chrome keeps the unsuffixed name the release workflow and the store dashboard already use.
+const suffix = TARGET.id === 'chrome' ? '' : `-${TARGET.id}`;
+const name = `epimoni-autofill-v${manifest.version}${suffix}.zip`;
 rmSync(join(ROOT, name), { force: true });
 run('zip', ['-qr', join(ROOT, name), '.'], DIST);
-console.log(`${name}: production build, ready for the Chrome Web Store dashboard`);
+console.log(`${name}: production ${TARGET.id} build, ready for its store`);

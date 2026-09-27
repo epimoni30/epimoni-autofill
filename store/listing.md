@@ -52,8 +52,9 @@ autre site carrière (Workday, Taleez, formulaires maison), il suffit de cliquer
 
 ANALYSE D'OFFRE PAR L'IA
 Sur une annonce, « Analyser cette offre » compare votre CV aux attentes du poste et donne un
-score avec vos points faibles. Une analyse par heure sans compte ; avec un compte Epimoni,
-selon votre formule, et l'analyse complète s'ouvre sur epimoni30.com.
+score avec vos points faibles, et la lettre de motivation peut être rédigée dans la limite du
+formulaire. Ces fonctions IA demandent un compte Epimoni connecté à l'extension (gratuit : une
+par heure ; illimité avec une formule), et l'analyse complète s'ouvre sur epimoni30.com.
 
 VIE PRIVÉE
 Votre CV reste dans votre navigateur. Le remplissage n'envoie rien. Seule l'analyse d'offre,
@@ -89,8 +90,9 @@ careers site (Workday, Taleez, in-house forms), just click the toolbar icon.
 
 AI OFFER ANALYSIS
 On a job ad, "Analyse this offer" compares your CV with what the role asks for and gives a
-score with your weak points. One analysis an hour without an account; with an Epimoni account,
-according to your plan, and the full analysis opens on epimoni30.com.
+score with your weak points, and the cover letter can be written within the form's limit. These
+AI features need an Epimoni account connected to the extension (free: one an hour; unlimited
+with a plan), and the full analysis opens on epimoni30.com.
 
 PRIVACY
 Your CV stays in your browser. Filling sends nothing. Only the offer analysis, started by you,

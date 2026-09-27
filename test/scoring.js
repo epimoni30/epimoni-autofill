@@ -29,8 +29,10 @@ export const RUNNER_BODY = `
   // Ground truth first, including controls the engine will (correctly) never offer to
   // fill, so a skipped password field still counts as a pass rather than vanishing.
   const truth = deepQueryAll(document, '[data-expect]');
+  // The CV's attached PDF, as the worker would hand it over: a name, and bytes on demand.
+  const files = { cv_file: { name: 'cv.pdf', load: () => new File(['%PDF-1.4 sample'], 'cv.pdf', { type: 'application/pdf' }) } };
   // The engine the content script runs, fillers included: \`runFill\` in src/content/fill.js.
-  return runFill({ root: document, url: location.href, profile, entries, resolver: __resolver, fillers: EPIMONI_FILLERS })
+  return runFill({ root: document, url: location.href, profile, entries, files, resolver: __resolver, fillers: EPIMONI_FILLERS })
     .then((run) => {
   if (run.errors.length) console.warn('filler errors', run.errors);
   const outcome = new Map();

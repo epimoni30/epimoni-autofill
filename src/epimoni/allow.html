@@ -1,0 +1,33 @@
+<!doctype html>
+<!-- Where the browser's data-collection consent is asked, on a browser that asks for it
+     (Firefox). The grant must be requested inside a click on an extension page, which the
+     popup (it closes when the prompt opens) and the in-page panel are not. -->
+<html>
+<meta charset="utf-8">
+<title>Epimoni</title>
+<style>
+  :root { color-scheme: light dark; --fg: #18181b; --muted: #71717a; --line: #e4e4e7; --bg: #fafafa; --card: #fff; --accent: #7c5cff; --ok: #15803d; }
+  @media (prefers-color-scheme: dark) { :root { --fg: #f4f4f5; --muted: #a1a1aa; --line: #3f3f46; --bg: #121214; --card: #18181b; --ok: #4ade80; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 48px 16px; font: 14px/1.55 system-ui, -apple-system, sans-serif; color: var(--fg); background: var(--bg); }
+  main { max-width: 480px; margin: 0 auto; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px 22px; }
+  h1 { font-size: 18px; margin: 0 0 12px; }
+  .muted { color: var(--muted); }
+  .ok { color: var(--ok); }
+  .actions { margin-top: 16px; }
+  button { font: inherit; border: 1px solid var(--accent); background: var(--accent); color: #fff; font-weight: 600; border-radius: 8px; padding: 8px 14px; cursor: pointer; }
+  button:disabled { opacity: .5; cursor: default; }
+</style>
+<body>
+<main>
+  <h1 data-i18n="consent_title"></h1>
+  <p data-i18n="consent_body"></p>
+  <p class="muted" data-i18n="consent_core"></p>
+  <p id="result" hidden></p>
+  <div class="actions" id="actions">
+    <button type="button" id="allow" data-i18n="consent_allow"></button>
+  </div>
+</main>
+<script src="allow.js"></script>
+</body>
+</html>

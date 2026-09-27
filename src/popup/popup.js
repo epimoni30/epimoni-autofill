@@ -1,11 +1,9 @@
-// The popup answers three questions: can it fill this page, where did its CV come from, and
-// what does the AI half cost me right now. It never shows the token.
+// The toolbar popup is a menu, and only that: which CV fills forms, the fast action (fill this
+// page), the AI actions (analyse the advert, write the cover letter), and the dashboard.
+// Everything else (editing, the library, the applications) lives on the dashboard.
 //
-// Editing lives on the options page rather than here. The six extras used to be in this
-// 300 px panel beside the CV that has none of them, which meant two surfaces owning halves
-// of one profile; they now sit in the same form as the CV they complete.
-//
-// Every string goes through `chrome.i18n`.
+// The AI actions are for a paired Epimoni account and are shown disabled without one, with
+// the step that turns them on. Every string goes through `chrome.i18n`.
 
 const send = (msg) => new Promise((r) => chrome.runtime.sendMessage(msg, (x) => r(x || {})));
 const el = (id) => document.getElementById(id);
@@ -23,106 +21,113 @@ function localise() {
   }
 }
 
-/** How long ago the CV was taken, in words rather than a date. */
-const ago = (ts) => {
-  if (!ts) return '';
-  const days = Math.round((Date.now() - ts) / 86400000);
-  if (days <= 0) return t('popup_today');
-  if (days === 1) return t('popup_yesterday');
-  return t('popup_days_ago', [String(days)]);
-};
-
-/** Text, never innerHTML: a CV label is user data and has no business being parsed as markup. */
-function line(parent, text, className) {
-  const div = document.createElement('div');
-  if (className) div.className = className;
-  div.textContent = text;
-  parent.appendChild(div);
-}
-
 function link(parent, href, text) {
   const a = document.createElement('a');
   a.href = href;
   a.target = '_blank';
   a.rel = 'noopener';
   a.textContent = text;
-  a.style.display = 'block';
   parent.appendChild(a);
   return a;
 }
 
-/** A button that opens the CV editor. It is an extension page, so it needs the worker. */
-function editorButton(parent, key, primary) {
-  const b = document.createElement('button');
-  if (primary) b.className = 'primary';
-  b.textContent = t(key);
-  b.addEventListener('click', async () => {
-    await send({ type: 'open-options' });
-    window.close();
-  });
-  parent.appendChild(b);
-  return b;
+/**
+ * Run something on the page in the active tab: the fill, or the fill followed by one of the
+ * AI actions (`after`). Injecting first is what grants the page: on a site with no declared
+ * content script, this click is the permission.
+ */
+async function onPage(after) {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab?.id) return;
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id, allFrames: true },
+      files: ['content.js'],
+    });
+  } catch {}
+  chrome.tabs.sendMessage(tab.id, after ? { type: 'fill', after } : { type: 'fill' });
+  window.close();
+}
+
+const openDashboard = (hash = '') => {
+  chrome.tabs.create({ url: chrome.runtime.getURL(`dashboard.html${hash}`) });
+  window.close();
+};
+
+/** Which CV fills forms, and the choice between them when there are several. */
+async function renderCv(state) {
+  const host = el('cv');
+  host.textContent = '';
+  if (!state.has_cv) {
+    host.textContent = t('popup_no_profile');
+    return;
+  }
+  const { cvs = [] } = await send({ type: 'cv:list' });
+  if (cvs.length > 1) {
+    const select = document.createElement('select');
+    select.id = 'cv-pick';
+    select.setAttribute('aria-label', t('popup_cv_used'));
+    for (const c of cvs) {
+      const o = document.createElement('option');
+      o.value = c.id;
+      o.textContent = c.label || c.summary?.name || t('opt_cv_untitled');
+      o.selected = c.active;
+      select.appendChild(o);
+    }
+    select.addEventListener('change', () => send({ type: 'cv:activate', id: select.value }));
+    host.append(t('popup_cv_used'), select);
+  } else {
+    host.textContent = t('popup_cv', [state.cv_label || cvs[0]?.summary?.name || t('opt_cv_untitled')]);
+  }
+}
+
+/**
+ * The AI actions are for a paired Epimoni account. Without one they stay visible and
+ * disabled, with the one step that turns them on; with one, the allowance is said beneath.
+ */
+async function renderAi(state) {
+  const note = el('ai-note');
+  const ready = Boolean(state.ai) && state.has_cv;
+  el('analyse').disabled = !ready;
+  el('letter').disabled = !ready;
+  if (!state.ai && state.consent) {
+    // Paired, and the browser asks before the CV leaves it (Firefox). The request has to come
+    // from a click on an extension page that stays open, which the popup is not.
+    note.textContent = t('ai_consent_note');
+    note.appendChild(document.createElement('br'));
+    const b = document.createElement('button');
+    b.className = 'linkish';
+    b.textContent = t('ai_consent_cta');
+    b.addEventListener('click', () => send({ type: 'consent:open' }).then(() => window.close()));
+    note.appendChild(b);
+    return;
+  }
+  if (!state.ai) {
+    note.textContent = t(state.stale ? 'popup_ai_reconnect' : 'popup_ai_needs_account');
+    note.appendChild(document.createElement('br'));
+    link(note, SITE, t(state.stale ? 'popup_reconnect' : 'popup_ai_connect')).style.display = 'inline-block';
+    return;
+  }
+  // Asked last and quietly: it reaches the network, and everything above is on screen already.
+  const tier = await send({ type: 'tier' });
+  if (tier.paid) note.textContent = t('popup_tier_paid');
+  else if (tier.rate_limited) {
+    note.textContent = t('popup_tier_spent', [String(Math.ceil((tier.reset_seconds || 0) / 60))]);
+    note.appendChild(document.createElement('br'));
+    link(note, PLANS, t('panel_quota_cta')).style.display = 'inline-block';
+  } else note.textContent = t('popup_tier_free');
 }
 
 (async () => {
   localise();
   const state = await send({ type: 'state' });
-  const status = el('status');
-  status.textContent = '';
 
-  // No CV from anywhere: from an account, from the site, or typed here. This is the only
-  // state in which the extension cannot do its job, and it is one click from being fixed:
-  // which is why it offers the editor rather than only naming the account it lacks.
-  if (!state.has_cv) {
-    line(status, t('popup_no_profile'));
-    editorButton(el('actions'), 'popup_add_cv', true);
-    link(el('links'), SITE, t('popup_connect_link'));
-    return;
-  }
+  el('fill').disabled = !state.has_cv;
+  el('fill').addEventListener('click', () => onPage(null));
+  el('analyse').addEventListener('click', () => onPage('analyse'));
+  el('letter').addEventListener('click', () => onPage('letter'));
+  el('dashboard').addEventListener('click', () => openDashboard(state.has_cv ? '' : '#cv'));
 
-  // An expired 31-day token. Filling still works (the profile is local) and the analysis
-  // falls through to the free anonymous tier, so this is a prompt rather than a failure.
-  if (state.stale) line(status, t('popup_stale'), 'warn');
-
-  line(status, t('popup_ready_fields', [String(state.fields)]));
-  if (state.paired && state.cv_label) line(status, t('popup_cv', [state.cv_label]), 'muted');
-  else if (state.cv_source === 'local') line(status, t('popup_cv_local'), 'muted');
-  else if (state.cv_source === 'site') line(status, t('popup_cv_site'), 'muted');
-  const when = ago(state.taken_at || state.paired_at);
-  if (when) line(status, t('popup_synced', [when]), 'muted');
-  // Something is stored, but not enough for a comparison against an advert to mean anything.
-  if (!state.cv_analysable) line(status, t('popup_thin'), 'warn');
-
-  const fillBtn = document.createElement('button');
-  fillBtn.className = 'primary';
-  fillBtn.textContent = t('popup_fill');
-  fillBtn.addEventListener('click', async () => {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (!tab?.id) return;
-    // Inject before messaging: on a site with no declared content script there is nothing
-    // listening yet, and this is the click that grants us the page.
-    try {
-      await chrome.scripting.executeScript({
-        target: { tabId: tab.id, allFrames: true },
-        files: ['content.js'],
-      });
-    } catch {}
-    chrome.tabs.sendMessage(tab.id, { type: 'fill' });
-    window.close();
-  });
-  el('actions').appendChild(fillBtn);
-  const edit = editorButton(el('actions'), 'popup_edit_cv', false);
-  edit.style.marginLeft = '6px';
-
-  if (state.stale || !state.paired)
-    link(el('links'), SITE, t(state.stale ? 'popup_reconnect' : 'popup_connect_link'));
-
-  // The allowance, last and quietly: it is the answer to a question the user has not asked
-  // yet, and it reaches the network. Everything above is already on screen by now.
-  const tier = await send({ type: 'tier' });
-  if (tier.paid) line(el('links'), t('popup_tier_paid'), 'ok');
-  else if (tier.rate_limited) {
-    line(el('links'), t('popup_tier_spent', [String(Math.ceil((tier.reset_seconds || 0) / 60))]), 'muted');
-    link(el('links'), PLANS, t('panel_quota_cta'));
-  } else line(el('links'), t(tier.mode === 'account' ? 'popup_tier_free' : 'popup_tier_anon'), 'muted');
+  await renderCv(state);
+  await renderAi(state);
 })();

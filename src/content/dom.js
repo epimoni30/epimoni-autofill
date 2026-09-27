@@ -148,6 +148,61 @@ export function fillableElements(root = document, extra = []) {
   return [...native, ...more];
 }
 
+/** Does a file input's `accept` let a PDF in? No `accept` at all means anything goes. */
+function acceptsPdf(el) {
+  const accept = (el.getAttribute('accept') || '').toLowerCase().trim();
+  if (!accept) return true;
+  return accept
+    .split(',')
+    .map((a) => a.trim())
+    .some(
+      (a) => a === '.pdf' || a === 'application/pdf' || a === 'application/*' || a === '*/*' || a === '*',
+    );
+}
+
+const seenBy = (node) => node && visible(node) && !concealed(node);
+
+/**
+ * What the user sees of a file input, or null when they see nothing.
+ *
+ * Almost no upload is a bare `<input type=file>`: the input is hidden and a styled label or a
+ * drop zone stands in for it. So the input's own visibility decides nothing here; what must be
+ * visible is the thing the user would click: its `<label>`, or the nearest ancestor (three
+ * hops at most) that holds this one file input and nothing else to upload. That keeps the rule
+ * the text path follows for the same reason: a CV is never handed to a control the user could
+ * not have seen asking for it.
+ */
+function fileSurface(el) {
+  if (seenBy(el)) return el;
+  const root = el.getRootNode();
+  const byFor = el.id && root.querySelector ? root.querySelector(`label[for="${CSS.escape(el.id)}"]`) : null;
+  if (seenBy(byFor)) return byFor;
+  if (seenBy(el.closest('label'))) return el.closest('label');
+  let node = el.parentElement;
+  for (let hops = 0; node && hops < 3; hops += 1, node = node.parentElement) {
+    if (node.querySelectorAll('input[type="file" i]').length !== 1) return null;
+    if (seenBy(node)) return node;
+  }
+  return null;
+}
+
+/**
+ * File inputs a CV could go into, kept apart from `fillableElements`.
+ *
+ * A file input never joins the text scan: it would change the shape of the repeated-section
+ * blocks around it, and it takes one key only (`cv_file`, the registry's `file` shape). The
+ * refusals are the text path's, minus the input's own visibility (see `fileSurface`), plus
+ * one: an `accept` that rules out a PDF.
+ */
+export function fileInputs(root = document) {
+  const passwordForms = formsWithPassword(root);
+  return deepQueryAll(root, 'input[type="file" i]').filter((el) => {
+    if (el.disabled || el.getAttribute('aria-disabled') === 'true') return false;
+    if (isDenied(el, passwordForms)) return false;
+    return acceptsPdf(el) && Boolean(fileSurface(el));
+  });
+}
+
 function labelledByText(el) {
   const ids = (el.getAttribute('aria-labelledby') || '').split(/\s+/).filter(Boolean);
   const doc = el.ownerDocument;
@@ -750,6 +805,28 @@ export function setValue(el, value) {
     if (!setter) return false;
     setter.call(el, value);
   }
+  el.dispatchEvent(new Event('input', { bubbles: true }));
+  el.dispatchEvent(new Event('change', { bubbles: true }));
+  el.setAttribute('data-epimoni-filled', '1');
+  return true;
+}
+
+/** Is this value a file (a `File`, from any frame's realm) rather than text? */
+export const isFile = (v) => Boolean(v) && typeof v === 'object' && typeof v.name === 'string' && 'size' in v;
+
+/**
+ * Put a file into a file input, the way choosing it in the picker would.
+ *
+ * A file input's `files` can only be set from a `FileList`, and the only way to make one is a
+ * `DataTransfer`. The events are the picker's: frameworks and drop-zone libraries read the
+ * file on `change`. Undoing is `clearValue`: an empty value is the one a file input accepts.
+ */
+export function setFile(el, file) {
+  if (!isFile(file) || (el.getAttribute('type') || '').toLowerCase() !== 'file') return false;
+  const dt = new DataTransfer();
+  dt.items.add(file);
+  el.files = dt.files;
+  if (el.files?.length !== 1) return false;
   el.dispatchEvent(new Event('input', { bubbles: true }));
   el.dispatchEvent(new Event('change', { bubbles: true }));
   el.setAttribute('data-epimoni-filled', '1');

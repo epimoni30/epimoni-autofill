@@ -149,6 +149,16 @@ export async function read() {
 }
 
 /**
+ * The bag as it would read with `id` active, without making it so. A page can fill from, and
+ * analyse against, another CV of the library without changing which one the others use.
+ * An unknown id reads as the active one.
+ */
+export async function readAs(id) {
+  const bag = await rawRead();
+  return withActive(entry(bag, id) ? { ...bag, active_cv_id: id } : bag);
+}
+
+/**
  * Merge a patch into the bag. CV fields are refused here on purpose: they belong to a
  * library entry, and `saveCv` is the only way in. Silently accepting `{cv}` would write a
  * copy that the next read would shadow: a bug that looks like storage losing writes.

@@ -80,6 +80,18 @@ function stub({ responses }) {
 const ANON = '/api/v1/users/anonymous-login';
 const ANALYSE = '/api/v1/ml/analyse/cvVSoffer-doc?lang=fr';
 const ME = '/api/v1/users/me';
+const LETTER = '/api/v1/ml/analyse/motivation/generate-doc?lang=fr';
+/** What a pairing from a signed-in site session leaves in storage. */
+const pairAccount = (h, extra = {}) => {
+  h.local.epimoni = {
+    ...h.local.epimoni,
+    jwt: 'account-1',
+    user_id: 'u-1',
+    user_type: 'google',
+    paired: true,
+    ...extra,
+  };
+};
 const ok = (score = 72) => ({
   json: {
     ml: {
@@ -116,6 +128,13 @@ test('a content script can read the profile and nothing that edits or erases the
     'cv:save',
     'cv:delete',
     'cv:clear',
+    'cv:file:set',
+    'cv:file:remove',
+    'cv:file:get',
+    'app:list',
+    'app:update',
+    'app:delete',
+    'app:clear',
     'extras',
     'forget',
     'unpair',
@@ -127,60 +146,59 @@ test('a content script can read the profile and nothing that edits or erases the
   assert.equal((await ask(h.listeners, { type: 'state' })).has_cv, true);
 });
 
-test('with no account at all: one anonymous session, one metered call, an answer', async () => {
-  const h = await loadWorker({
-    responses: { [ANON]: { json: { jwt: 'anon-1', user_id: 'a-1' } }, [ANALYSE]: ok(72) },
-  });
-  // A CV written in the extension itself: nobody signed in, nothing paired.
-  await ask(h.listeners, { type: 'cv:save', cv: CV, source: 'local' });
-
-  const res = await ask(h.listeners, {
-    type: 'analyse',
-    posting: POSTING,
-    host: 'candidat.francetravail.fr',
-    lang: 'fr',
-  });
-  assert.equal(res.ok, true, 'an anonymous user gets an analysis');
-  assert.equal(res.mode, 'anonymous');
-  assert.equal(res.teaser.score, 72);
-  // `/editeur` reads a run back through the session that owns it, and that is not the
-  // browser's session here, so the link is deliberately not offered.
-  assert.equal(res.linkable, false);
-
-  assert.equal(h.calls.filter((c) => c.path === ANALYSE).length, 1, 'exactly one metered call');
-  assert.equal(h.calls.find((c) => c.path === ANALYSE).token, 'anon-1', 'sent with the anonymous session');
-});
-
-test('the session is opened on the first metered call, not before', async () => {
+test('without a paired account the AI is refused before anything reaches the network', async () => {
+  // The AI features are an Epimoni account's. A CV typed in the extension, or handed over by a
+  // visitor who never signed in, fills forms and nothing more: no session is opened on their
+  // behalf, and no request leaves.
   const h = await loadWorker({
     responses: { [ANON]: { json: { jwt: 'anon-1', user_id: 'a-1' } }, [ANALYSE]: ok() },
   });
   await ask(h.listeners, { type: 'cv:save', cv: CV, source: 'local' });
+  const analysed = await ask(h.listeners, { type: 'analyse', posting: POSTING, lang: 'fr' });
+  const written = await ask(h.listeners, { type: 'letter', posting: POSTING, lang: 'fr', max_chars: 1500 });
+  assert.deepEqual([analysed.kind, written.kind], ['not-paired', 'not-paired']);
+  assert.equal(h.calls.length, 0, 'no request at all, and above all no anonymous-login');
+  assert.equal(h.local.epimoni.anon, undefined);
+  const state = await ask(h.listeners, { type: 'state' });
+  assert.equal(state.ai, false, 'and the surfaces are told, so they can show the buttons disabled');
+  assert.equal((await ask(h.listeners, { type: 'profile' })).ai, false);
+});
+
+test('filling and reading state reach the network not at all', async () => {
+  const h = await loadWorker({ responses: {} });
+  await ask(h.listeners, { type: 'cv:save', cv: CV, source: 'local' });
+  pairAccount(h);
   await ask(h.listeners, { type: 'state' });
-  await ask(h.listeners, { type: 'profile' });
-  // Filling a form is free and needs no identity: opening a session here would create an
-  // account row for somebody who has only installed the extension.
-  assert.equal(h.calls.length, 0, 'reading state and filling reach the network not at all');
-
-  await ask(h.listeners, { type: 'analyse', posting: POSTING, lang: 'fr' });
-  assert.equal(h.calls.filter((c) => c.path === ANON).length, 1);
+  const profile = await ask(h.listeners, { type: 'profile' });
+  assert.equal(profile.ai, true, 'a paired account is offered the AI');
+  assert.equal(h.calls.length, 0, 'filling is free and needs no identity, account or not');
 });
 
-test('a second advert reuses the session; the same advert costs nothing twice', async () => {
-  const h = await loadWorker({
-    responses: { [ANON]: { json: { jwt: 'anon-1', user_id: 'a-1' } }, [ANALYSE]: ok() },
-  });
+test('the same advert costs nothing twice; a second advert is a second call', async () => {
+  const h = await loadWorker({ responses: { [ANALYSE]: ok() } });
   await ask(h.listeners, { type: 'cv:save', cv: CV, source: 'local' });
+  pairAccount(h);
   await ask(h.listeners, { type: 'analyse', posting: POSTING, lang: 'fr' });
   const again = await ask(h.listeners, { type: 'analyse', posting: POSTING, lang: 'fr' });
-  // The backend memoises, but a memo hit is still charged, so the
-  // cache that saves the user's hour is the local one.
   assert.equal(again.cached, true);
   const other = { ...POSTING, text: `${POSTING.text} Poste basé à Lyon, CDI, télétravail partiel.` };
   await ask(h.listeners, { type: 'analyse', posting: other, lang: 'fr' });
-
   assert.equal(h.calls.filter((c) => c.path === ANALYSE).length, 2, 'one call per distinct advert');
-  assert.equal(h.calls.filter((c) => c.path === ANON).length, 1, 'and one session for both');
+});
+
+test('a letter goes out on the account, held to the limit, and is not asked twice', async () => {
+  const h = await loadWorker({
+    responses: { [LETTER]: { json: { ml: { content: { paragraphs: ['Madame,', 'Je postule.'] } } } } },
+  });
+  await ask(h.listeners, { type: 'cv:save', cv: CV, source: 'local' });
+  pairAccount(h);
+  const res = await ask(h.listeners, { type: 'letter', posting: POSTING, lang: 'fr', max_chars: 1500 });
+  assert.equal(res.text, 'Madame,\n\nJe postule.');
+  assert.deepEqual([res.limit, res.within, res.mode], [1500, true, 'account']);
+  await ask(h.listeners, { type: 'letter', posting: POSTING, lang: 'fr', max_chars: 1500 });
+  const sent = h.calls.filter((c) => c.path === LETTER);
+  assert.equal(sent.length, 1);
+  assert.equal(sent[0].token, 'account-1');
 });
 
 test('a paired account spends its own token, and gets the link back to the site', async () => {
@@ -210,44 +228,24 @@ test('a paired account spends its own token, and gets the link back to the site'
   );
 });
 
-test('an expired account token is marked stale and the answer still arrives', async () => {
-  // The 31-day token ran out. Refusing outright would read as a broken extension; the honest
-  // behaviour is to fall through to the free tier, say which allowance paid for it, and leave
-  // the reconnect prompt where the popup and the panel already show it.
+test('an expired account token is marked stale and asks to reconnect, with no other identity tried', async () => {
   const h = await loadWorker({
-    responses: {
-      [ANON]: { json: { jwt: 'anon-1', user_id: 'a-1' } },
-      [ANALYSE]: (n) => (n === 1 ? { status: 401, json: {} } : ok(64)),
-    },
+    responses: { [ANON]: { json: { jwt: 'anon-1', user_id: 'a-1' } }, [ANALYSE]: { status: 401, json: {} } },
   });
   await ask(h.listeners, { type: 'cv:save', cv: CV, source: 'local' });
-  h.local.epimoni = { ...h.local.epimoni, jwt: 'expired-1', user_id: 'u-1', paired: true };
-
+  pairAccount(h, { jwt: 'expired-1' });
   const res = await ask(h.listeners, { type: 'analyse', posting: POSTING, lang: 'fr' });
-  assert.equal(res.ok, true);
-  assert.equal(res.mode, 'anonymous');
-  assert.equal(res.stale, true, 'the surface must be able to say which allowance was spent');
-  assert.equal(h.local.epimoni.stale, true, 'and the popup must show the reconnect prompt');
-
-  const tokens = h.calls.filter((c) => c.path === ANALYSE).map((c) => c.token);
-  assert.deepEqual(tokens, ['expired-1', 'anon-1'], 'one retry, on a different token');
-});
-
-test('an expired anonymous session is re-minted once, and only once', async () => {
-  const h = await loadWorker({
-    responses: {
-      [ANON]: (n) => ({ json: { jwt: `anon-${n}`, user_id: `a-${n}` } }),
-      [ANALYSE]: { status: 401, json: {} },
-    },
-  });
-  await ask(h.listeners, { type: 'cv:save', cv: CV, source: 'local' });
-  const res = await ask(h.listeners, { type: 'analyse', posting: POSTING, lang: 'fr' });
-  assert.equal(res.ok, false);
   assert.equal(res.kind, 'expired');
-  // Two sessions and two attempts, then it stops. A retry loop against a 401 would mint an
-  // account row per attempt.
-  assert.equal(h.calls.filter((c) => c.path === ANON).length, 2);
-  assert.equal(h.calls.filter((c) => c.path === ANALYSE).length, 2);
+  assert.equal(h.local.epimoni.stale, true, 'the popup and the panel show the reconnect prompt');
+  assert.deepEqual(
+    h.calls.map((c) => c.path),
+    [ANALYSE],
+    'one call, and no anonymous session',
+  );
+  // Once stale, nothing more goes out until the account is connected again.
+  const next = await ask(h.listeners, { type: 'analyse', posting: POSTING, lang: 'fr' });
+  assert.equal(next.kind, 'expired');
+  assert.equal(h.calls.length, 1);
 });
 
 test('429 reports the wait and drops the cached allowance', async () => {
@@ -261,8 +259,7 @@ test('429 reports the wait and drops the cached allowance', async () => {
     },
   });
   await ask(h.listeners, { type: 'cv:save', cv: CV, source: 'local' });
-  // A session from an earlier analysis: without one, asking the tier makes no call at all.
-  h.local.epimoni.anon = { jwt: 'anon-0', user_id: 'a-0', at: Date.now() };
+  pairAccount(h);
   // Asked first, so there is a cached "you may analyse" to invalidate.
   assert.equal((await ask(h.listeners, { type: 'tier' })).rate_limited, false);
 
@@ -294,16 +291,15 @@ test('a paying customer is told there is no limit, and it costs one unmetered re
   assert.equal(h.calls.filter((c) => c.path === ME).length, 1, 'asked once, then cached');
 });
 
-test('asking the tier opens no session: opening the popup is not a metered call', async () => {
+test('without an account the tier is answered locally: opening the popup costs nothing', async () => {
   const h = await loadWorker({ responses: {} });
   await ask(h.listeners, { type: 'cv:save', cv: CV, source: 'local' });
   const t = await ask(h.listeners, { type: 'tier' });
   assert.deepEqual(
-    { mode: t.mode, paid: t.paid, rate_limited: t.rate_limited },
-    { mode: 'anonymous', paid: false, rate_limited: false },
+    { ai: t.ai, mode: t.mode, rate_limited: t.rate_limited },
+    { ai: false, mode: 'none', rate_limited: false },
   );
   assert.equal(h.calls.length, 0, 'no request at all, and above all no anonymous-login');
-  assert.equal(h.local.epimoni.anon, undefined, 'no session was stored');
 });
 
 test('an empty CV is refused before anything is spent', async () => {
@@ -313,6 +309,7 @@ test('an empty CV is refused before anything is spent', async () => {
   // A name and nothing else: enough to fill a form, not enough for a comparison to mean
   // anything. Charging an hour for that answer is the thing being prevented.
   await ask(h.listeners, { type: 'cv:save', cv: { basics: { name: 'Camille Dupont' } }, source: 'local' });
+  pairAccount(h);
   const res = await ask(h.listeners, { type: 'analyse', posting: POSTING, lang: 'fr' });
   assert.equal(res.kind, 'no-cv');
   assert.equal(h.calls.length, 0, 'no session opened, no call made');
@@ -330,6 +327,7 @@ test('a comparison that assessed nothing is a refusal, not a score of zero', asy
     },
   });
   await ask(h.listeners, { type: 'cv:save', cv: CV, source: 'local' });
+  pairAccount(h);
   const res = await ask(h.listeners, { type: 'analyse', posting: POSTING, lang: 'fr' });
   assert.equal(res.ok, false);
   assert.equal(res.kind, 'empty');
@@ -355,6 +353,7 @@ test('an assessed zero is a real answer and still comes through', async () => {
     },
   });
   await ask(h.listeners, { type: 'cv:save', cv: CV, source: 'local' });
+  pairAccount(h);
   const res = await ask(h.listeners, { type: 'analyse', posting: POSTING, lang: 'fr' });
   assert.equal(res.ok, true);
   assert.equal(res.teaser.score, 0);
@@ -370,6 +369,7 @@ test('the backend refusing with 502 scoring_empty says the same thing', async ()
     },
   });
   await ask(h.listeners, { type: 'cv:save', cv: CV, source: 'local' });
+  pairAccount(h);
   const res = await ask(h.listeners, { type: 'analyse', posting: POSTING, lang: 'fr' });
   assert.equal(res.kind, 'empty');
 });

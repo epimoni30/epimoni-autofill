@@ -12,13 +12,17 @@ import { existsSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { join } from 'node:path';
 import { bundleContent } from './tools/bundle.mjs';
+import { targetFrom } from './platform/index.mjs';
 
 const ROOT = fileURLToPath(new URL('.', import.meta.url));
 // `--dev` adds a localhost content script and a `?epimoni_autofill=1` auto-run, so a fixture
 // page can be driven without a toolbar click. Never in a shipped build: it would mean filling
 // forms on any local page, which the single purpose does not cover.
 const DEV = process.argv.includes('--dev');
-const DIST = join(ROOT, 'dist');
+// `--target=firefox` builds for another browser into its own directory (platform/). The code
+// is the same for every target; only the manifest is transformed.
+const TARGET = targetFrom(process.argv);
+const DIST = join(ROOT, TARGET.dist);
 const read = (p) => readFile(join(ROOT, p), 'utf8');
 const load = (p) => import(pathToFileURL(join(ROOT, p)).href);
 const { FIELDS, SECTIONS } = await load('src/schema/fields.js');
@@ -85,10 +89,14 @@ if (DEV && process.env.EPIMONI_API) {
 }
 await writeFile(join(DIST, 'popup.html'), await read('src/popup/popup.html'));
 await writeFile(join(DIST, 'popup.js'), await read('src/popup/popup.js'));
-// The CV editor: the surface that makes the extension usable with no Epimoni account. It is
-// an ES module, so it keeps its imports and resolves them against dist/src/shared.
-await writeFile(join(DIST, 'options.html'), await read('src/options/options.html'));
-await writeFile(join(DIST, 'options.js'), await read('src/options/options.js'));
+// The dashboard: the CV editor (the surface that makes the extension usable with no Epimoni
+// account) and the application tracker, behind one menu. Its scripts are ES modules copied as
+// they are to dist/src/dashboard, where `../shared/` resolves exactly as it does in src/.
+await writeFile(join(DIST, 'dashboard.html'), await read('src/dashboard/dashboard.html'));
+await cp(join(ROOT, 'src/dashboard'), join(DIST, 'src/dashboard'), {
+  recursive: true,
+  filter: (f) => !f.endsWith('.html'),
+});
 /**
  * Validate the manifest against the Chrome rules that fail at *load* time rather than at
  * build time: the ones that cost a debugging round trip through chrome://extensions.
@@ -179,11 +187,15 @@ async function validateLocales(m) {
   for (const f of [
     'src/popup/popup.js',
     'src/popup/popup.html',
-    'src/options/options.js',
-    'src/options/options.html',
+    'src/dashboard/dashboard.html',
+    'src/dashboard/index.js',
+    'src/dashboard/cv.js',
+    'src/dashboard/applications.js',
     'src/content/index.js',
     'src/epimoni/pair.js',
     'src/epimoni/pair.html',
+    'src/epimoni/allow.js',
+    'src/epimoni/allow.html',
   ]) {
     const src = await read(f);
     for (const [, k] of src.matchAll(/\bt\('([a-z0-9_]+)'/g)) used.add(k);
@@ -287,10 +299,25 @@ if (DEV) {
   // a test has no user to click.
   manifest.host_permissions = [...manifest.host_permissions, ...LOCAL];
 }
-validateManifest(manifest, JSON.parse(await read(`_locales/${manifest.default_locale}/messages.json`)));
-await validateLocales(manifest);
+const built = TARGET.transform(manifest);
+validateManifest(built, JSON.parse(await read(`_locales/${built.default_locale}/messages.json`)));
+{
+  // The target's own load-time rules, and one every target shares: a content script the
+  // manifest declares must exist in the build. A missing one does not fail the load; the
+  // script just never runs, and on the site that means pairing silently stops working.
+  const problems = TARGET.validate(built);
+  for (const cs of built.content_scripts || [])
+    for (const f of cs.js || [])
+      if (!existsSync(join(DIST, f))) problems.push(`content script "${f}" is not in ${TARGET.dist}/`);
+  if (problems.length) {
+    console.error(`${TARGET.id} manifest validation failed:`);
+    for (const p of problems) console.error(`  - ${p}`);
+    process.exit(1);
+  }
+}
+await validateLocales(built);
 await validatePacksAndFillers();
-await writeFile(join(DIST, 'manifest.json'), JSON.stringify(manifest, null, 2));
+await writeFile(join(DIST, 'manifest.json'), JSON.stringify(built, null, 2));
 await cp(join(ROOT, '_locales'), join(DIST, '_locales'), { recursive: true });
 
 await cp(join(ROOT, 'icons'), join(DIST, 'icons'), { recursive: true });
@@ -320,11 +347,15 @@ await cp(join(ROOT, 'icons'), join(DIST, 'icons'), { recursive: true });
       else await visit(target);
     }
   };
-  for (const entry of ['background.js', 'options.js']) await visit(join(DIST, entry));
+  for (const entry of ['background.js', 'src/dashboard/index.js']) await visit(join(DIST, entry));
   if (problems.length) {
     console.error('module imports that do not resolve in dist/:');
     for (const m of problems) console.error(`  - ${m}`);
     process.exit(1);
   }
-  console.log('dist/ built:', fs.readdirSync(DIST).join(' '), '· module imports resolve');
+  console.log(
+    `${TARGET.dist}/ built (${TARGET.id}):`,
+    fs.readdirSync(DIST).join(' '),
+    '· module imports resolve',
+  );
 }

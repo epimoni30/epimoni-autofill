@@ -5,9 +5,8 @@
 // a `fill` message, rather than injecting the script from the page, because a content
 // script needs the isolated world to have `chrome.runtime` at all.
 //
-// The one thing it cannot exercise is the `externally_connectable` handshake: that listener
-// only accepts https://www.epimoni30.com, which would need a local TLS origin to fake. Its
-// allowlist is covered by test/pair.test.mjs instead.
+// The `externally_connectable` handshake is covered by test/pair.test.mjs, not here. The site
+// *bridge* is exercised here, on a page Playwright serves as https://www.epimoni30.com.
 
 import { createServer } from 'node:http';
 import { readFile, mkdtemp } from 'node:fs/promises';
@@ -435,6 +434,301 @@ await combo.close();
 await parcours.close();
 await indexed.close();
 
+// ── The CV's PDF, dropped into the form's CV upload ─────────────────────────────────────
+//
+// Kept against the active library entry in IndexedDB, sent to a page only once it turns out to
+// have a CV upload, and put into that upload and no other.
+const pdfText = '%PDF-1.4 e2e';
+const opener = await ctx.newPage();
+await opener.goto(`chrome-extension://${extId}/popup.html`);
+const askWorker = (msg) => opener.evaluate((m) => new Promise((r) => chrome.runtime.sendMessage(m, r)), msg);
+const pdfData = Buffer.from(pdfText).toString('base64');
+const notPdf = await askWorker({
+  type: 'cv:file:set',
+  id: 'cv-parcours',
+  name: 'photo.png',
+  mime: 'image/png',
+  data: pdfData,
+});
+check('a file that is not a PDF is refused by the worker', notPdf.error === 'type', JSON.stringify(notPdf));
+const kept = await askWorker({
+  type: 'cv:file:set',
+  id: 'cv-parcours',
+  name: 'Manon-Leroy-CV.pdf',
+  mime: 'application/pdf',
+  data: pdfData,
+});
+check('a PDF is kept against the active CV', kept.ok === true && kept.file?.name === 'Manon-Leroy-CV.pdf');
+const listed = await askWorker({ type: 'cv:list' });
+check(
+  'the library says which CV has a PDF',
+  listed.cvs?.find((c) => c.id === 'cv-parcours')?.file?.name === 'Manon-Leroy-CV.pdf',
+);
+
+const uploads = await fillPage('uploads.html');
+await uploads
+  .waitForFunction(() => document.getElementById('cv-picked').textContent !== '', { timeout: 3000 })
+  .catch(() => {});
+const upResult = await uploads.evaluate(async () => {
+  const zone = document.querySelector('#cv-zone input');
+  return {
+    picked: document.getElementById('cv-picked').textContent,
+    bytes: zone.files[0] ? await zone.files[0].text() : null,
+    type: zone.files[0]?.type || null,
+    others: [...document.querySelectorAll('input[type="file"]')]
+      .filter((i) => i !== zone && i.files.length)
+      .map((i) => i.name),
+    submitted: window.__submitted === true,
+  };
+});
+check(
+  'the PDF lands in the CV upload, read by the page on change',
+  upResult.picked === 'Manon-Leroy-CV.pdf',
+  upResult.picked,
+);
+check(
+  'its bytes arrive intact, as a PDF',
+  upResult.bytes === pdfText && upResult.type === 'application/pdf',
+  String(upResult.bytes),
+);
+check('no other upload gets a file', upResult.others.length === 0, upResult.others.join(', '));
+await uploads.getByRole('button', { name: undoLabel }).click();
+const upUndone = await uploads.evaluate(() => document.querySelector('#cv-zone input').files.length);
+check('undo empties the CV upload', upUndone === 0, String(upUndone));
+// A second click, the way an ATS that uploads on change and then empties its input looks.
+const clickFill = async (file) =>
+  sw.evaluate(async (f) => {
+    const tabs = await chrome.tabs.query({});
+    const tab = tabs.find((t) => t.url?.includes(f))?.id;
+    await chrome.tabs.sendMessage(tab, { type: 'fill' });
+  }, file);
+await clickFill('uploads.html');
+await uploads.waitForTimeout(400);
+const reattached = await uploads.evaluate(() => document.querySelector('#cv-zone input').files.length);
+check('after undo, a click attaches the PDF again', reattached === 1, String(reattached));
+await uploads.evaluate(() => {
+  document.querySelector('#cv-zone input').value = '';
+});
+await clickFill('uploads.html');
+await uploads.waitForTimeout(400);
+const twice = await uploads.evaluate(() => document.querySelector('#cv-zone input').files.length);
+check('an upload the page emptied after taking the PDF is not given it twice', twice === 0, String(twice));
+await uploads.close();
+
+// Without a PDF of the user's own, one is made from the CV: the same document, as a file.
+await askWorker({ type: 'cv:file:remove', id: 'cv-parcours' });
+const madeMeta = (await askWorker({ type: 'cv:list' })).cvs?.find((c) => c.id === 'cv-parcours')?.file;
+check(
+  'with no PDF of their own, the library offers one made from the CV',
+  madeMeta?.origin === 'generated' && madeMeta?.name === 'CV-Camille-Dupont-Mercier.pdf',
+  JSON.stringify(madeMeta),
+);
+const made = await fillPage('uploads.html');
+await made
+  .waitForFunction(() => document.getElementById('cv-picked').textContent !== '', { timeout: 3000 })
+  .catch(() => {});
+const madeResult = await made.evaluate(async () => {
+  const f = document.querySelector('#cv-zone input').files[0];
+  const src = f ? await f.text() : '';
+  return {
+    name: f?.name || null,
+    head: src.slice(0, 9),
+    tail: src.slice(-6),
+    hasName: src.includes('(Camille Dupont-Mercier)'),
+  };
+});
+check(
+  'the made PDF lands in the CV upload, a complete file carrying the CV',
+  madeResult.name === 'CV-Camille-Dupont-Mercier.pdf' &&
+    madeResult.head === '%PDF-1.4\n' &&
+    madeResult.tail === '%%EOF\n' &&
+    madeResult.hasName,
+  JSON.stringify(madeResult),
+);
+
+// ── Several CVs: the panel's picker ─────────────────────────────────────────────────────
+//
+// A second, thin CV: a name and nothing else, so nothing is made from it. Choosing it in the
+// panel refills this page from it, leaves the CV upload empty, and changes nothing for the
+// rest of the extension.
+await sw.evaluate(async () => {
+  const bag = await chrome.storage.local.get('epimoni');
+  const thin = {
+    id: 'cv-thin',
+    label: 'CV court',
+    source: 'local',
+    cv: { basics: { name: 'Inès Garnier', email: 'ines@example.org' } },
+    profile: {
+      full_name: 'Inès Garnier',
+      given_name: 'Inès',
+      family_name: 'Garnier',
+      email: 'ines@example.org',
+    },
+    updated_at: Date.now(),
+  };
+  await chrome.storage.local.set({ epimoni: { ...bag.epimoni, cvs: [...bag.epimoni.cvs, thin] } });
+});
+const pickerOptions = await made.evaluate(() =>
+  [...(document.getElementById('epimoni-panel')?.shadowRoot?.querySelectorAll('select option') || [])].map(
+    (o) => o.textContent,
+  ),
+);
+check('with one CV, the panel shows no picker', pickerOptions.length === 0, pickerOptions.join(', '));
+await made.close();
+
+const picked = await fillPage('uploads.html');
+const shadowSelect = picked.locator('#epimoni-panel select');
+const listed2 = await shadowSelect.locator('option').allTextContents();
+check(
+  'with two CVs, the panel lists both',
+  listed2.length === 2 && listed2.includes('CV court'),
+  listed2.join(', '),
+);
+// By keyboard, as a person would: \`selectOption\` dispatches synthetic events, and the panel
+// acts only on trusted ones, which is exactly what keeps a page's script from driving it.
+await shadowSelect.selectOption('cv-thin');
+const scripted = await picked.evaluate(() => document.querySelector('#cv-zone input').files.length);
+check('a scripted change of CV does nothing', scripted === 1, String(scripted));
+await shadowSelect.selectOption('cv-parcours');
+await shadowSelect.focus();
+// Type-ahead: on a closed select, typing an option's first letters selects it on every
+// platform, where the arrow keys open a native menu on macOS.
+await picked.keyboard.type('CV c');
+await picked.waitForTimeout(600);
+const afterPick = await picked.evaluate(() => ({
+  file: document.querySelector('#cv-zone input').files.length,
+  selected: document.getElementById('epimoni-panel')?.shadowRoot?.querySelector('select')?.value,
+}));
+check(
+  'choosing the thin CV refills the page from it: no PDF for a CV with nothing to print',
+  afterPick.file === 0 && afterPick.selected === 'cv-thin',
+  JSON.stringify(afterPick),
+);
+const stillActive = (await askWorker({ type: 'cv:list' })).cvs?.find((c) => c.active)?.id;
+check(
+  'the choice is for this page only: the active CV is unchanged',
+  stillActive === 'cv-parcours',
+  stillActive,
+);
+await picked.close();
+// The popup sets the CV the extension uses everywhere, which is the other half of the choice.
+const pop = await ctx.newPage();
+await pop.goto(`chrome-extension://${extId}/popup.html`);
+await pop.waitForSelector('#cv-pick', { timeout: 3000 }).catch(() => {});
+const popOptions = await pop.locator('#cv-pick option').count();
+await pop.selectOption('#cv-pick', 'cv-thin');
+await pop.waitForTimeout(300);
+const nowActive = (await askWorker({ type: 'cv:list' })).cvs?.find((c) => c.active)?.id;
+check(
+  'the popup lists both CVs and switches the active one',
+  popOptions === 2 && nowActive === 'cv-thin',
+  `${popOptions} / ${nowActive}`,
+);
+await pop.selectOption('#cv-pick', 'cv-parcours');
+await pop.waitForTimeout(300);
+await pop.close();
+await sw.evaluate(async () => {
+  const bag = await chrome.storage.local.get('epimoni');
+  await chrome.storage.local.set({
+    epimoni: { ...bag.epimoni, cvs: bag.epimoni.cvs.filter((c) => c.id !== 'cv-thin') },
+  });
+});
+
+// ── A form that grows after the fill ──────────────────────────────────────────────────────
+//
+// The next step of a wizard is filled as it appears, without another click; a field the user
+// emptied after the fill stays empty; and once they undo, the page is no longer watched.
+const steps = await fillPage('steps.html');
+const firstStep = await steps.evaluate(() => document.getElementById('e').value);
+check('the first step is filled on the click', firstStep === profile.email, firstStep);
+await steps.fill('#e', '');
+await steps.click('#next');
+await steps.waitForFunction(() => document.getElementById('t')?.value, { timeout: 3000 }).catch(() => {});
+const grown = await steps.evaluate(() => ({
+  tel: document.getElementById('t')?.value ?? null,
+  ville: document.getElementById('v')?.value ?? null,
+  email: document.getElementById('e').value,
+  panel: document.getElementById('epimoni-panel')?.shadowRoot?.textContent || '',
+  submitted: window.__submitted === true,
+}));
+check(
+  'the next step is filled as it appears, with no second click',
+  grown.tel === profile.phone && grown.ville === 'Nantes',
+  `${grown.tel} / ${grown.ville}`,
+);
+check('a field the user emptied is not filled again', grown.email === '', grown.email);
+const fiveFilled = await sw.evaluate(() => chrome.i18n.getMessage('panel_filled_many', ['5']));
+check('the panel counts the new fields', grown.panel.includes(fiveFilled), fiveFilled);
+check('nothing was submitted on the growing form', grown.submitted === false);
+
+// ── The application tracker ──────────────────────────────────────────────────────────────
+//
+// The fill recorded this page, once, and the re-fill brought its field count up to date. The
+// user says when they sent it: the extension never submits, so it cannot know.
+await steps.waitForTimeout(300);
+const stepApps = ((await askWorker({ type: 'app:list' })).apps || []).filter((a) =>
+  a.url.includes('steps.html'),
+);
+check(
+  'a fill adds the page to the tracker, once, and the re-fill updates it',
+  stepApps.length === 1 && stepApps[0].fields === 5 && stepApps[0].status === 'filled',
+  JSON.stringify(stepApps.map((a) => [a.fields, a.status, a.title])),
+);
+const sentLabel = await sw.evaluate(() => chrome.i18n.getMessage('panel_mark_applied'));
+await steps.locator('#epimoni-panel').getByRole('button', { name: sentLabel }).click();
+await steps.waitForTimeout(300);
+const afterSent = ((await askWorker({ type: 'app:list' })).apps || []).find((a) =>
+  a.url.includes('steps.html'),
+);
+check('"J\'ai envoyé ma candidature" marks it as sent', afterSent?.status === 'applied', afterSent?.status);
+const tracker = await ctx.newPage();
+await tracker.goto(`chrome-extension://${extId}/dashboard.html#candidatures`);
+await tracker.waitForSelector('.app', { timeout: 3000 }).catch(() => {});
+const trackerView = await tracker.evaluate(() => ({
+  cards: document.querySelectorAll('.app').length,
+  steps: [...document.querySelectorAll('.app')]
+    .find((c) => c.querySelector('a')?.href.includes('steps.html'))
+    ?.querySelector('select')?.value,
+  raw: [...document.body.innerText.matchAll(/\b(trk|panel|opt)_[a-z_]+/g)].map((m) => m[0]),
+}));
+check(
+  'the dashboard opens on the applications, listed with their status',
+  trackerView.cards >= 1 && trackerView.steps === 'applied' && trackerView.raw.length === 0,
+  JSON.stringify(trackerView),
+);
+// One page, two views: the menu switches between them, and the CV's save bar belongs to the
+// CV view only.
+const views = async () =>
+  tracker.evaluate(() => ({
+    cv: !document.querySelector('[data-view="cv"]').hidden,
+    apps: !document.querySelector('[data-view="candidatures"]').hidden,
+    bar: !document.querySelector('.bar').hidden,
+    current: document.querySelector('[aria-current="page"]')?.dataset.nav,
+    count: document.getElementById('nav-count').textContent,
+  }));
+const onApps = await views();
+check(
+  'the applications view shows alone, without the save bar, and the menu counts them',
+  onApps.apps && !onApps.cv && !onApps.bar && onApps.current === 'candidatures' && Number(onApps.count) >= 1,
+  JSON.stringify(onApps),
+);
+await tracker.click('[data-nav="cv"]');
+await tracker.waitForTimeout(200);
+const onCv = await views();
+check(
+  'the menu switches to the CV, with its save bar',
+  onCv.cv && !onCv.apps && onCv.bar && onCv.current === 'cv',
+  JSON.stringify(onCv),
+);
+await tracker.close();
+await steps.getByRole('button', { name: undoLabel }).click();
+await steps.click('#more');
+await steps.waitForTimeout(800);
+const afterStop = await steps.evaluate(() => document.getElementById('li')?.value ?? null);
+check('after undo, a new question is left alone', afterStop === '', String(afterStop));
+await steps.close();
+await opener.close();
+
 // ── The offer analysis, and the rule the whole design exists to keep ──────────────────────
 //
 // `/ml/analyse/cvVSoffer-doc` is metered: one free call an hour, then the paid passes. The
@@ -580,7 +874,7 @@ await sw.evaluate(() => {
 });
 await extPage.reload();
 const popupPlans = await extPage
-  .waitForSelector('#links a[href*="#pricing"]', { timeout: 5000 })
+  .waitForSelector('#ai-note a[href*="#pricing"]', { timeout: 5000 })
   .then((a) => a.getAttribute('href'))
   .catch(() => null);
 check('a spent hour shows the plans link in the popup', !!popupPlans, popupPlans || 'no link');
@@ -652,6 +946,125 @@ check(
   JSON.stringify(ended[0]?.meta || {}),
 );
 
+// ── The cover letter, from the AI tier ──────────────────────────────────────────────────
+//
+// One metered call, held to the form's limit, never written into the form on its own.
+const LETTER = ['Madame, Monsieur,', 'Votre annonce a retenu toute mon attention.', 'Cordialement.'];
+await stubWorker({ status: 200, body: { ml: { ml_id: 'ml-letter', content: { paragraphs: LETTER } } } });
+const letterCalls = () =>
+  sw.evaluate(() => (globalThis.__calls || []).filter((u) => u.includes('motivation/generate-doc')).length);
+const askLetter = () =>
+  extPage.evaluate(
+    () =>
+      new Promise((r) =>
+        chrome.runtime.sendMessage(
+          { type: 'letter', posting: { text: 'Annonce '.repeat(60), ok: true }, max_chars: 1500 },
+          r,
+        ),
+      ),
+  );
+const letterRes = await askLetter();
+check(
+  'a letter comes back as text, counted against the limit',
+  letterRes.ok === true &&
+    letterRes.text === LETTER.join('\n\n') &&
+    letterRes.limit === 1500 &&
+    letterRes.within,
+  JSON.stringify(letterRes).slice(0, 120),
+);
+await askLetter();
+check(
+  'asking again for the same letter makes no second call',
+  (await letterCalls()) === 1,
+  String(await letterCalls()),
+);
+
+const letterPage = await fillPage('letter.html');
+const letterCta = await sw.evaluate(() => chrome.i18n.getMessage('panel_letter_cta'));
+const insertLabel = await sw.evaluate(() => chrome.i18n.getMessage('panel_letter_insert'));
+// The free skills line, on the same page: the stub CV lists Python, and the advert names it.
+const skillsFound = await sw.evaluate(() => chrome.i18n.getMessage('panel_skills_found', ['1', '1']));
+const markLabel = await sw.evaluate(() => chrome.i18n.getMessage('panel_skills_mark'));
+const advertBefore = await letterPage.evaluate(() => document.getElementById('contents').innerHTML);
+const panelSkills = await letterPage.evaluate(
+  () => document.getElementById('epimoni-panel')?.shadowRoot?.textContent || '',
+);
+check(
+  "the panel says which of the CV's skills the advert names",
+  panelSkills.includes(skillsFound),
+  skillsFound,
+);
+await letterPage.locator('#epimoni-panel').getByRole('button', { name: markLabel }).click();
+const marked = await letterPage.evaluate(() => ({
+  ranges: CSS.highlights.get('epimoni-skill')?.size || 0,
+  text: [...(CSS.highlights.get('epimoni-skill') || [])].map((r) => r.toString()),
+  html: document.getElementById('contents').innerHTML,
+}));
+check(
+  "highlighting marks the skill in the advert without touching the page's markup",
+  marked.ranges === 1 && marked.text[0] === 'Python' && marked.html === advertBefore,
+  JSON.stringify({ ranges: marked.ranges, text: marked.text }),
+);
+const beforeInsert = await letterPage.evaluate(() => document.getElementById('lm').value);
+check('the fill leaves the letter box empty', beforeInsert === '', beforeInsert);
+await letterPage.locator('#epimoni-panel').getByRole('button', { name: letterCta }).click();
+await letterPage
+  .locator('#epimoni-panel')
+  .getByRole('button', { name: insertLabel })
+  .waitFor({ timeout: 3000 })
+  .catch(() => {});
+const shown = await letterPage.evaluate(() => ({
+  box: document.getElementById('lm').value,
+  panel: document.getElementById('epimoni-panel')?.shadowRoot?.textContent || '',
+}));
+check(
+  'the letter is shown with its count, and the box is still empty until the user inserts it',
+  shown.box === '' && shown.panel.includes('Votre annonce a retenu') && shown.panel.includes('/ 1500'),
+  shown.panel.slice(0, 160),
+);
+await letterPage.locator('#epimoni-panel').getByRole('button', { name: insertLabel }).click();
+const inserted = await letterPage.evaluate(() => ({
+  box: document.getElementById('lm').value,
+  submitted: window.__submitted === true,
+}));
+check(
+  '"Insérer" puts the letter in the box, and nothing is sent',
+  inserted.box === LETTER.join('\n\n') && !inserted.submitted,
+);
+await letterPage.getByRole('button', { name: undoLabel }).click();
+const letterUndone = await letterPage.evaluate(() => document.getElementById('lm').value);
+check('"Tout annuler" takes the letter back out', letterUndone === '', letterUndone.slice(0, 40));
+await letterPage.close();
+
+// The popup's "Rédiger la lettre de motivation": one click there, and the page is filled and the
+// letter written, with nothing more to press but "Insérer".
+await stubWorker({ status: 200, body: { ml: { ml_id: 'ml-letter-2', content: { paragraphs: LETTER } } } });
+const viaPopup = await ctx.newPage();
+await viaPopup.goto(`${base}/letter.html`, { waitUntil: 'load' });
+await sw.evaluate(async () => {
+  const tabs = await chrome.tabs.query({});
+  const tab = tabs.find((x) => x.url?.includes('letter.html'))?.id;
+  await chrome.scripting.executeScript({ target: { tabId: tab, allFrames: true }, files: ['content.js'] });
+  await chrome.tabs.sendMessage(tab, { type: 'fill', after: 'letter' });
+});
+await viaPopup
+  .locator('#epimoni-panel')
+  .getByRole('button', { name: insertLabel })
+  .waitFor({ timeout: 4000 })
+  .catch(() => {});
+const popupLetter = await viaPopup.evaluate(() => ({
+  shown: (document.getElementById('epimoni-panel')?.shadowRoot?.textContent || '').includes(
+    'Votre annonce a retenu',
+  ),
+  box: document.getElementById('lm').value,
+}));
+check(
+  "the popup's letter action fills the page and writes the letter, still waiting for Insérer",
+  popupLetter.shown && popupLetter.box === '',
+  JSON.stringify(popupLetter),
+);
+await viaPopup.close();
+
 // ── No account at all ────────────────────────────────────────────────────────────────────
 //
 // The extension has to work for somebody who has never signed in: the CV lives here, the
@@ -712,40 +1125,64 @@ const anonState = await extPage.evaluate(
   () => new Promise((r) => chrome.runtime.sendMessage({ type: 'state' }, r)),
 );
 check(
-  'an unpaired install still reports a usable CV',
-  anonState?.has_cv === true && anonState?.mode === 'anonymous',
-  JSON.stringify({ has_cv: anonState?.has_cv, mode: anonState?.mode }),
+  'an unpaired install still reports a usable CV, and no AI',
+  anonState?.has_cv === true && anonState?.ai === false,
+  JSON.stringify({ has_cv: anonState?.has_cv, ai: anonState?.ai }),
 );
 
+// The AI is an Epimoni account's: refused here before any identity is resolved, so a visitor
+// without one opens no session and sends nothing.
 const anonRes = await sendAnalyse('Recherche developpeur Go. '.repeat(30));
-const anonCalls = await sw.evaluate(() => globalThis.__calls || []);
-check(
-  'an anonymous user gets the offer analysis',
-  anonRes?.ok === true && anonRes?.teaser?.score === 58,
-  JSON.stringify(anonRes?.teaser || anonRes),
-);
-check(
-  'the anonymous session is opened exactly once',
-  anonCalls.filter((u) => u.includes('anonymous-login')).length === 1,
-  anonCalls.join(' '),
-);
-check(
-  'and costs exactly one metered call',
-  anonCalls.filter((u) => u.includes('cvVSoffer-doc')).length === 1,
-);
-check(
-  'no link to the site is offered for a run the site cannot open',
-  anonRes?.linkable === false && anonRes?.mode === 'anonymous',
-);
-
 const anonTier = await extPage.evaluate(
   () => new Promise((r) => chrome.runtime.sendMessage({ type: 'tier' }, r)),
 );
+const anonCalls = await sw.evaluate(() => globalThis.__calls || []);
 check(
-  'the anonymous tier is reported as metered and free',
-  anonTier?.paid === false && anonTier?.mode === 'anonymous',
-  JSON.stringify(anonTier),
+  'without an account the analysis is refused as such',
+  anonRes?.kind === 'not-paired',
+  JSON.stringify(anonRes),
 );
+// Usage events are left out: the previous page reports as it closes, which can land after the
+// reset above. What must not happen here is a session or a model call.
+const anonAi = anonCalls.filter((u) => !u.includes('/api/v1/events'));
+check('and no session is opened, no model call made', anonAi.length === 0, anonAi.join(' '));
+check(
+  'the tier says there is no AI, without asking the server',
+  anonTier?.ai === false && anonTier?.mode === 'none',
+);
+
+// The popup is a menu: fill, the AI actions, the dashboard. Without an account the AI actions
+// stay visible and disabled, with the link that turns them on.
+await extPage.reload();
+await extPage.waitForSelector('#ai-note a', { timeout: 3000 }).catch(() => {});
+const anonPopup = await extPage.evaluate(() => ({
+  fill: document.getElementById('fill').disabled,
+  analyse: document.getElementById('analyse').disabled,
+  letter: document.getElementById('letter').disabled,
+  connect: document.querySelector('#ai-note a')?.href || null,
+}));
+check(
+  'the popup offers the fill and shows the AI actions disabled, with the way to connect',
+  !anonPopup.fill && anonPopup.analyse && anonPopup.letter && anonPopup.connect?.includes('epimoni30.com'),
+  JSON.stringify(anonPopup),
+);
+
+// And the same in the panel: the analysis button is there, disabled, with the same link.
+const anonPage = await fillPage('letter.html');
+const anonPanel = await anonPage.evaluate(() => {
+  const root = document.getElementById('epimoni-panel')?.shadowRoot;
+  const buttons = [...(root?.querySelectorAll('button') || [])];
+  return {
+    disabled: buttons.filter((b) => b.disabled).length,
+    links: [...(root?.querySelectorAll('a') || [])].filter((a) => a.href.includes('extension-chrome')).length,
+  };
+});
+check(
+  'the panel shows the analysis and the letter disabled, each with the way to connect',
+  anonPanel.disabled === 2 && anonPanel.links >= 2,
+  JSON.stringify(anonPanel),
+);
+await anonPage.close();
 
 // ── The CV editor ────────────────────────────────────────────────────────────────────────
 //
@@ -753,7 +1190,7 @@ check(
 // CV can be created, so a key that fails to resolve or a save that does not round-trip breaks
 // the whole standalone path, and neither throws.
 const options = await ctx.newPage();
-await options.goto(`chrome-extension://${extId}/options.html`);
+await options.goto(`chrome-extension://${extId}/dashboard.html`);
 await options.waitForTimeout(500);
 
 const opt = await options.evaluate(() => {
@@ -938,6 +1375,7 @@ const readPopup = () =>
       raw: (text.match(/__MSG_\w+__|\bpopup_\w+|\bfield_\w+/g) || []).slice(0, 5),
       words: text.trim().split(/\s+/).length,
       buttons: [...document.querySelectorAll('button')].map((b) => b.textContent).join('|'),
+      fillDisabled: document.getElementById('fill')?.disabled === true,
       lang: document.documentElement.lang,
     };
   });
@@ -952,8 +1390,8 @@ check(
   `${empty.words} words, ${empty.unresolved.join(', ')}`,
 );
 check(
-  'and offers the editor rather than only naming an account it lacks',
-  /CV/i.test(empty.buttons),
+  'and offers the dashboard, with nothing to fill yet',
+  empty.fillDisabled && /tableau de bord|dashboard|panel/i.test(empty.buttons),
   empty.buttons,
 );
 check('the popup leaks no raw message keys when empty', empty.raw.length === 0, empty.raw.join(', '));
@@ -1032,6 +1470,107 @@ check(
   JSON.stringify(afterAccept),
 );
 await pairPage.close();
+
+// The site bridge, the whole way: a page served as https://www.epimoni30.com (Playwright
+// answers the request, so no certificate is needed and the origin is the real one), the
+// declared content script, the worker's `fromBridge`, the confirmation page and the answer
+// posted back. This is the path Firefox pairs through, and the one that needs no extension id.
+{
+  await sw.evaluate(async () => {
+    await chrome.storage.local.remove('epimoni');
+    await chrome.storage.session.remove(['pair_pending', 'pair_cooldown_until']);
+  });
+  const site = await ctx.newPage();
+  await site.route('https://www.epimoni30.com/**', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'text/html',
+      body: '<!doctype html><title>site</title><p>site</p>',
+    }),
+  );
+  await site.goto('https://www.epimoni30.com/fr/extension-chrome');
+  const ask = (msg) =>
+    site.evaluate(
+      (m) =>
+        new Promise((resolve) => {
+          const id = crypto.randomUUID();
+          const timer = setTimeout(() => resolve({ timeout: true }), 3000);
+          addEventListener('message', (e) => {
+            if (e.data?.epimoni === 'response' && e.data.id === id) {
+              clearTimeout(timer);
+              resolve(e.data.res);
+            }
+          });
+          postMessage({ epimoni: 'request', id, msg: m }, location.origin);
+        }),
+      msg,
+    );
+  check(
+    'bridge: the site can see it is there before asking',
+    await site.evaluate(() => document.documentElement.hasAttribute('data-epimoni-bridge')),
+  );
+  const pong = await ask({ type: 'epimoni:ping' });
+  check(
+    'bridge: a ping from the site is answered',
+    pong?.ok === true && !!pong.version,
+    JSON.stringify(pong),
+  );
+
+  const opened = ctx.waitForEvent('page', { timeout: 5000 }).catch(() => null);
+  const req = await ask({
+    type: 'epimoni:pair',
+    cv: { basics: { name: 'Léa Bridge', email: 'lea@example.org' } },
+    cv_label: 'CV du pont',
+  });
+  check(
+    'bridge: a pairing is a request to confirm',
+    req?.ok === true && req.mode === 'confirm',
+    JSON.stringify(req),
+  );
+  const stored = await sw.evaluate(async () => (await chrome.storage.local.get('epimoni')).epimoni || null);
+  check('bridge: nothing is stored before the user accepts', stored === null);
+  const confirm = await opened;
+  check('bridge: the confirmation page opens', !!confirm && confirm.url().includes(`pair.html#${req?.id}`));
+  if (confirm) {
+    await confirm.waitForFunction(() => !document.getElementById('accept').disabled, { timeout: 5000 });
+    await confirm.click('#accept');
+    await confirm.waitForTimeout(500);
+  }
+  const status = await ask({ type: 'epimoni:pair-status', id: req?.id });
+  check('bridge: the site reads the outcome back', status?.status === 'accepted', JSON.stringify(status));
+  const names = await sw.evaluate(async () =>
+    ((await chrome.storage.local.get('epimoni')).epimoni?.cvs || []).map((c) => c.cv?.basics?.name),
+  );
+  check('bridge: the accepted CV is in the library', names.includes('Léa Bridge'), JSON.stringify(names));
+  const refused = await ask({ type: 'epimoni:devfill', urlIncludes: '' });
+  check('bridge: the dev-only hook does not cross', refused?.timeout === true, JSON.stringify(refused));
+  await confirm?.close();
+  await site.close();
+}
+
+// The consent page, in a Chrome build: nothing is declared optional there, so it asks
+// nothing and says so. What it asks on Firefox is test/consent.test.mjs's.
+{
+  const allow = await ctx.newPage();
+  const errors = [];
+  allow.on('pageerror', (e) => errors.push(String(e)));
+  await allow.goto(`chrome-extension://${extId}/src/epimoni/allow.html`);
+  await allow
+    .waitForFunction(() => !document.getElementById('result').hidden, { timeout: 5000 })
+    .catch(() => {});
+  const shown = await allow.evaluate(() => ({
+    result: document.getElementById('result').textContent,
+    title: document.querySelector('h1').textContent,
+  }));
+  const done = await sw.evaluate(() => chrome.i18n.getMessage('consent_done'));
+  check(
+    'consent page: on Chrome it has nothing to ask',
+    shown.result === done && !!shown.title,
+    JSON.stringify(shown),
+  );
+  check('consent page: no script errors', errors.length === 0, errors.join(' | '));
+  await allow.close();
+}
 
 await ctx.close();
 server.close();

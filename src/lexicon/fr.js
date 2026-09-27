@@ -357,6 +357,38 @@ export default {
       any: ['langues', 'langues parlees', 'vos langues', 'niveau de langue'],
       not: ['programmation', 'informatique'],
     },
+    // A file input only (the registry's `file` shape). Every other upload on the form (the
+    // letter, a diploma, a photo, "autre document") names itself, and any of those words
+    // rules the CV out, even beside it: one box for "CV et lettre" is not ours to guess.
+    cv_file: {
+      any: [
+        'cv',
+        'curriculum vitae',
+        'votre cv',
+        'joindre votre cv',
+        'deposer votre cv',
+        'deposez votre cv',
+        'telecharger votre cv',
+        'importer votre cv',
+        'ajouter votre cv',
+      ],
+      not: [
+        'lettre',
+        'motivation',
+        'diplome',
+        'diplomes',
+        'photo',
+        'identite',
+        'portfolio',
+        'autre',
+        'autres',
+        'complementaire',
+        'complementaires',
+        'justificatif',
+        'attestation',
+        'recommandation',
+      ],
+    },
     'work.position': {
       any: [
         'poste',
