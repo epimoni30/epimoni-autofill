@@ -9,10 +9,9 @@ carries the same number, and the release workflow refuses a tag that does not ma
 
 ## [Unreleased]
 
-## [0.1.0] - Unreleased
+## [0.1.0] - 2026-09-28
 
-First public version. The heading carries the version already, so the release workflow's
-notes come from this section when `v0.1.0` is tagged; set the date then.
+First public version.
 
 ### Security
 
