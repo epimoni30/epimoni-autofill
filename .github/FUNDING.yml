@@ -1,0 +1,3 @@
+# The "Sponsor" button on the repository page. Epimoni funds this project; see "Sponsor" in
+# README.md. Shown only while Settings > General > Features > Sponsorships is ticked.
+custom: ["https://www.epimoni30.com"]

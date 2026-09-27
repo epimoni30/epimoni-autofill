@@ -134,3 +134,11 @@ else, write to contact.epimoni30@gmail.com.
 
 [Apache-2.0](LICENSE). The licence doesn't cover the Epimoni name or logo, so a fork has to
 replace them before it's published. See [TRADEMARK.md](TRADEMARK.md).
+
+## Sponsor
+
+Epimoni Autofill is sponsored by [Epimoni](https://www.epimoni30.com), which pays for its
+development and runs the API behind the offer analysis. Epimoni makes AI career tools for job
+seekers: CV analysis, cover letters, interview practice and salary negotiation. If the
+extension saves you time, [epimoni30.com](https://www.epimoni30.com) is the best way to
+support it.
