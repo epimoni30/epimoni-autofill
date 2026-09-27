@@ -4,7 +4,7 @@
 
 ## Checklist
 
-- [ ] `npm run check` passes locally: lint, unit tests, measure, build, e2e.
+- [ ] `npm run check` passes locally: lint, unit tests, measure, guard, playground, build, e2e.
 - [ ] `npm run measure` still reports **0 wrong fills**. If fill rate moved, the numbers are in the description.
 - [ ] A new field or board comes with a fixture annotated with `data-expect`, or a trap with `data-expect="none"`.
 - [ ] No new permission or host pattern in `manifest.json`, or it was discussed in an issue first.

@@ -24,10 +24,10 @@ Node 20 or later.
 ```bash
 npm ci
 npx playwright install chromium   # the full Chromium: headless-shell cannot load extensions
-npm run check                     # lint, unit tests, fill measurement, build, end-to-end
+npm run check                     # lint, unit tests, fill measurement, filler guard, playground, build, end-to-end
 ```
 
-`npm run check` is what CI runs, and a pull request needs it green. It leaves a dev build in
+`npm run check` is what CI runs (the `check` job), and a pull request can't be merged until it's green. It leaves a dev build in
 `dist/`, so run `npm run build` before loading the extension unpacked for anything but a test.
 
 Formatting and lint are [Biome](https://biomejs.dev): `npm run format` fixes what can be fixed
@@ -133,11 +133,28 @@ the production API.
 
 ## Pull requests
 
-- For anything beyond a small fix, open an issue first so we can agree on the approach.
-- Keep one change per pull request. A formatting-only change goes in its own commit.
-- Write commit messages that say *why*, not only what. `git log` has examples.
+Anyone can open an issue or a pull request. Here's how a change gets in:
+
+1. For anything beyond a small fix, open an issue first so we can agree on the approach.
+2. Fork the repository, make your change on a branch of your fork, and open a pull request
+   against `main`. Nobody pushes to `main` directly, maintainers included.
+3. CI runs `npm run check` on the pull request. On your first contribution, a maintainer has to
+   approve the workflow run before it starts, so don't worry if it sits waiting for a while.
+4. The `check` job has to pass and every review conversation has to be resolved.
+5. A maintainer merges it. Only the Epimoni maintainer account can merge into `main`, and
+   every merge is a squash, so your pull request lands as one commit.
+
+Because of the squash, the pull request is what we review and keep:
+
+- One change per pull request. A formatting-only change gets its own pull request, not just
+  its own commit, since commits inside a pull request are merged together.
+- Give the pull request a title that says what changes and a description that says *why*.
+  The title becomes the commit message on `main`.
 - Add a line under "Unreleased" in [CHANGELOG.md](CHANGELOG.md) for anything a user would
   notice.
+- In `.github/workflows/`, pin every action to a full commit SHA with the version as a
+  comment (`uses: actions/checkout@<sha> # v4`), like the existing ones. Dependabot keeps
+  those pins up to date.
 
 ## Licence and brand
 
