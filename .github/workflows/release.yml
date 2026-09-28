@@ -57,37 +57,43 @@ jobs:
           grep -q 'const EPIMONI_DEV = false' dist/content.js
           grep -q 'globalThis.EPIMONI_DEV = false' dist/background.js
 
-      - name: Zip dist/
+      # Everything the release job attaches goes into one directory, written by absolute path,
+      # and is checked here. v0.1.0's first run uploaded three separate paths and the Firefox
+      # zip never reached the artifact although its step passed; the release job only found
+      # out when `gh` could not attach it. Now a missing or empty file fails this job, the
+      # listing is in the log, and the upload takes a single directory.
+      - name: Package the zips and the release notes
         run: |
-          name="epimoni-autofill-${GITHUB_REF_NAME}.zip"
-          (cd dist && zip -qr "../$name" .)
-          echo "ZIP=$name" >> "$GITHUB_ENV"
+          out="$GITHUB_WORKSPACE/release"
+          name="epimoni-autofill-${GITHUB_REF_NAME}"
+          rm -rf "$out" && mkdir -p "$out"
 
-      # The same source for addons.mozilla.org: only the manifest differs (platform/firefox.mjs).
-      - name: Zip dist-firefox/
-        run: |
+          (cd dist && zip -qr "$out/$name.zip" .)
+
+          # The same source for addons.mozilla.org: only the manifest differs (platform/firefox.mjs).
           node build.mjs --target=firefox
-          name="epimoni-autofill-${GITHUB_REF_NAME}-firefox.zip"
-          (cd dist-firefox && zip -qr "../$name" .)
-          echo "ZIP_FIREFOX=$name" >> "$GITHUB_ENV"
+          (cd dist-firefox && zip -qr "$out/$name-firefox.zip" .)
 
-      # Release notes: the CHANGELOG section for this version, if one exists.
-      - name: Release notes from CHANGELOG.md
-        run: |
+          # Release notes: the CHANGELOG section for this version, if one exists.
           awk -v v="${GITHUB_REF_NAME#v}" '
             $0 ~ "^## \\[" v "\\]" { on = 1; next }
             on && /^## \[/ { exit }
             on { print }
-          ' CHANGELOG.md > notes.md
-          [ -s notes.md ] || echo "See CHANGELOG.md." > notes.md
+          ' CHANGELOG.md > "$out/notes.md"
+          [ -s "$out/notes.md" ] || echo "See CHANGELOG.md." > "$out/notes.md"
+
+          ls -la "$out"
+          for f in "$name.zip" "$name-firefox.zip" notes.md; do
+            if [ ! -s "$out/$f" ]; then
+              echo "::error::release/$f is missing or empty"
+              exit 1
+            fi
+          done
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: release
-          path: |
-            ${{ env.ZIP }}
-            ${{ env.ZIP_FIREFOX }}
-            notes.md
+          path: release/
           if-no-files-found: error
 
   release:
@@ -99,8 +105,12 @@ jobs:
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: release
+          path: release
 
       - name: GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" "epimoni-autofill-${GITHUB_REF_NAME}.zip" "epimoni-autofill-${GITHUB_REF_NAME}-firefox.zip" --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --notes-file notes.md --verify-tag
+        run: |
+          ls -la release
+          name="epimoni-autofill-${GITHUB_REF_NAME}"
+          gh release create "$GITHUB_REF_NAME" "release/$name.zip" "release/$name-firefox.zip" --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --notes-file release/notes.md --verify-tag
