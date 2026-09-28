@@ -1163,7 +1163,18 @@ const anonPopup = await extPage.evaluate(() => ({
 }));
 check(
   'the popup offers the fill and shows the AI actions disabled, with the way to connect',
-  !anonPopup.fill && anonPopup.analyse && anonPopup.letter && anonPopup.connect?.includes('epimoni30.com'),
+  !anonPopup.fill &&
+    anonPopup.analyse &&
+    anonPopup.letter &&
+    (() => {
+      if (!anonPopup.connect) return false;
+      try {
+        const { hostname } = new URL(anonPopup.connect);
+        return hostname === 'epimoni30.com' || hostname.endsWith('.epimoni30.com');
+      } catch {
+        return false;
+      }
+    })(),
   JSON.stringify(anonPopup),
 );
 
