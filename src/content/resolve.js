@@ -124,6 +124,10 @@ export function createResolver({ lexicons, autocomplete = {} }) {
   }
 
   function shapeAllows(key, bundle) {
+    // A file input and a file field only ever meet each other: no text lands in a file
+    // picker, and no file is typed into a text box.
+    if (bundle.type === 'file' || fieldOf(key)?.shape === 'file')
+      return bundle.type === 'file' && fieldOf(key)?.shape === 'file';
     // A radio group is a closed option list, exactly like a select, and is gated by the same
     // key list: free text has nowhere to go in either.
     const isSelect = bundle.tag === 'select' || bundle.tag === 'radiogroup';

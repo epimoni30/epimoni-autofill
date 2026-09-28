@@ -62,8 +62,17 @@ async function main() {
     el('accept').disabled = false;
   }, 800);
 
+  // On a browser that asks for data-collection consent (Firefox), an account pairing is
+  // where the AI turns on, so the Accept click also asks for it. It has to be the first thing
+  // the handler does: an `await` before it would lose the user gesture. The pairing does not
+  // wait on the answer: a refusal leaves filling as it is and the AI off, askable later.
+  const consent = Array.isArray(req.consent) ? req.consent : [];
+  if (consent.length) para(t('consent_pair_note'), 'muted');
+
   const decide = (type) => async (e) => {
     if (!e.isTrusted) return;
+    if (type === 'pair:accept' && consent.length)
+      chrome.permissions.request({ data_collection: consent }).catch(() => {});
     el('accept').disabled = true;
     el('refuse').disabled = true;
     const res = await send({ type, id });

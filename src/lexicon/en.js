@@ -326,6 +326,34 @@ export default {
       any: ['languages', 'languages spoken', 'language level'],
       not: ['programming'],
     },
+    // A file input only. "Resume" here is the CV; the French summary sense cannot reach a
+    // file picker, because the `file` shape admits no other key.
+    cv_file: {
+      any: [
+        'resume',
+        'cv',
+        'curriculum vitae',
+        'resume cv',
+        'upload resume',
+        'upload your resume',
+        'attach resume',
+        'attach your resume',
+      ],
+      not: [
+        'cover',
+        'letter',
+        'transcript',
+        'portfolio',
+        'photo',
+        'diploma',
+        'certificate',
+        'other',
+        'additional',
+        'supporting',
+        'reference',
+        'references',
+      ],
+    },
     'work.position': {
       any: ['job title', 'title', 'position', 'position title', 'role', 'job'],
       not: [

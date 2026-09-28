@@ -1,6 +1,7 @@
 <!doctype html>
-<!-- The CV the extension fills from, and the only surface that can create one.
-     `lang` is set at runtime from chrome.i18n.getUILanguage(). -->
+<!-- The extension's own page: the CV it fills from (the only surface that can create one) and
+     the applications it filled, behind one menu. `lang` is set at runtime from
+     chrome.i18n.getUILanguage(); the view is the hash: #cv (default) or #candidatures. -->
 <html>
 <meta charset="utf-8">
 <title>Epimoni</title>
@@ -15,7 +16,20 @@
   }
   * { box-sizing: border-box; }
   body { margin: 0; padding: 28px 16px 80px; font: 14px/1.55 system-ui, -apple-system, sans-serif; color: var(--fg); background: var(--bg); }
-  main { max-width: 760px; margin: 0 auto; }
+  a { color: var(--accent); }
+  .shell { max-width: 1040px; margin: 0 auto; display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 28px; align-items: start; }
+  main { max-width: 800px; min-width: 0; }
+  .menu { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 2px; }
+  .menu .brand { font-weight: 700; font-size: 15px; margin: 2px 10px 12px; }
+  .menu a { display: flex; justify-content: space-between; gap: 8px; padding: 8px 10px; border-radius: 8px; color: var(--fg); text-decoration: none; }
+  .menu a:hover { background: var(--card); }
+  .menu a[aria-current="page"] { background: var(--card); color: var(--accent); font-weight: 600; box-shadow: inset 0 0 0 1px var(--line); }
+  .menu .count { color: var(--muted); font-weight: 400; font-size: 12px; align-self: center; }
+  @media (max-width: 760px) {
+    .shell { grid-template-columns: 1fr; gap: 14px; }
+    .menu { position: static; flex-direction: row; flex-wrap: wrap; align-items: center; }
+    .menu .brand { width: 100%; margin: 0 4px 6px; }
+  }
   h1 { font-size: 20px; margin: 0 0 4px; }
   h2 { font-size: 15px; margin: 0 0 10px; }
   .muted { color: var(--muted); }
@@ -34,7 +48,6 @@
   button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
   button.link { border: 0; background: none; color: var(--accent); padding: 2px 4px; }
   button.danger { color: #b91c1c; }
-  a { color: var(--accent); }
   .entry { border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin-bottom: 10px; }
   .entry-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
   .entry-head b { font-size: 12px; color: var(--muted); font-weight: 600; }
@@ -55,9 +68,30 @@
     .cv-row { flex-wrap: wrap; }
     .cv-row .grow { flex: 1 0 100%; }
   }
+  /* The applications view. */
+  .trk-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 16px 0 12px; }
+  .chip { border-radius: 999px; padding: 3px 11px; font-size: 13px; }
+  .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .apps { list-style: none; margin: 0; padding: 0; }
+  .app { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; }
+  .app-head { display: flex; gap: 12px; align-items: flex-start; }
+  .app-main { flex: 1; min-width: 0; }
+  .app-title { font-weight: 600; overflow-wrap: anywhere; }
+  .app-meta { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+  .app-foot { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .app select { width: auto; }
+  .empty { background: var(--card); border: 1px dashed var(--line); border-radius: 12px; padding: 24px; text-align: center; }
+  @media (max-width: 560px) { .app-head { flex-direction: column; } }
 </style>
 <body>
+<div class="shell">
+<nav class="menu" aria-label="Epimoni">
+  <div class="brand">Epimoni</div>
+  <a href="#cv" data-nav="cv"><span data-i18n="dash_menu_cv"></span></a>
+  <a href="#candidatures" data-nav="candidatures"><span data-i18n="dash_menu_applications"></span><span id="nav-count" class="count"></span></a>
+</nav>
 <main>
+<div data-view="cv">
   <h1 data-i18n="opt_title"></h1>
   <p class="muted" data-i18n="opt_intro" style="margin-top:0"></p>
 
@@ -82,6 +116,19 @@
       <button type="button" id="new-cv" data-i18n="opt_library_new"></button>
       <span id="library-msg" class="muted"></span>
     </div>
+  </section>
+
+  <section id="file-card">
+    <h2 data-i18n="opt_file_heading"></h2>
+    <p class="muted" style="margin:-4px 0 10px" data-i18n="opt_file_intro"></p>
+    <div class="actions">
+      <span id="cv-file-name" class="grow"></span>
+      <button type="button" id="cv-file-preview" data-i18n="opt_file_preview" hidden></button>
+      <button type="button" id="cv-file-choose"></button>
+      <button type="button" id="cv-file-remove" class="link" data-i18n="opt_file_use_generated" hidden></button>
+      <input id="cv-file-input" type="file" accept="application/pdf,.pdf" hidden>
+    </div>
+    <div id="cv-file-msg" class="muted" style="margin-top:6px"></div>
   </section>
 
   <section>
@@ -146,14 +193,30 @@
       <button type="button" id="forget" class="danger" data-i18n="opt_forget"></button>
     </div>
   </section>
-</main>
+</div>
 
-<div class="bar">
+<div data-view="candidatures" hidden>
+  <h1 data-i18n="trk_title"></h1>
+  <p class="muted" style="margin-top:0" data-i18n="trk_intro"></p>
+  <div class="trk-bar">
+    <div id="trk-filters" class="trk-bar grow" style="margin:0"></div>
+    <button type="button" id="trk-export" data-i18n="trk_export"></button>
+  </div>
+  <ul id="trk-apps" class="apps"></ul>
+  <div id="trk-empty" class="empty muted" data-i18n="trk_empty" hidden></div>
+  <div class="trk-bar">
+    <button type="button" id="trk-clear" class="link danger" data-i18n="trk_clear" hidden></button>
+  </div>
+</div>
+</main>
+</div>
+
+<div class="bar" data-view="cv">
   <div class="bar-inner">
     <span id="saved" class="muted grow"></span>
     <button type="button" id="save" class="primary" data-i18n="opt_save"></button>
   </div>
 </div>
-<script type="module" src="options.js"></script>
+<script type="module" src="src/dashboard/index.js"></script>
 </body>
 </html>

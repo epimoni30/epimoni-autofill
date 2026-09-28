@@ -276,3 +276,31 @@ test('a free-text key keeps its shape rule inside a block', () => {
   assert.equal(blockKey('entreprise', work0, { tag: 'select' }), 'skip:shape-refused');
   assert.equal(blockKey('date de debut', work0, { tag: 'select', part: 'year' }), 'work.start@0');
 });
+
+// A file input and the `file` shape only ever meet each other. A CV upload labelled "Votre
+// CV" is the document, a text box labelled the same is not, and the upload beside the
+// letter is the letter's, whatever else it says.
+test('a file input takes the CV file and nothing else', () => {
+  assert.equal(key('votre cv', { type: 'file' }), 'cv_file');
+  assert.equal(key('upload your resume', { type: 'file' }), 'cv_file');
+  assert.equal(key('sube tu cv', { type: 'file' }), 'cv_file');
+  assert.equal(key('', { type: 'file', nearby: 'deposez votre cv ici pdf' }), 'cv_file');
+  // Text keys are refused on shape, not matched.
+  assert.equal(key('adresse e mail', { type: 'file' }), 'skip:shape-refused');
+});
+
+test('a text control never takes the CV file', () => {
+  assert.notEqual(key('votre cv'), 'cv_file');
+  assert.notEqual(key('resume', { tag: 'textarea', type: 'textarea' }), 'cv_file');
+});
+
+test('another document on the form rules the CV out', () => {
+  for (const label of [
+    'cv et lettre de motivation',
+    'autre document',
+    'resume cover letter',
+    'additional documents resume',
+    'otros documentos cv',
+  ])
+    assert.notEqual(key(label, { type: 'file' }), 'cv_file', label);
+});

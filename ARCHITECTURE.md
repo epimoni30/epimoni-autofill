@@ -21,6 +21,7 @@ npm run lint    # Biome format + lint check (CI runs `biome ci`)
 npm run format  # apply Biome formatting and safe fixes
 npm run check   # lint + test + measure + guard + build + e2e
 npm run package # production build → epimoni-autofill-v<version>.zip, refuses a dev build
+npm run build:firefox / package:firefox   the same, for Firefox (`build.mjs --target=firefox`)
 npm run playground        # build site/, the public playground (playground:serve to open it)
 npm run playground:test   # drive the built playground; its verdicts must equal measure's
 ```
@@ -28,7 +29,7 @@ npm run playground:test   # drive the built playground; its verdicts must equal 
 `npm run check` leaves a dev build in `dist/`: its last step is `e2e`, which builds with
 `--dev`. Run `npm run build` before loading it as anything but a test.
 
-`npm run e2e` drives the built extension in a real Chromium: 78 checks, headless, a few
+`npm run e2e` drives the built extension in a real Chromium: 121 checks, headless, a few
 seconds. Two things make that work and are easy to undo by accident:
 
 - `channel: 'chromium'`, not `headless: false`. Since Playwright 1.49 the default headless
@@ -49,23 +50,30 @@ be shared across a workspace.
 ── the free core: no account, no token, no network ─────────────────────────────────────────
 src/shared/cvdoc.js     the CV document: read it, write it, flatten it, translate it to JSON Résumé
 src/shared/store.js     the CV library and everything else remembered; one writer, one copy
+src/shared/files.js     the PDF a user attached to a CV, in the extension's own IndexedDB
+src/shared/pdf.js       a CV as a PDF, written by hand: the file sent when the user attached none
+src/shared/applications.js  the application tracker: one entry per job page filled, local only
 src/background/index.js the core worker: the library, the fill profile, the toolbar click
-src/options/            the CV page, the only surface that can create a CV
+src/dashboard/          the extension's one page, behind a menu: the CV (cv.js, the only surface
+                        that can create one) and the applications (applications.js)
 src/content/fill.js     one fill of one page: scan, describe, resolve, write, fillers wired in
 src/content/dom.js      finding, describing and writing to controls
 src/content/resolve.js  described control → canonical profile key (pure)
 src/content/guard.js    the only API a filler acts through
 src/content/posting.js  the job advert on the page → text worth analysing
+src/content/keywords.js which of the CV's skills the advert names, and marking them in the page
 src/schema/fields.js    every canonical field: its shape, and where it lives in JSON Résumé
 src/lexicon/<lang>.js   one language pack each: phrases, section headings, dates; index.js lists them
 src/fillers/            site and widget fillers: evidence and guarded writers, never decisions
 tools/bundle.mjs        ES modules → the content script; enforces the filler contract
+platform/               per-browser manifest transforms (chrome, firefox); build.mjs --target=
 
 ── the Epimoni add-on: everything that talks to epimoni30.com ──────────────────────────────
 src/epimoni/worker.js   pairing with the site, the offer analysis, the allowance, reporting
 src/epimoni/identity.js which token a metered call goes out with, and what it may do
 src/epimoni/api.js      the backend, named statuses, and the anonymous session
 src/epimoni/telemetry.js  counts-only usage events, riding on a token already held
+src/epimoni/bridge.js   the site's door on every browser: postMessage ↔ worker, forwards ping/pair/pair-status only
 ```
 
 Three places define what the engine knows, and each has one job. The registry
@@ -79,15 +87,19 @@ is usually a pack's phrases and at most a filler; adding a *field* is the regist
 
 The product is two things with one line between them. The core is a JSON Résumé editor and a
 keyword engine: you write your CV once, and the extension fills application forms from it. It is
-free, needs no account, and makes no network call. The Epimoni add-on is the AI half:
-scoring the CV against the advert on screen, and handing a CV over from epimoni30.com. It is
-optional, metered by the backend, and everything it does lives in `src/epimoni/`.
+free, needs no account, and makes no network call: filling, the CV library and its PDF, the
+application tracker and the skills line. The Epimoni add-on is the AI half: scoring the CV
+against the advert on screen, writing the cover letter, and handing a CV over from
+epimoni30.com. It needs a paired Epimoni account (`aiAllowed`: paired, with a live token),
+is metered by the backend, and everything it does lives in `src/epimoni/`. Without an account
+the AI buttons are shown disabled, with the link that connects one; no session is opened on
+anybody's behalf.
 
 The folder *is* the decision, and three rules keep it one:
 
 - Only the core worker imports the add-on, and only `epimoni/worker.js`, through four exports:
   `installEpimoni` (the site's listener), `handleEpimoni` (the messages it owns: `analyse`,
-  `tier`, `unpair`, `report`), `epimoniState` (what a surface may say about the account) and
+  `letter`, `tier`, `unpair`, `report`), `epimoniState` (what a surface may say about the account) and
   `forgetEpimoni`. A message the core does not know is offered to the add-on, and one neither
   knows is answered `unknown`.
 - The add-on depends on the core, never the reverse. It reads `shared/store.js` and
@@ -259,6 +271,122 @@ checkbox unticked, because checkboxes are never touched; the panel tells the use
 A description longer than the field's `maxlength` is offered, never truncated: a cut sentence
 submitted in somebody's name is worse than an empty field.
 
+## The CV file: one upload, one key
+
+Most application forms ask for the CV as a file before they ask for anything else. Each
+library entry can hold one PDF the user attached (`shared/files.js`, IndexedDB rather than
+`chrome.storage.local`, which stores JSON and would carry the file as base64 inside the bag
+every read parses). An entry without one gets a PDF made from the document itself, so a
+fresh install attaches a real CV on its first fill without the user producing a file.
+
+That PDF is rendered on demand by the worker (`cvFileOf`) and never stored: derived on read,
+like the active CV, so it always matches the document as saved, and none of the three paths
+that write a CV (the editor, an import, the site's hand-off) has to remember to refresh it. It
+is only made from a CV with a name and something besides it (`cvIsPrintable`); a name alone is
+not sent to an employer.
+
+`shared/pdf.js` writes the file by hand. A PDF library with its fonts would be most of the
+package in an extension that ships no third-party code, and a CV needs little: two weights of
+one font, rules under headings, wrapping and pages. It uses the standard Helvetica pair, which
+every reader carries, so nothing is embedded, and their WinAnsi encoding covers French and
+Spanish; a character it cannot encode loses its accent or becomes "?", never breaks the file.
+One column of real text, which is also what applicant tracking systems read best. The output
+is deterministic and 7-bit, so character offsets are byte offsets and `test/pdf.test.mjs` can
+check every cross-reference entry against the object it names. The section titles come from
+the locale (`pdf_*`) and fall back to English.
+
+A file input is scanned apart from the text controls (`dom.fileInputs`) and never joins the
+block structure. It takes exactly one key, `cv_file`, whose registry shape is `file`, and
+`shapeAllows` makes the two exclusive: no text lands in a file picker and no file in a text
+box. The same three mechanisms as everywhere else keep it from the wrong upload. The `not`
+lists name every other document a form asks for (letter, diploma, photo, "autre document"),
+so a box labelled "CV et lettre de motivation" is a miss rather than a guess. An `accept` that
+rules out a PDF rules out the input. And the concealment rule still holds, moved from the input
+to what stands in for it: upload inputs are almost always hidden behind a label or a drop zone,
+so what must be visible is that surface (`fileSurface`), and an input with no visible surface
+gets nothing.
+
+The bytes stay in the worker until a page asks. The profile a content script receives carries
+the file's name and size; the content script asks for the file (`cv-file`) only when the
+resolver has named a CV upload on the page, so a page without one never receives the document.
+It crosses as base64, because extension messages are JSON, and is written with a
+`DataTransfer`, the only way to build the `FileList` an input accepts, followed by the picker's
+own `input` and `change` events.
+
+## Choosing a CV
+
+Several CVs are only useful if choosing one is where the choice is made. The popup sets the
+CV the extension uses everywhere (`cv:activate`, the same as the CV page). The panel says which
+CV filled the page and offers the others; picking one undoes this fill and fills again from
+that CV, for this page only. It does not change the active CV, which is why the worker reads a
+non-active entry through `store.readAs(id)` without persisting anything, and why the offer
+analysis on that page is sent with the same id: the score is about the document the form was
+filled from. The content script learns ids and names of the CVs (`cv:choices`), never the
+documents, and the picker acts only on a trusted change event, like every other control in the
+panel.
+
+## A form that grows
+
+A wizard renders its next step after "Suivant", an ATS renders a section late, and a user adds
+a block. A fill used to be one pass at click time. Now, for two minutes after a fill, a
+`MutationObserver` watches for added nodes that hold a form control and runs the same
+`runFill` again, debounced, with a `skip` set of every control the page has already been
+through. Only new controls are written or offered. That set is the point: a field the user
+emptied after the fill is a decision, and a re-fill that filled it again would overrule them
+silently. The watch ends on "tout annuler", on the next click (which starts a new one), and on
+its timeout. The panel is updated in place rather than rebuilt, so an offer analysis already on
+screen survives a re-fill.
+
+Only additions wake it. A control revealed by toggling `display` is not an added node, and a
+toolbar click still covers that case.
+
+## The application tracker
+
+Every page the extension fills is an application the user may want to follow, so the fill
+records it (`shared/applications.js`), and the dashboard's applications view
+(`dashboard.html#candidatures`) shows the list with a status, a note
+and a CSV export. It is core: local storage, no account, no network, like the fill that feeds it.
+
+An entry is one job page, keyed on its address with tracking parameters and the fragment
+removed (`applicationKey`), so a second fill or a wizard's second step updates it rather than
+adding one. The worker computes that key from the tab the message came from, never from the
+message, so a page can record or update only its own entry. A title read from the advert
+replaces one taken from the page title and never the reverse, and a new fill never moves a
+status back: filling the form again after "entretien" does not make it "remplie".
+
+The extension cannot know whether the form was sent, because it never sends it. The panel asks,
+with one button, and that button can only move an entry forward from "remplie".
+
+## The skills line: the free half of reading an advert
+
+On a page with an advert, the panel says which of the CV's skills, languages and certificates
+the advert names ("3 sur 7"), and can mark them in the page. It is a plain whole-word match on
+this machine (`content/keywords.js`), which is exactly what it claims to be; what the advert asks
+for that the CV lacks, and how much that matters, is the paid analysis just below it. Short terms
+keep their case, so "Go" or "SQL" do not match ordinary words, and "Java" is not in "JavaScript".
+
+Marking uses the CSS Custom Highlight API: ranges over the page's own text nodes, drawn by the
+browser. No `<mark>` is inserted and no node moves, so a React page keeps its state, and turning
+it off leaves the markup exactly as it was, which `e2e.mjs` checks by comparing it.
+
+## The cover letter: the AI tier's first answer
+
+A letter box (`cover_letter`, a textarea) is left empty by the fill. When the page also has an
+advert, the panel offers to write the letter. That is the add-on: `letter` in
+`epimoni/worker.js` sends the CV document and the advert's text to
+`/ml/analyse/motivation/generate-doc` with the form's limit, from the box's `maxlength` or from
+what its label says ("1500 caractères maximum"). The backend holds the letter to that limit with
+one measured repair pass.
+
+The letter is shown, counted, and put in the box only on a click, where it joins "tout annuler"
+like any fill. Prose in somebody's name is theirs to read first. A letter longer than the box
+accepts is never cut to fit: the insert button is disabled and the user can copy it instead.
+
+`meteredCall` is the one path every paid feature takes: resolve an identity only then (it may
+open a session), retry once on a 401, and on a 429 forget the cached allowance. The backend
+memoises the same CV, advert, template and limit without charging, and the worker caches the
+answer for the session, so reopening the panel costs nothing.
+
 ## Reading the advert: the heuristic is primary, JSON-LD only enriches
 
 You'd expect it the other way round. We measured it:
@@ -285,7 +413,7 @@ per-board button labels, which would be an adapter wearing a different hat.
 
 ## The CV document, and the library that holds several
 
-The CV page (`src/options/`) is the only surface that can create a CV. Storage holds a
+The dashboard's CV view (`src/dashboard/cv.js`) is the only surface that can create a CV. Storage holds a
 library, `cvs`, a list, and an `active_cv_id`, because one slot was wrong in a way that
 only showed up in use: a hand-off from the site overwrote a CV somebody had typed here, with
 no warning and no way back, and one document cannot answer "the short CV for agencies or the
@@ -403,6 +531,9 @@ So an `epimoni:pair` message is a *request*:
    only on a real click on Accept. A refusal also refuses every new request for a minute, so a
    page cannot keep opening tabs.
 
+The same rules apply whether the request arrives over `externally_connectable` or through the
+bridge: both go through `fromSite`. Details are in `docs/pairing.md`, "Two transports".
+
 The site learns the outcome by polling `epimoni:pair-status` with the id it was given:
 `pending`, `accepted`, `refused` or `expired`, and nothing else. It never gets the token back.
 
@@ -437,6 +568,23 @@ whole library, editing it, erasing it and unpairing are for extension pages only
 - An unresolved *prose* field becomes `action: 'ai-candidate'`. A recognised key refused on shape
   becomes `skip: shape-refused` instead, because the AI tier should never be handed a question
   the lexicon already understood.
+
+## Firefox asks before data leaves
+
+Firefox records, apart from install, whether an add-on may transmit data, in Mozilla's
+categories (`data_collection_permissions`, declared in `platform/firefox.mjs`). The free core
+sends nothing and declares nothing it needs. The add-on's two kinds of sending are declared
+optional, and `epimoni/consent.js` holds each to a grant: the CV and the advert
+(`personallyIdentifyingInfo`, `websiteContent`) before an analysis or a letter, and the
+counts-only usage events (`technicalAndInteraction`, `browsingActivity`) before `track`
+sends anything, which on Firefox is never unless the user allows it.
+
+The consent is checked after the account, not instead of it: `aiRefusal` refuses an unpaired
+install first (`not-paired`, no network), then a paired one without the grant (`consent`). A
+paired account is not a grant, because the grant is the browser's to record. It is asked for
+inside a click: on the pairing page's Accept, and on `src/epimoni/allow.html`, which the popup
+and the panel open. The gate is the manifest, not a browser sniff: a build that declares no
+optional collection, which is Chrome's, has nothing to ask and every check answers yes.
 
 ## MV3 facts that change how you write the code
 

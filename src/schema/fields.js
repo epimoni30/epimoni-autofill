@@ -17,6 +17,7 @@
 //   long   prose; refused on a one-line input unless its maxlength says it is a letter field
 //   date   a date; may be a text input, a month input or split month/year dropdowns
 //   any    no constraint from the control's size
+//   file   a document, not text: only a file input takes it, and a file input takes nothing else
 // `select: true` lets the value go into a closed option list (a <select>, a radio group, a
 // filler's option list). Anything else resolved onto one is a miss by design: free text and
 // a closed list are different questions, and guessing an option is how a wrong answer is
@@ -48,6 +49,7 @@ export const SECTIONS = [
 //   cv      computed from the document by `toProfile` in shared/cvdoc.js
 //   extras  typed by the user in the extension; the CV format has no place for it
 //   none    recognised so it is left alone, never filled (the cover letter is the AI tier's)
+//   library a file the user attached to the CV in the extension (IndexedDB, see shared/files.js)
 const FLAT = [
   { key: 'given_name', shape: 'short', source: 'cv' },
   { key: 'family_name', shape: 'short', source: 'cv' },
@@ -77,6 +79,9 @@ const FLAT = [
   { key: 'education_institution', shape: 'any', source: 'cv' },
   { key: 'skills', shape: 'any', source: 'cv' },
   { key: 'languages', shape: 'any', select: true, source: 'cv' },
+  // The CV itself, as the PDF the user attached to this library entry. A cover letter, a
+  // diploma or a photo upload is a different question with a different file, and is left alone.
+  { key: 'cv_file', shape: 'file', source: 'library' },
 ];
 
 // ── Fields of a repeated section: one per block, one block per CV entry ──────────────────

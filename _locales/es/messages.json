@@ -86,6 +86,9 @@
   "field_languages": {
     "message": "Idiomas"
   },
+  "field_cv_file": {
+    "message": "CV (archivo PDF)"
+  },
   "field_awards_awarder": {
     "message": "Otorgado por"
   },
@@ -820,5 +823,366 @@
   },
   "pair_library_full": {
     "message": "Su biblioteca de CV está llena. Elimine un CV en la extensión y vuelva a conectar."
+  },
+  "opt_file_heading": {
+    "message": "Archivo del CV (PDF)"
+  },
+  "opt_file_intro": {
+    "message": "Se coloca en el campo «CV» de los formularios al rellenarlos. Si no añade su propio PDF, la extensión crea uno a partir de este CV. Todo se queda en este ordenador."
+  },
+  "opt_file_none": {
+    "message": "Ningún PDF adjunto a este CV."
+  },
+  "opt_file_current": {
+    "message": "$NAME$ · $SIZE$ KB",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      },
+      "size": {
+        "content": "$2"
+      }
+    }
+  },
+  "opt_file_choose": {
+    "message": "Adjuntar un PDF"
+  },
+  "opt_file_replace": {
+    "message": "Reemplazar"
+  },
+  "opt_file_save_first": {
+    "message": "Guarde primero este CV para adjuntarle un PDF."
+  },
+  "opt_file_saved": {
+    "message": "PDF adjunto a este CV."
+  },
+  "opt_file_removed": {
+    "message": "Su PDF se ha quitado: lo sustituye el creado a partir de este CV."
+  },
+  "opt_file_error_type": {
+    "message": "Solo se aceptan archivos PDF."
+  },
+  "opt_file_error_size": {
+    "message": "Este PDF supera los 5 MB."
+  },
+  "opt_file_error": {
+    "message": "No se pudo guardar el PDF."
+  },
+  "opt_file_badge": {
+    "message": "PDF adjunto"
+  },
+  "pdf_profile": {
+    "message": "Perfil"
+  },
+  "pdf_work": {
+    "message": "Experiencia profesional"
+  },
+  "pdf_education": {
+    "message": "Formación"
+  },
+  "pdf_projects": {
+    "message": "Proyectos"
+  },
+  "pdf_certificates": {
+    "message": "Certificaciones"
+  },
+  "pdf_skills": {
+    "message": "Competencias"
+  },
+  "pdf_languages": {
+    "message": "Idiomas"
+  },
+  "pdf_present": {
+    "message": "actualidad"
+  },
+  "panel_filled_with": {
+    "message": "Rellenado con"
+  },
+  "popup_cv_used": {
+    "message": "CV en uso"
+  },
+  "opt_file_generated": {
+    "message": "Creado a partir de este CV: $NAME$ · $SIZE$ KB",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      },
+      "size": {
+        "content": "$2"
+      }
+    }
+  },
+  "opt_file_not_printable": {
+    "message": "Añada su nombre y alguna experiencia, formación o competencias para que se cree el PDF."
+  },
+  "opt_file_own": {
+    "message": "Usar mi propio PDF"
+  },
+  "opt_file_preview": {
+    "message": "Vista previa"
+  },
+  "opt_file_use_generated": {
+    "message": "Volver al PDF creado a partir de este CV"
+  },
+  "opt_file_badge_generated": {
+    "message": "PDF creado"
+  },
+  "panel_tracked": {
+    "message": "Añadida a sus candidaturas."
+  },
+  "panel_tracked_applied": {
+    "message": "Candidatura marcada como enviada."
+  },
+  "panel_mark_applied": {
+    "message": "He enviado mi candidatura"
+  },
+  "panel_open_tracker": {
+    "message": "Ver mis candidaturas"
+  },
+  "popup_tracker": {
+    "message": "Mis candidaturas"
+  },
+  "trk_title": {
+    "message": "Mis candidaturas"
+  },
+  "trk_intro": {
+    "message": "Cada formulario que rellena la extensión se añade aquí. Esta lista se queda en este ordenador."
+  },
+  "trk_empty": {
+    "message": "Aún no hay candidaturas. Rellene un formulario con la extensión y aparecerá aquí."
+  },
+  "trk_export": {
+    "message": "Exportar (CSV)"
+  },
+  "trk_clear": {
+    "message": "Vaciar la lista"
+  },
+  "trk_clear_confirm": {
+    "message": "Haga clic otra vez para borrarlo todo"
+  },
+  "trk_all": {
+    "message": "Todas"
+  },
+  "trk_status": {
+    "message": "Estado"
+  },
+  "trk_status_filled": {
+    "message": "Rellenada"
+  },
+  "trk_status_applied": {
+    "message": "Enviada"
+  },
+  "trk_status_interview": {
+    "message": "Entrevista"
+  },
+  "trk_status_offer": {
+    "message": "Oferta recibida"
+  },
+  "trk_status_rejected": {
+    "message": "Rechazada"
+  },
+  "trk_filled_on": {
+    "message": "Rellenada el $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "trk_with_cv": {
+    "message": "con «$CV$»",
+    "placeholders": {
+      "cv": {
+        "content": "$1"
+      }
+    }
+  },
+  "trk_note": {
+    "message": "Añadir una nota"
+  },
+  "trk_note_placeholder": {
+    "message": "Contacto, fecha de entrevista, seguimiento…"
+  },
+  "trk_delete": {
+    "message": "Eliminar"
+  },
+  "trk_delete_confirm": {
+    "message": "Confirmar"
+  },
+  "trk_file": {
+    "message": "candidaturas"
+  },
+  "trk_col_title": {
+    "message": "Puesto"
+  },
+  "trk_col_company": {
+    "message": "Empresa"
+  },
+  "trk_col_site": {
+    "message": "Sitio"
+  },
+  "trk_col_url": {
+    "message": "Enlace"
+  },
+  "trk_col_status": {
+    "message": "Estado"
+  },
+  "trk_col_filled": {
+    "message": "Rellenada el"
+  },
+  "trk_col_updated": {
+    "message": "Actualizada"
+  },
+  "trk_col_cv": {
+    "message": "CV"
+  },
+  "trk_col_note": {
+    "message": "Nota"
+  },
+  "panel_letter_found": {
+    "message": "Este formulario pide una carta de presentación."
+  },
+  "panel_letter_limit": {
+    "message": "Límite: $MAX$ caracteres.",
+    "placeholders": {
+      "max": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_letter_cta": {
+    "message": "Redactar mi carta con IA"
+  },
+  "panel_letter_writing": {
+    "message": "Redactando su carta…"
+  },
+  "panel_letter_count": {
+    "message": "$N$ caracteres",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_letter_count_limit": {
+    "message": "$N$ / $MAX$ caracteres",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      },
+      "max": {
+        "content": "$2"
+      }
+    }
+  },
+  "panel_letter_insert": {
+    "message": "Insertar en el formulario"
+  },
+  "panel_letter_inserted": {
+    "message": "Carta insertada. Reléala antes de enviar."
+  },
+  "panel_letter_too_long": {
+    "message": "Más larga de lo que acepta el formulario: cópiela y acórtela."
+  },
+  "panel_letter_copy": {
+    "message": "Copiar"
+  },
+  "panel_letter_copied": {
+    "message": "Copiada"
+  },
+  "panel_letter_empty": {
+    "message": "No se pudo redactar la carta. Inténtelo de nuevo."
+  },
+  "dash_menu_cv": {
+    "message": "Mi CV"
+  },
+  "dash_menu_applications": {
+    "message": "Mis candidaturas"
+  },
+  "panel_skills_found": {
+    "message": "Sus competencias citadas en la oferta: $N$ de $TOTAL$",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "panel_skills_none": {
+    "message": "Ninguna de sus competencias aparece tal cual en la oferta."
+  },
+  "panel_skills_mark": {
+    "message": "Resaltar en la oferta"
+  },
+  "panel_skills_unmark": {
+    "message": "Quitar el resaltado"
+  },
+  "popup_ai_heading": {
+    "message": "Funciones de IA"
+  },
+  "popup_analyse": {
+    "message": "Analizar la oferta de esta página"
+  },
+  "popup_letter": {
+    "message": "Redactar la carta de presentación"
+  },
+  "popup_dashboard": {
+    "message": "Abrir el panel"
+  },
+  "popup_ai_needs_account": {
+    "message": "Reservadas a las cuentas Epimoni conectadas a la extensión."
+  },
+  "popup_ai_connect": {
+    "message": "Conectar mi cuenta Epimoni →"
+  },
+  "popup_ai_reconnect": {
+    "message": "Su conexión con Epimoni ha caducado."
+  },
+  "panel_ai_needs_account": {
+    "message": "Función de IA reservada a las cuentas Epimoni conectadas a la extensión."
+  },
+  "panel_ai_connect": {
+    "message": "Conectar mi cuenta Epimoni →"
+  },
+  "panel_ai_reconnect": {
+    "message": "Su conexión con Epimoni ha caducado."
+  },
+  "panel_ai_reconnect_cta": {
+    "message": "Volver a conectarme →"
+  },
+  "panel_no_advert": {
+    "message": "No se ha encontrado ninguna oferta en esta página."
+  },
+  "panel_no_letter_box": {
+    "message": "Este formulario no pide carta de presentación."
+  },
+  "consent_title": {
+    "message": "Permitir el envío para el análisis y la carta"
+  },
+  "consent_body": {
+    "message": "Para analizar una oferta o escribir una carta, Epimoni envía tu CV y el texto del anuncio a su servidor, en el momento en que lo pides. Firefox te pide tu consentimiento antes."
+  },
+  "consent_core": {
+    "message": "Rellenar formularios no envía nada y funciona sin este consentimiento."
+  },
+  "consent_allow": {
+    "message": "Permitir"
+  },
+  "consent_done": {
+    "message": "Permitido. Puedes cerrar esta pestaña."
+  },
+  "consent_refused": {
+    "message": "No se ha permitido nada. El relleno sigue funcionando; el análisis y la carta siguen desactivados."
+  },
+  "consent_pair_note": {
+    "message": "Firefox también te pedirá permiso para enviar tu CV y el anuncio cuando uses el análisis o la carta."
+  },
+  "ai_consent_note": {
+    "message": "Firefox pide tu consentimiento antes de que tu CV y el anuncio se envíen a Epimoni."
+  },
+  "ai_consent_cta": {
+    "message": "Permitir el envío"
   }
 }

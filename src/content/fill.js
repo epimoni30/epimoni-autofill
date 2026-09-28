@@ -21,13 +21,16 @@
 import {
   assignBlocks,
   clearValue,
+  fileInputs,
   fillableElements,
   hasUserValue,
+  isFile,
   labelBundle,
   matchOption,
   radioAnswered,
   radioGroupBundle,
   radioGroups,
+  setFile,
   setRadio,
   setValue,
   valueFor,
@@ -76,6 +79,7 @@ export function activeFillers(fillers, doc, url, errors = []) {
  * on a custom dropdown is written exactly as a fill would be.
  */
 export async function writeOne(el, value, owner, errors = []) {
+  if (isFile(value)) return { ok: setFile(el, value), undo: null };
   if (owner?.write) {
     const api = createGuard(el, { setValue, clearValue, matchOption });
     let res;
@@ -100,15 +104,25 @@ export async function writeOne(el, value, owner, errors = []) {
  * - `filled`       `{el, key, index, value, via, undo}` written
  * - `suggestions`  `{el, key, index, value, owner}` offered, not written
  * - `rows`         one per control, for measurement: decision, bundle, what was written
- * - `ai`, `unknown`, `ongoing`, `radios` counts; `blocks`; `fillers` (ids); `errors`
+ * - `ai`, `unknown`, `ongoing`, `radios`, `files` counts; `blocks`; `fillers` (ids); `errors`
+ *
+ * `files` maps a `file`-shaped key to `{name, load}`: `load()` resolves to the `File`, and is
+ * only called once a file input on the page has asked for that key, so a document is never
+ * fetched for a page that has nowhere to put it.
+ *
+ * `skip` is a set of controls this page has already been through: a re-fill after the form
+ * grew (a new step, a late section) writes and offers only what is new, so a field the user
+ * cleared on purpose stays cleared.
  */
 export async function runFill({
   root = document,
   url = '',
   profile = {},
   entries = {},
+  files = {},
   resolver,
   fillers = [],
+  skip = null,
 }) {
   const errors = [];
   const doc = root.ownerDocument || root;
@@ -175,6 +189,7 @@ export async function runFill({
     const owner = owners[i];
     const row = { el, decision: d, bundle: bundles[i], owner: owner?.id || null, wrote: null };
     rows.push(row);
+    if (skip?.has(el)) continue;
     if (d.action === 'ai-candidate') {
       ai += 1;
       continue;
@@ -217,6 +232,7 @@ export async function runFill({
     const d = resolver.resolve(radioGroupBundle(group));
     const rrow = { group, decision: d, chosen: null };
     radioRows.push(rrow);
+    if (group.inputs.some((r) => skip?.has(r))) continue;
     if (radioAnswered(group) || d.action !== 'fill') continue;
     const value = profile[d.key];
     if (value === undefined) continue;
@@ -225,6 +241,43 @@ export async function runFill({
     rrow.chosen = chosen;
     filled.push({ el: chosen, key: d.key, value, via: d.via, radio: true, undo: null });
     radios += 1;
+  }
+
+  // File inputs: one key, the CV's own upload. Resolved one by one with no block (a file
+  // input takes no part in the section structure) and settled like any other claim, so two
+  // CV boxes on one page give one fill and one suggestion.
+  const loaded = new Map();
+  const fileOf = async (key) => {
+    if (!files?.[key]) return null;
+    if (!loaded.has(key))
+      loaded.set(
+        key,
+        await Promise.resolve()
+          .then(files[key].load)
+          .catch(() => null),
+      );
+    return loaded.get(key);
+  };
+  const fileEls = fileInputs(root);
+  const fileBundles = fileEls.map((el) => labelBundle(el));
+  const fileDecisions = resolver.resolveAll(fileBundles);
+  let attached = 0;
+  for (const [i, el] of fileEls.entries()) {
+    const d = fileDecisions[i];
+    const row = { el, decision: d, bundle: fileBundles[i], owner: null, wrote: null };
+    rows.push(row);
+    if (skip?.has(el) || (d.action !== 'fill' && d.action !== 'suggest')) continue;
+    if (hasUserValue(el)) continue; // a file the user chose is theirs
+    const file = await fileOf(d.key);
+    if (!file) continue; // no document attached to this CV: recognised, nothing to put there
+    if (d.action === 'suggest') {
+      suggestions.push({ el, key: d.key, value: file, owner: null });
+      continue;
+    }
+    if (!setFile(el, file)) continue;
+    row.wrote = { key: d.key, value: file.name };
+    filled.push({ el, key: d.key, value: file.name, via: d.via, undo: null });
+    attached += 1;
   }
 
   return {
@@ -237,6 +290,8 @@ export async function runFill({
     unknown,
     ongoing,
     radios,
+    files: attached,
+    fileEls,
     blocks,
     fillers: active.map((f) => f.id),
     errors,

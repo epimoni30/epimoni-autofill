@@ -11,11 +11,12 @@
 // would need one, and Starlette matches origins by
 // exact string, so `chrome-extension://*` would not work.
 
-import { read, write, saveCv, unpairOnly } from '../shared/store.js';
+import { write, saveCv, unpairOnly } from '../shared/store.js';
 import { cvIsAnalysable, cvSummary, fieldCurrent, normalizeCvDoc, toProfile } from '../shared/cvdoc.js';
 import { track } from './telemetry.js';
 import { apiFetch, whoIs } from './api.js';
 import { entitlement, forgetEntitlement, resolveIdentity } from './identity.js';
+import { AI_DATA, missing } from './consent.js';
 
 const SITE = 'https://www.epimoni30.com';
 
@@ -34,6 +35,8 @@ const SITE = 'https://www.epimoni30.com';
  * shape exists to avoid.
  */
 const ANALYSE_PATH = '/api/v1/ml/analyse/cvVSoffer-doc';
+// The cover letter from the CV document and the advert's text, memoised on its inputs.
+const LETTER_PATH = '/api/v1/ml/analyse/motivation/generate-doc';
 
 /**
  * A cheap, stable fingerprint of a string. Not a security primitive: it names a cache entry.
@@ -307,20 +310,64 @@ async function applyPairing({ kind, picked }) {
   return { ok: true, mode: 'account' };
 }
 
-function onExternal(msg, sender, respond) {
-  if (!sender.origin || sender.origin !== SITE) {
-    respond({ ok: false, error: 'origin' });
-    return false;
-  }
-  if (msg?.type === 'epimoni:ping') {
-    respond({ ok: true, version: chrome.runtime.getManifest().version });
-    return false;
+/**
+ * What the site may ask, whichever way it reached us. `from` is `{origin, tab}` as the browser
+ * reported it, never as the message claims.
+ *
+ * Two transports lead here, one rule set. `externally_connectable` (Chrome only) is how the
+ * site that is live today talks to us; the bridge (`bridge.js`, a content script on the site,
+ * every browser) is how it talks to us from now on, and it is the only one Firefox has. Keeping
+ * the decision here means the transports carry messages and decide nothing.
+ */
+async function fromSite(msg, from) {
+  if (!from.origin || from.origin !== SITE) return { ok: false, error: 'origin' };
+  if (msg?.type === 'epimoni:ping') return { ok: true, version: chrome.runtime.getManifest().version };
+
+  // The site asks how its request ended, by the id it was given. It learns accepted, refused
+  // or expired, never anything about the library or the account already paired.
+  if (msg?.type === 'epimoni:pair-status') {
+    const id = typeof msg.id === 'string' ? msg.id : '';
+    const pending = await livePending();
+    if (pending?.id === id) return { ok: true, status: 'pending' };
+    const done = (await sessionGet(RESULTS_KEY))?.[id];
+    return done ? { ok: true, ...done } : { ok: false, error: 'unknown' };
   }
 
+  if (msg?.type !== 'epimoni:pair') return { ok: false, error: 'type' };
+  // A page, not a worker or another extension's frame: the request has to have come from a tab.
+  if (!from.tab?.id) return { ok: false, error: 'origin' };
+  return requestPairing(msg).catch(() => ({ ok: false, error: 'failed' }));
+}
+
+/**
+ * The bridge's envelope: `{type: 'site', msg}` from `bridge.js`, reached through the core
+ * worker's message listener. Only the top frame of a tab on the site counts: the bridge is
+ * declared for top frames only, and a frame the site embeds is somebody else's page.
+ * `sender.origin` is Chrome's; Firefox gives the URL, which says the same.
+ */
+function fromBridge(msg, sender) {
+  if (!sender?.tab?.id || sender.frameId !== 0) return { ok: false, error: 'origin' };
+  let origin = sender.origin;
+  if (!origin) {
+    try {
+      origin = new URL(sender.url).origin;
+    } catch {
+      return { ok: false, error: 'origin' };
+    }
+  }
+  return fromSite(msg.msg, { origin, tab: sender.tab });
+}
+
+function onExternal(msg, sender, respond) {
   // Development builds only: run the toolbar path against a named tab and report back what
   // happened. A shipped build has EPIMONI_DEV false, so the site can never make the
-  // extension act on another tab.
-  if (msg?.type === 'epimoni:devfill' && typeof EPIMONI_DEV !== 'undefined' && EPIMONI_DEV) {
+  // extension act on another tab. External only: the bridge never forwards it.
+  if (
+    msg?.type === 'epimoni:devfill' &&
+    sender.origin === SITE &&
+    typeof EPIMONI_DEV !== 'undefined' &&
+    EPIMONI_DEV
+  ) {
     (async () => {
       try {
         const tabs = await chrome.tabs.query({});
@@ -341,30 +388,7 @@ function onExternal(msg, sender, respond) {
     })();
     return true;
   }
-
-  // The site asks how its request ended, by the id it was given. It learns accepted, refused
-  // or expired, never anything about the library or the account already paired.
-  if (msg?.type === 'epimoni:pair-status') {
-    (async () => {
-      const id = typeof msg.id === 'string' ? msg.id : '';
-      const pending = await livePending();
-      if (pending?.id === id) return respond({ ok: true, status: 'pending' });
-      const done = (await sessionGet(RESULTS_KEY))?.[id];
-      respond(done ? { ok: true, ...done } : { ok: false, error: 'unknown' });
-    })();
-    return true;
-  }
-
-  if (msg?.type !== 'epimoni:pair') {
-    respond({ ok: false, error: 'type' });
-    return false;
-  }
-  // A page, not a worker or another extension's frame: the request has to have come from a tab.
-  if (!sender.tab?.id) {
-    respond({ ok: false, error: 'origin' });
-    return false;
-  }
-  requestPairing(msg).then(respond, () => respond({ ok: false, error: 'failed' }));
+  fromSite(msg, { origin: sender.origin, tab: sender.tab }).then(respond);
   return true; // async respond
 }
 
@@ -379,6 +403,9 @@ async function pairingDecision(msg) {
       kind: pending.kind,
       ...pending.shown,
       summary: cv ? cvSummary(cv, {}) : null,
+      // What the page asks the browser for inside the Accept click, where one asks (Firefox):
+      // only an account pairing turns the AI on, so only it needs the grant.
+      consent: pending.kind === 'account' ? await missing(AI_DATA) : [],
     };
   }
   if (msg.type === 'pair:refuse') {
@@ -390,6 +417,62 @@ async function pairingDecision(msg) {
   const res = await applyPairing(pending);
   await settle(pending.id, res.ok ? 'accepted' : 'failed', res.mode || pending.kind);
   return res;
+}
+
+/**
+ * The AI features are for a paired Epimoni account.
+ *
+ * Filling, the CV, the PDF, the tracker and the skills line are the free core and need
+ * nothing. What reaches the backend's models needs an account the user connected from the
+ * site, and a token that has not expired: refused here, before any identity is resolved, so
+ * a visitor without one never opens a session or reaches the network.
+ */
+export const aiAllowed = (state) => Boolean(state?.paired && state?.jwt && !state?.stale);
+
+/**
+ * Why the AI is not available, for a surface to say, or null when it is.
+ *
+ * The account comes first and is decided without any call. Then, on a browser that asks
+ * (Firefox), the user's consent to the CV and the advert leaving the machine: a paired
+ * account is not a grant, because the grant is the browser's to record (consent.js).
+ */
+const aiRefusal = async (state) => {
+  if (!aiAllowed(state)) return { ok: false, kind: state?.paired && state?.jwt ? 'expired' : 'not-paired' };
+  return (await missing(AI_DATA)).length ? { ok: false, kind: 'consent' } : null;
+};
+
+/**
+ * One metered call to the backend, with the identity it goes out under.
+ *
+ * Returns `{res, ident}`, or `{fail}` with the answer a surface should show. Shared
+ * by every paid feature, because the rules are the same for all of them: resolve an identity
+ * only now (it may open a session), retry once on a 401, and on a 429 forget the cached
+ * allowance so the panel stops promising a free call it was just refused.
+ */
+async function meteredCall(state, msg, path, body) {
+  const ident = await resolveIdentity(state, { mint: false });
+  if (!ident.ok || ident.mode !== 'account') return { fail: { ok: false, kind: 'not-paired' } };
+
+  const res = await apiFetch(ident.jwt, `${path}?lang=${encodeURIComponent(msg.lang || 'fr')}`, {
+    method: 'POST',
+    body,
+  });
+
+  // An expired account token is not retried on another identity: the AI is an account's,
+  // so the answer is to reconnect. The pairing is marked stale, which is what makes the popup
+  // and the panel say so.
+  if (!res.ok && res.kind === 'expired' && ident.mode === 'account') await write({ stale: true });
+
+  if (!res.ok) {
+    if (res.kind === 'quota') {
+      // The window just moved. A cached "not rate limited" would make the panel promise a
+      // free call it has this second been refused.
+      await forgetEntitlement();
+      await track(ident.jwt, 'ext_fill', { what: 'paywall_shown', host: msg.host || '', mode: ident.mode });
+    }
+    return { fail: { ...res, mode: ident.mode } };
+  }
+  return { res, ident };
 }
 
 /**
@@ -406,6 +489,8 @@ async function pairingDecision(msg) {
  * and to say plainly which tier the person is on.
  */
 async function analyse(state, msg) {
+  const refused = await aiRefusal(state);
+  if (refused) return refused;
   const text = String(msg?.posting?.text || '').trim();
   // The CV, wherever it came from: paired from an account, handed over by an anonymous
   // session, or typed into the extension's own editor. All three land in `state.cv`.
@@ -418,44 +503,13 @@ async function analyse(state, msg) {
   // a memo hit is still charged, so the cache that actually saves the user money is this one.
   if (hit) return { ...hit, cached: true };
 
-  let ident = await resolveIdentity(state);
-  if (!ident.ok) return { ok: false, kind: ident.kind || 'failed' };
-
-  const call = (jwt) =>
-    apiFetch(jwt, `${ANALYSE_PATH}?lang=${encodeURIComponent(msg.lang || 'fr')}`, {
-      method: 'POST',
-      body: { content: state.cv, offer_text: text, builder_id: state.builder_id || null },
-    });
-
-  let res = await call(ident.jwt);
-  let degraded = false;
-
-  // One retry, and only on a 401.
-  //
-  // An expired token must not read as a broken extension. For the account half that means
-  // marking the pairing stale (the popup and the panel already show a reconnect link) and
-  // then answering anyway on the anonymous tier, which is what "usable signed out" means in
-  // practice. For the anonymous half it means minting a fresh session, since ours is the only
-  // thing that could have expired and the user has nothing to reconnect.
-  if (!res.ok && res.kind === 'expired') {
-    if (ident.mode === 'account') await write({ stale: true });
-    const next = await resolveIdentity(await read(), { force: ident.mode === 'anonymous' });
-    if (next.ok && next.jwt !== ident.jwt) {
-      degraded = ident.mode === 'account';
-      ident = next;
-      res = await call(ident.jwt);
-    }
-  }
-
-  if (!res.ok) {
-    if (res.kind === 'quota') {
-      // The window just moved. A cached "not rate limited" would make the panel promise a
-      // free analysis it has this second been refused.
-      await forgetEntitlement();
-      await track(ident.jwt, 'ext_fill', { what: 'paywall_shown', host: msg.host || '', mode: ident.mode });
-    }
-    return { ...res, mode: ident.mode };
-  }
+  const got = await meteredCall(state, msg, ANALYSE_PATH, {
+    content: state.cv,
+    offer_text: text,
+    builder_id: state.builder_id || null,
+  });
+  if (got.fail) return got.fail;
+  const { res, ident } = got;
 
   const ml = res.data?.ml || {};
   // A defence the backend now also mounts, kept here because the two ship separately: an
@@ -478,7 +532,6 @@ async function analyse(state, msg) {
     builder_id: ident.mode === 'account' ? state.builder_id || null : null,
     linkable: ident.mode === 'account',
     mode: ident.mode,
-    stale: degraded,
     teaser: teaserFrom(ml.content),
   };
   await cacheAnalysis(key, answer);
@@ -493,6 +546,66 @@ async function analyse(state, msg) {
 }
 
 /**
+ * A cover letter for the advert on screen, written by the backend, never into the form.
+ *
+ * The panel shows it and the user inserts it with a click: prose written in somebody's name
+ * is theirs to read before it goes anywhere. `max_chars` is the form's own limit (France
+ * Travail's 1500), which the backend holds the letter to with one repair pass.
+ *
+ * Same order as the analysis: refuse for free, answer from cache, only then spend. The
+ * backend memoises the same inputs without charging, and the cache here spares even the
+ * round trip when the panel is reopened.
+ */
+async function letter(state, msg) {
+  const refused = await aiRefusal(state);
+  if (refused) return refused;
+  const text = String(msg?.posting?.text || '').trim();
+  if (!state.cv || !cvIsAnalysable(state.cv)) return { ok: false, kind: 'no-cv' };
+  if (!text) return { ok: false, kind: 'no-posting' };
+  const max =
+    Number.isInteger(msg.max_chars) && msg.max_chars >= 300 && msg.max_chars <= 10000 ? msg.max_chars : null;
+
+  const key = `letter:${fingerprint(text)}:${fingerprint(JSON.stringify(state.cv))}:${max ?? ''}`;
+  const hit = await cachedAnalysis(key);
+  if (hit) return { ...hit, cached: true };
+
+  const got = await meteredCall(state, msg, LETTER_PATH, {
+    content: state.cv,
+    offer_text: text,
+    template: '1',
+    max_chars: max,
+    builder_id: state.builder_id || null,
+  });
+  if (got.fail) return got.fail;
+  const { res, ident } = got;
+
+  const paragraphs = (Array.isArray(res.data?.ml?.content?.paragraphs) ? res.data.ml.content.paragraphs : [])
+    .map((p) => String(p || '').trim())
+    .filter(Boolean);
+  if (!paragraphs.length) return { ok: false, kind: 'empty', mode: ident.mode };
+  // Joined the way the backend measures it, so the count the panel shows is the one the
+  // budget was held to.
+  const body = paragraphs.join('\n\n');
+  const answer = {
+    ok: true,
+    text: body,
+    chars: body.length,
+    limit: max,
+    within: max ? body.length <= max : true,
+    mode: ident.mode,
+  };
+  await cacheAnalysis(key, answer);
+  await track(ident.jwt, 'ext_fill', {
+    what: 'letter_generated',
+    host: msg.host || '',
+    limit: max || 0,
+    within: answer.within,
+    mode: ident.mode,
+  });
+  return answer;
+}
+
+/**
  * What the surfaces may say about the user's allowance, without spending anything.
  *
  * Asked when a panel or the popup opens, never on the fill path. It resolves an identity,
@@ -501,17 +614,27 @@ async function analyse(state, msg) {
  * offered an analysis.
  */
 async function tier(state) {
-  // Reading the allowance never opens a session: without one, the answer is the free tier,
-  // which is what the first analysis would be metered on anyway.
-  const ident = await resolveIdentity(state, { mint: false });
-  if (!ident.ok)
-    return { mode: 'anonymous', paid: false, tier: 'gratuit', rate_limited: false, reset_seconds: null };
-  return entitlement(ident.jwt, ident.mode);
+  // Without a paired account there is no AI to meter, so nothing to ask the server: the
+  // answer is local and opens no session. The same without the user's consent, where asked.
+  const refused = await aiRefusal(state);
+  if (refused)
+    return {
+      mode: 'none',
+      ai: false,
+      consent: refused.kind === 'consent',
+      stale: Boolean(state?.stale),
+      paid: false,
+      tier: null,
+      rate_limited: false,
+      reset_seconds: null,
+    };
+  return { ...(await entitlement(state.jwt, 'account')), ai: true };
 }
 
 /** Listen for the site. Called once by the core worker; without it the site cannot reach us. */
 export function installEpimoni() {
-  chrome.runtime.onMessageExternal.addListener(onExternal);
+  // Absent where the browser has no `externally_connectable`; the bridge covers it there.
+  chrome.runtime.onMessageExternal?.addListener(onExternal);
 }
 
 /**
@@ -519,10 +642,16 @@ export function installEpimoni() {
  * here, the same way the analysis decides it: a surface that computed this itself would
  * eventually disagree with the code that spends the quota.
  */
-export function epimoniState(state) {
+export async function epimoniState(state) {
+  const refused = await aiRefusal(state);
   return {
     paired: !!state.paired,
-    mode: state.jwt && !state.stale ? 'account' : 'anonymous',
+    // Whether the AI features are available: a paired account with a live token, and the
+    // user's consent where the browser asks for it.
+    ai: !refused,
+    // The one step left is the browser's consent (Firefox): a surface offers to ask for it.
+    consent: refused?.kind === 'consent',
+    mode: state.jwt && !state.stale ? 'account' : 'none',
     paired_at: state.paired_at || null,
     // The 31-day token expired. Filling still works from the local profile, and the analysis
     // falls through to the anonymous tier, so this is a prompt to reconnect rather than a
@@ -540,12 +669,23 @@ export async function forgetEpimoni() {
  * The add-on's messages. Returns `undefined` for a message it does not own, so the core
  * worker can answer "unknown" without knowing what the add-on handles.
  */
-export async function handleEpimoni(msg, state) {
+export async function handleEpimoni(msg, state, sender) {
   switch (msg?.type) {
+    case 'site':
+      return fromBridge(msg, sender);
+    case 'consent:open':
+      // The grant has to be asked inside a click on an extension page, which neither the
+      // panel nor the worker is: this opens the one that asks.
+      await chrome.tabs.create({ url: chrome.runtime.getURL('src/epimoni/allow.html') });
+      return { ok: true };
+    case 'consent:missing':
+      return { ok: true, missing: await missing(AI_DATA) };
     case 'tier':
       return tier(state);
     case 'analyse':
       return analyse(state, msg);
+    case 'letter':
+      return letter(state, msg);
     case 'pair:pending':
     case 'pair:accept':
     case 'pair:refuse':

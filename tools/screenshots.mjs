@@ -177,7 +177,7 @@ await shoot(await fill(`store/demo.html?lang=${LANG}`), 'fill');
 
 const editor = await ctx.newPage();
 await editor.setViewportSize(SIZE);
-await editor.goto(`chrome-extension://${extId}/options.html`, { waitUntil: 'load' });
+await editor.goto(`chrome-extension://${extId}/dashboard.html`, { waitUntil: 'load' });
 await editor.waitForTimeout(500);
 await shoot(editor, 'cv-editor');
 

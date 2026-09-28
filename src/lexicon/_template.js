@@ -70,6 +70,7 @@ export default {
     education_institution: { any: [], not: [] }, // any
     skills: { any: [], not: [] }, // any
     languages: { any: [], not: [] }, // any, may be a dropdown
+    cv_file: { any: [], not: [] }, // file: a file input only, the CV's own upload
     // ── work (inside a block of this section only)
     'work.position': { any: [], not: [] }, // any
     'work.company': { any: [], not: [] }, // any

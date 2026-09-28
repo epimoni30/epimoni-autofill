@@ -6,6 +6,7 @@
 
 import {
   read,
+  readAs,
   write,
   clear,
   effectiveProfile,
@@ -16,7 +17,34 @@ import {
   deleteCv,
   MAX_CVS,
 } from '../shared/store.js';
-import { cvIsAnalysable, cvSummary, normalizeCvDoc, toEntries, toProfile } from '../shared/cvdoc.js';
+import {
+  cvIsAnalysable,
+  cvSummary,
+  normalizeCvDoc,
+  toEntries,
+  toJsonResume,
+  toProfile,
+} from '../shared/cvdoc.js';
+import { cvIsPrintable, pdfName, renderCvPdf } from '../shared/pdf.js';
+import {
+  applicationFor,
+  clearApplications,
+  deleteApplication,
+  listApplications,
+  recordApplication,
+  updateApplication,
+} from '../shared/applications.js';
+import {
+  clearFiles,
+  deleteFile,
+  fileMeta,
+  fileProblem,
+  fromBase64,
+  getFile,
+  listFileMeta,
+  putFile,
+  toBase64,
+} from '../shared/files.js';
 import { epimoniState, forgetEpimoni, handleEpimoni, installEpimoni } from '../epimoni/worker.js';
 
 installEpimoni();
@@ -47,7 +75,54 @@ function profileOf(state) {
  * that page: it can have the flat profile it fills from, and nothing that edits or erases the
  * user's data.
  */
-const CONTENT_SCRIPT_TYPES = new Set(['profile', 'report', 'tier', 'analyse', 'open-options']);
+const CONTENT_SCRIPT_TYPES = new Set([
+  'profile',
+  'cv-file',
+  'cv:choices',
+  'app:record',
+  'app:applied',
+  'open-tracker',
+  'report',
+  'tier',
+  'analyse',
+  'letter',
+  'open-options',
+  // The site bridge's envelope. The add-on checks the sender is the site's top frame.
+  'site',
+  // The panel's "allow" link, on a browser that asks for data-collection consent.
+  'consent:open',
+]);
+
+/** The PDF's section titles, in the browser's language: the renderer itself is pure. */
+const pdfLabels = () =>
+  Object.fromEntries(
+    ['profile', 'work', 'education', 'projects', 'certificates', 'skills', 'languages', 'present'].map(
+      (k) => [k, chrome.i18n?.getMessage(`pdf_${k}`) || ''],
+    ),
+  );
+
+/**
+ * The file a CV upload receives for one library entry: the PDF the user attached, or else one
+ * rendered from the document now. The rendered one is never stored, so it always matches the
+ * CV as saved, and no path that writes a CV (the editor, an import, the site) has to remember
+ * to refresh it. Null when there is neither: a CV with a name and nothing else is not sent to
+ * an employer.
+ */
+async function cvFileOf(id, cv) {
+  const upload = await getFile(id).catch(() => null);
+  if (upload) return { ...upload, origin: 'upload' };
+  if (!cv) return null;
+  const resume = toJsonResume(cv);
+  if (!cvIsPrintable(resume)) return null;
+  const bytes = renderCvPdf(resume, pdfLabels());
+  return {
+    name: pdfName(resume),
+    type: 'application/pdf',
+    size: bytes.byteLength,
+    bytes,
+    origin: 'generated',
+  };
+}
 const EXTENSION_ORIGIN = chrome.runtime.getURL('');
 const fromExtensionPage = (sender) =>
   typeof sender?.url === 'string' && sender.url.startsWith(EXTENSION_ORIGIN);
@@ -71,7 +146,7 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
         // The token never leaves the worker.
         const summary = state.cv ? cvSummary(state.cv, state.extras || {}) : null;
         respond({
-          ...epimoniState(state),
+          ...(await epimoniState(state)),
           cv_label: state.cv_label || null,
           cv_source: state.cv_source || null,
           taken_at: state.taken_at || null,
@@ -88,7 +163,43 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
         // `entries` is the document entry by entry, for forms that ask for the career as
         // repeated blocks. Derived on every ask, like the profile of a migrated bag: the
         // document is the only copy, so there is nothing to keep in step.
-        respond({ profile: profileOf(state), entries: state.cv ? toEntries(state.cv) : {} });
+        //
+        // `cv_file` is the attached PDF's name and size only. The bytes cross on a second
+        // message, `cv-file`, sent once a page turns out to have a CV upload: most pages a
+        // fill runs on do not, and they have no business receiving the document.
+        //
+        // `id` fills from another CV of the library for this page only (the panel's picker);
+        // which CV is active for everything else does not change.
+        {
+          const st = msg.id ? await readAs(msg.id) : state;
+          const account = await epimoniState(st);
+          respond({
+            profile: profileOf(st),
+            entries: st.cv ? toEntries(st.cv) : {},
+            cv_id: st.active_cv_id || null,
+            cv_file: fileMeta(await cvFileOf(st.active_cv_id, st.cv)),
+            // Whether the panel may offer the AI features: a paired account, token live.
+            ai: account.ai,
+            consent: account.consent,
+            stale: Boolean(st.stale),
+          });
+        }
+        break;
+      case 'cv-file': {
+        const st = msg.id ? await readAs(msg.id) : state;
+        const f = await cvFileOf(st.active_cv_id, st.cv);
+        respond(f ? { name: f.name, type: f.type, data: toBase64(f.bytes) } : { ok: false });
+        break;
+      }
+      case 'cv:choices':
+        // What the panel's picker needs, and no more: an id and a name per CV. The documents
+        // stay in the worker.
+        respond({
+          cvs: (await listCvs()).map((r) => {
+            const doc = (state.cvs || []).find((c) => c.id === r.id)?.cv;
+            return { id: r.id, label: r.label || (doc && cvSummary(doc, {}).name) || null, active: r.active };
+          }),
+        });
         break;
       case 'extras':
         await write({ extras: { ...(state.extras || {}), ...(msg.extras || {}) } });
@@ -111,6 +222,12 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
       case 'cv:list': {
         const rows = await listCvs();
         const bag = await read();
+        const uploads = await listFileMeta().catch(() => ({}));
+        const files = {};
+        for (const r of rows) {
+          const doc = (bag.cvs || []).find((c) => c.id === r.id)?.cv || null;
+          files[r.id] = uploads[r.id] || (doc ? fileMeta(await cvFileOf(r.id, doc)) : null);
+        }
         respond({
           // The summary is built here because `cvSummary` lives with the document model and
           // the store deliberately imports nothing.
@@ -120,6 +237,7 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
               ...r,
               summary: doc ? cvSummary(doc, bag.extras || {}) : null,
               analysable: doc ? cvIsAnalysable(doc) : false,
+              file: files[r.id] || null,
             };
           }),
           max: MAX_CVS,
@@ -156,13 +274,94 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
       case 'cv:rename':
         respond({ ok: Boolean(await renameCv(msg.id, msg.label)) });
         break;
-      case 'cv:delete':
-        respond({ ok: Boolean(await deleteCv(msg.id)) });
+      case 'cv:delete': {
+        const ok = Boolean(await deleteCv(msg.id));
+        // A file left behind is an orphan nobody can reach, not a reason to fail the delete.
+        if (ok) await deleteFile(msg.id).catch(() => {});
+        respond({ ok });
         break;
+      }
       case 'cv:clear':
         // Every document, not just the active one: this is "effacer mes données".
         for (const row of await listCvs()) await deleteCv(row.id);
+        await clearFiles().catch(() => {});
         await write({ profile: null });
+        respond({ ok: true });
+        break;
+      // ── The CV's file ───────────────────────────────────────────────────────────────
+      // One PDF per library entry, for the upload box application forms ask for. Checked
+      // here as well as on the page: the worker is the one that keeps it.
+      case 'cv:file:set': {
+        if (!(await listCvs()).some((r) => r.id === msg.id)) {
+          respond({ ok: false, error: 'no-cv' });
+          break;
+        }
+        const file = { name: msg.name, type: msg.mime, bytes: fromBase64(msg.data) };
+        const problem = fileProblem(file);
+        if (problem) {
+          respond({ ok: false, error: problem });
+          break;
+        }
+        respond({ ok: true, file: await putFile(msg.id, file) });
+        break;
+      }
+      case 'cv:file:get': {
+        // The file as a form would receive it, for the CV page's preview.
+        const st = await readAs(msg.id);
+        const f = st.active_cv_id === msg.id ? await cvFileOf(msg.id, st.cv) : null;
+        respond(f ? { ok: true, name: f.name, origin: f.origin, data: toBase64(f.bytes) } : { ok: false });
+        break;
+      }
+      case 'cv:file:remove':
+        await deleteFile(msg.id);
+        respond({ ok: true });
+        break;
+      // ── The application tracker ─────────────────────────────────────────────────────
+      // A page records itself, and only itself: the address is the tab the message came
+      // from, never one the message names.
+      case 'app:record': {
+        const url = sender.tab?.url || sender.url;
+        const cvId = msg.cv_id || state.active_cv_id || null;
+        const cvLabel = (state.cvs || []).find((c) => c.id === cvId)?.label || null;
+        const app = await recordApplication({
+          url,
+          title: msg.title,
+          company: msg.company,
+          fromAdvert: Boolean(msg.from_advert),
+          cv_id: cvId,
+          cv_label: cvLabel,
+          fields: msg.fields,
+        });
+        respond(app ? { ok: true, id: app.id, status: app.status } : { ok: false });
+        break;
+      }
+      case 'app:applied': {
+        // "J'ai envoyé ma candidature", from the panel on that page. It only ever moves an
+        // application forward from "rempli": the user may have got further since.
+        const app = await applicationFor(sender.tab?.url || sender.url);
+        if (!app) {
+          respond({ ok: false });
+          break;
+        }
+        const next = app.status === 'filled' ? await updateApplication(app.id, { status: 'applied' }) : app;
+        respond({ ok: true, status: next.status });
+        break;
+      }
+      case 'app:list':
+        respond({ apps: await listApplications() });
+        break;
+      case 'app:update':
+        respond({ ok: Boolean(await updateApplication(msg.id, { status: msg.status, note: msg.note })) });
+        break;
+      case 'app:delete':
+        respond({ ok: await deleteApplication(msg.id) });
+        break;
+      case 'app:clear':
+        await clearApplications();
+        respond({ ok: true });
+        break;
+      case 'open-tracker':
+        chrome.tabs.create({ url: chrome.runtime.getURL('dashboard.html#candidatures') });
         respond({ ok: true });
         break;
       case 'open-options':
@@ -172,11 +371,18 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
         break;
       case 'forget':
         await clear();
+        await clearApplications();
+        await clearFiles().catch(() => {});
         await forgetEpimoni();
         respond({ ok: true });
         break;
-      default:
-        respond((await handleEpimoni(msg, state)) ?? { ok: false, error: 'unknown' });
+      default: {
+        // An analysis asked from a page that fills from another CV of the library compares
+        // that CV, so the score is about the document the form was filled from.
+        const st =
+          (msg.type === 'analyse' || msg.type === 'letter') && msg.cv_id ? await readAs(msg.cv_id) : state;
+        respond((await handleEpimoni(msg, st, sender)) ?? { ok: false, error: 'unknown' });
+      }
     }
   })();
   return true;

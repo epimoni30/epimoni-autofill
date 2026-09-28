@@ -137,7 +137,7 @@ test('the core worker runs with the add-on deleted, and never touches the networ
     await import(pathToFileURL(file).href);
     const ask = (msg) =>
       new Promise((resolve) =>
-        listeners[0](msg, { id: 'test-ext', url: 'chrome-extension://test-ext/options.html' }, resolve),
+        listeners[0](msg, { id: 'test-ext', url: 'chrome-extension://test-ext/dashboard.html' }, resolve),
       );
     const saved = await ask({
       type: 'cv:save',

@@ -140,6 +140,7 @@ export function bundleContent(root, { dev = false } = {}) {
     'src/content/posting.js',
     'src/content/guard.js',
     'src/content/fill.js',
+    'src/content/keywords.js',
   ];
   const entries = [...exposed, 'src/lexicon/index.js', 'src/fillers/index.js'];
   const mods = collect(root, entries);

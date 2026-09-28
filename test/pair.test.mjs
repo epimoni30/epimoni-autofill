@@ -370,3 +370,56 @@ test('ping answers without touching storage', async () => {
   assert.equal(res.ok, true);
   assert.equal(res.version, '0.1.0');
 });
+
+// The bridge (src/epimoni/bridge.js) reaches the worker as a content script on the site, not
+// through `externally_connectable`. Same rules, and the sender the browser reports decides.
+const BRIDGE_SENDER = {
+  id: 'test-ext',
+  tab: { id: 7 },
+  frameId: 0,
+  url: `${SITE}/fr/extension-chrome`,
+  origin: SITE,
+};
+const bridged = (msg, sender = BRIDGE_SENDER) => internal({ type: 'site', msg }, sender);
+
+test('bridge: a pairing request is a request, exactly as over externally_connectable', async () => {
+  reset();
+  const before = JSON.stringify(local);
+  const opened = tabs.length;
+  const req = await bridged({ ...GOOD, cv: { basics: { name: 'Camille' } } });
+  assert.equal(req.ok, true);
+  assert.equal(req.mode, 'confirm');
+  assert.equal(JSON.stringify(local), before, 'nothing is written before the user accepts');
+  assert.equal(tabs.at(-1), `chrome-extension://test-ext/src/epimoni/pair.html#${req.id}`);
+  assert.equal(tabs.length, opened + 1);
+  assert.deepEqual(await bridged({ type: 'epimoni:pair-status', id: req.id }), {
+    ok: true,
+    status: 'pending',
+  });
+});
+
+test('bridge: Firefox reports a URL rather than an origin, and that is enough', async () => {
+  const { origin, ...firefox } = BRIDGE_SENDER;
+  assert.equal((await bridged({ type: 'epimoni:ping' }, firefox)).ok, true);
+});
+
+test('bridge: only the top frame of a tab on the site is heard', async () => {
+  reset();
+  const refused = { ok: false, error: 'origin' };
+  // A frame the site embeds, a job board's content script, a sender with no tab.
+  assert.deepEqual(await bridged(GOOD, { ...BRIDGE_SENDER, frameId: 3 }), refused);
+  assert.deepEqual(
+    await bridged(GOOD, {
+      ...BRIDGE_SENDER,
+      url: 'https://www.hellowork.com/x',
+      origin: 'https://www.hellowork.com',
+    }),
+    refused,
+  );
+  assert.deepEqual(await bridged(GOOD, { id: 'test-ext', frameId: 0, url: SITE, origin: SITE }), refused);
+  assert.equal(session.pair_pending, undefined, 'none of them parked a request');
+});
+
+test('bridge: the dev-only hook is external only', async () => {
+  assert.deepEqual(await bridged({ type: 'epimoni:devfill', urlIncludes: '' }), { ok: false, error: 'type' });
+});

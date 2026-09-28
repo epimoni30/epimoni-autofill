@@ -9,10 +9,9 @@ carries the same number, and the release workflow refuses a tag that does not ma
 
 ## [Unreleased]
 
-## [0.1.0] - Unreleased
+## [0.1.0] - 2026-09-28
 
-First public version. The heading carries the version already, so the release workflow's
-notes come from this section when `v0.1.0` is tagged; set the date then.
+First public version.
 
 ### Security
 
@@ -38,8 +37,8 @@ notes come from this section when `v0.1.0` is tagged; set the date then.
 - A review panel listing every field touched, so you can check and undo before sending.
   The extension never submits a form, never ticks a checkbox, and refuses password and
   payment fields.
-- A CV editor inside the extension, with a library of several CVs and one active. No Epimoni
-  account is needed.
+- A CV editor inside the extension, with a library of several CVs and one active. Filling
+  needs no Epimoni account; the offer analysis and the cover letter need a paired account.
 - JSON Résumé import and export, including projects, volunteering, awards, publications,
   interests and references.
 - Custom dropdowns (WAI-ARIA comboboxes: React-Select, MUI and most design systems) filled and
@@ -49,6 +48,18 @@ notes come from this section when `v0.1.0` is tagged; set the date then.
 - Offer analysis: the CV compared against the job advert on screen, on request only, never on
   page load.
 - Interface in French, English and Spanish.
+- Your CV attached to upload fields: the PDF you added to a CV in the library, or one made
+  from the CV itself when you have not added one.
+- Forms that grow as you go (LinkedIn Easy Apply steps, "Add another" blocks) are filled again
+  without touching what was already filled.
+- A CV picker in the menu, and a choice of CV for the current page from the review panel.
+- A dashboard page with the CV library and a list of the applications you filled, kept on
+  your computer only.
+- The skills from your CV highlighted in the job advert, without changing the page.
+- A cover letter written for the advert on screen, shown first and inserted only when you click.
+- A Firefox build (`node build.mjs --target=firefox`), attached to each GitHub release.
+- epimoni30.com reaches the extension through a content script on its own pages, which needs no
+  extension id and works in Firefox.
 - A privacy policy (`PRIVACY.md`, English and French) and the Chrome Web Store listing text,
   permission justifications and data disclosures (`store/listing.md`).
 

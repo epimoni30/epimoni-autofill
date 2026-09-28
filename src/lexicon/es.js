@@ -234,6 +234,31 @@ export default {
       any: ['idiomas', 'idiomas hablados', 'nivel de idioma'],
       not: ['programacion'],
     },
+    // A file input only. The letter, a title, a photo or "otros documentos" each rule it out.
+    cv_file: {
+      any: [
+        'cv',
+        'curriculum',
+        'curriculum vitae',
+        'tu cv',
+        'adjunta tu cv',
+        'sube tu cv',
+        'adjuntar cv',
+        'subir cv',
+      ],
+      not: [
+        'carta',
+        'motivacion',
+        'foto',
+        'titulo',
+        'certificado',
+        'otro',
+        'otros',
+        'adicional',
+        'adicionales',
+        'portafolio',
+      ],
+    },
     'work.position': {
       any: ['puesto', 'titulo del puesto', 'cargo', 'funcion'],
       not: ['fecha', 'inicio', 'fin', 'ubicacion', 'ciudad', 'descripcion', 'deseado', 'empresa'],

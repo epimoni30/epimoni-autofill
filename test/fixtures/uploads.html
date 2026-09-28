@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="fr">
+<!-- File inputs. One is the CV upload, drawn the way nearly every form draws it: a hidden
+     input behind a drop zone the user can see. Everything else is a different document, a
+     box the user cannot see, a type that is not a PDF, or a sign-in form, and must be left
+     empty. The drop zone reads the file on `change`, like a real one, and says its name. -->
+<meta charset="utf-8"><title>Pièces jointes</title>
+<style>
+  .zone { border: 2px dashed #bbb; padding: 18px; margin: 10px 0; }
+  .zone input { display: none; }
+</style>
+<body>
+<form id="apply">
+  <div class="zone" id="cv-zone">
+    <p>Déposez votre CV ici (PDF, 5 Mo max.)</p>
+    <input type="file" name="resume" accept=".pdf,.doc,.docx" data-expect="cv_file">
+    <span id="cv-picked"></span>
+  </div>
+  <label for="lm">Lettre de motivation (fichier)</label>
+  <input type="file" id="lm" name="letter" data-expect="none">
+  <label for="both">CV et lettre de motivation</label>
+  <input type="file" id="both" name="both" data-expect="none">
+  <label for="other">Autre document</label>
+  <input type="file" id="other" name="other" data-expect="none">
+  <label for="photo">Photo</label>
+  <input type="file" id="photo" name="photo" accept="image/*" data-expect="none">
+  <label for="word">CV au format Word</label>
+  <input type="file" id="word" name="word" accept=".doc,.docx" data-expect="none">
+</form>
+<!-- A CV box nobody can see: the exfiltration shape, for a document this time. -->
+<div style="opacity:0">
+  <label for="ghost">CV</label>
+  <input type="file" id="ghost" name="ghost_cv" data-expect="none">
+</div>
+<!-- An upload inside a sign-in form is part of somebody else's login flow. -->
+<form id="login">
+  <label for="le">Adresse e-mail</label><input id="le" name="email" type="email" data-expect="none">
+  <label for="lp">Mot de passe</label><input id="lp" name="password" type="password" data-expect="none">
+  <label for="lcv">Votre CV</label><input type="file" id="lcv" name="cv" data-expect="none">
+</form>
+<script>
+  document.querySelector('#cv-zone input').addEventListener('change', (e) => {
+    document.getElementById('cv-picked').textContent = e.target.files[0]?.name || '';
+  });
+</script>
+</body></html>
