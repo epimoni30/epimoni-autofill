@@ -11,7 +11,7 @@ const t = (key, subs) => chrome.i18n.getMessage(key, subs) || key;
 const SITE = 'https://www.epimoni30.com/extension-chrome';
 // The plans on the site's home page, in the user's language: /#pricing, /en/#pricing…
 const LANG = chrome.i18n.getUILanguage().slice(0, 2);
-const PLANS = `https://www.epimoni30.com/${['en', 'es'].includes(LANG) ? `${LANG}/` : ''}#pricing`;
+const PLANS = `https://www.epimoni30.com/${['en', 'es', 'pt'].includes(LANG) ? `${LANG}/` : ''}#pricing`;
 
 /** Fill in everything the markup named, and set the document language for a screen reader. */
 function localise() {

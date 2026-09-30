@@ -1,0 +1,1188 @@
+{
+  "ext_name": {
+    "message": "Epimoni: preencher candidaturas"
+  },
+  "ext_description": {
+    "message": "Preenche suas candidaturas e analisa as vagas no LinkedIn e em sites de vagas. Com ou sem conta Epimoni."
+  },
+  "action_title": {
+    "message": "Preencher esta candidatura"
+  },
+  "field_given_name": {
+    "message": "Nome"
+  },
+  "field_family_name": {
+    "message": "Sobrenome"
+  },
+  "field_full_name": {
+    "message": "Nome completo"
+  },
+  "field_email": {
+    "message": "E-mail"
+  },
+  "field_email_confirm": {
+    "message": "Confirmar e-mail"
+  },
+  "field_phone": {
+    "message": "Telefone"
+  },
+  "field_street": {
+    "message": "Endereço"
+  },
+  "field_postal_code": {
+    "message": "CEP"
+  },
+  "field_city": {
+    "message": "Cidade"
+  },
+  "field_country": {
+    "message": "País"
+  },
+  "field_linkedin_url": {
+    "message": "LinkedIn"
+  },
+  "field_github_url": {
+    "message": "GitHub"
+  },
+  "field_portfolio_url": {
+    "message": "Site"
+  },
+  "field_current_title": {
+    "message": "Cargo atual"
+  },
+  "field_current_employer": {
+    "message": "Empresa atual"
+  },
+  "field_summary": {
+    "message": "Sobre você"
+  },
+  "field_cover_letter": {
+    "message": "Carta de apresentação"
+  },
+  "field_years_experience": {
+    "message": "Anos de experiência"
+  },
+  "field_salary_expectation": {
+    "message": "Pretensão salarial"
+  },
+  "field_notice_period": {
+    "message": "Aviso prévio"
+  },
+  "field_availability_date": {
+    "message": "Disponibilidade"
+  },
+  "field_work_authorization": {
+    "message": "Autorização de trabalho"
+  },
+  "field_education_degree": {
+    "message": "Escolaridade"
+  },
+  "field_education_institution": {
+    "message": "Instituição de ensino"
+  },
+  "field_skills": {
+    "message": "Habilidades"
+  },
+  "field_languages": {
+    "message": "Idiomas"
+  },
+  "field_cv_file": {
+    "message": "Currículo (arquivo PDF)"
+  },
+  "field_awards_awarder": {
+    "message": "Concedido por"
+  },
+  "field_awards_date": {
+    "message": "Data"
+  },
+  "field_awards_description": {
+    "message": "Descrição"
+  },
+  "field_awards_title": {
+    "message": "Título"
+  },
+  "field_certificates_date": {
+    "message": "Data"
+  },
+  "field_certificates_issuer": {
+    "message": "Emissor"
+  },
+  "field_certificates_name": {
+    "message": "Nome"
+  },
+  "field_certificates_url": {
+    "message": "Link"
+  },
+  "field_education_details": {
+    "message": "Detalhes"
+  },
+  "field_education_end": {
+    "message": "Término"
+  },
+  "field_education_field": {
+    "message": "Curso"
+  },
+  "field_education_score": {
+    "message": "Nota"
+  },
+  "field_education_start": {
+    "message": "Início"
+  },
+  "field_interests_keywords": {
+    "message": "Palavras-chave"
+  },
+  "field_interests_name": {
+    "message": "Nome"
+  },
+  "field_languages_fluency": {
+    "message": "Nível"
+  },
+  "field_languages_language": {
+    "message": "Idioma"
+  },
+  "field_projects_description": {
+    "message": "Descrição"
+  },
+  "field_projects_end": {
+    "message": "Término"
+  },
+  "field_projects_name": {
+    "message": "Nome"
+  },
+  "field_projects_start": {
+    "message": "Início"
+  },
+  "field_projects_url": {
+    "message": "Link"
+  },
+  "field_publications_date": {
+    "message": "Data"
+  },
+  "field_publications_description": {
+    "message": "Descrição"
+  },
+  "field_publications_name": {
+    "message": "Nome"
+  },
+  "field_publications_publisher": {
+    "message": "Editora"
+  },
+  "field_publications_url": {
+    "message": "Link"
+  },
+  "field_references_name": {
+    "message": "Nome"
+  },
+  "field_references_reference": {
+    "message": "Recomendação"
+  },
+  "field_skills_keywords": {
+    "message": "Palavras-chave"
+  },
+  "field_skills_level": {
+    "message": "Nível"
+  },
+  "field_skills_name": {
+    "message": "Nome"
+  },
+  "field_volunteer_description": {
+    "message": "Descrição"
+  },
+  "field_volunteer_end": {
+    "message": "Término"
+  },
+  "field_volunteer_organization": {
+    "message": "Organização"
+  },
+  "field_volunteer_position": {
+    "message": "Cargo"
+  },
+  "field_volunteer_start": {
+    "message": "Início"
+  },
+  "field_work_company": {
+    "message": "Empresa"
+  },
+  "field_work_description": {
+    "message": "Descrição"
+  },
+  "field_work_end": {
+    "message": "Término"
+  },
+  "field_work_location": {
+    "message": "Local"
+  },
+  "field_work_position": {
+    "message": "Cargo"
+  },
+  "field_work_start": {
+    "message": "Início"
+  },
+  "field_work_url": {
+    "message": "Link"
+  },
+  "cvsection_work": {
+    "message": "Experiência"
+  },
+  "cvsection_volunteer": {
+    "message": "Voluntariado"
+  },
+  "cvsection_education": {
+    "message": "Formação"
+  },
+  "cvsection_awards": {
+    "message": "Prêmio"
+  },
+  "cvsection_certificates": {
+    "message": "Certificação"
+  },
+  "cvsection_publications": {
+    "message": "Publicação"
+  },
+  "cvsection_skills": {
+    "message": "Habilidade"
+  },
+  "cvsection_languages": {
+    "message": "Idioma"
+  },
+  "cvsection_interests": {
+    "message": "Interesse"
+  },
+  "cvsection_references": {
+    "message": "Referência"
+  },
+  "cvsection_projects": {
+    "message": "Projeto"
+  },
+  "panel_leftover": {
+    "message": "Ainda há $COUNT$ × “$SECTION$” no seu currículo sem bloco nesta página: clique em “Adicionar” na página e abra a extensão de novo.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "section": {
+        "content": "$2"
+      }
+    }
+  },
+  "panel_tick_current": {
+    "message": "Cargo atual: a data de término fica vazia. Marque “trabalho aqui atualmente” se o formulário pedir."
+  },
+  "panel_filled_one": {
+    "message": "1 campo preenchido"
+  },
+  "panel_filled_many": {
+    "message": "$COUNT$ campos preenchidos",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_to_check": {
+    "message": "$COUNT$ para revisar",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_open_questions": {
+    "message": "$COUNT$ pergunta(s) aberta(s)",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_review": {
+    "message": "Revise tudo antes de enviar. Nada é enviado no seu lugar."
+  },
+  "panel_undo": {
+    "message": "Desfazer tudo"
+  },
+  "panel_close": {
+    "message": "Fechar"
+  },
+  "panel_open_epimoni": {
+    "message": "Abrir o Epimoni"
+  },
+  "panel_offer_found": {
+    "message": "Uma vaga foi detectada nesta página."
+  },
+  "panel_analyse_cta": {
+    "message": "Analisar esta vaga"
+  },
+  "panel_analysing": {
+    "message": "Analisando…"
+  },
+  "panel_match": {
+    "message": "Compatibilidade: $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_weakest": {
+    "message": "Pontos a reforçar:"
+  },
+  "panel_see_full": {
+    "message": "Ver a análise completa →"
+  },
+  "panel_quota": {
+    "message": "Nenhuma análise disponível nesta hora. Tente de novo em $MINUTES$ min.",
+    "placeholders": {
+      "minutes": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_quota_cta": {
+    "message": "Ver os planos"
+  },
+  "panel_stale": {
+    "message": "Sua sessão expirou. Conecte a extensão de novo pelo Epimoni."
+  },
+  "panel_no_cv": {
+    "message": "Adicione seu currículo para analisar esta vaga."
+  },
+  "panel_too_long": {
+    "message": "Esta vaga é longa demais para ser analisada."
+  },
+  "panel_analyse_failed": {
+    "message": "A análise não foi concluída. Tente de novo."
+  },
+  "section_profil": {
+    "message": "Perfil"
+  },
+  "section_experience": {
+    "message": "Experiência"
+  },
+  "section_formation": {
+    "message": "Formação"
+  },
+  "section_competences": {
+    "message": "Habilidades"
+  },
+  "section_certification": {
+    "message": "Certificações"
+  },
+  "section_culture": {
+    "message": "Cultura"
+  },
+  "panel_accept": {
+    "message": "Aceitar este valor"
+  },
+  "panel_dismiss": {
+    "message": "Descartar"
+  },
+  "popup_title": {
+    "message": "Epimoni candidaturas"
+  },
+  "popup_connect_link": {
+    "message": "Importar meu currículo do Epimoni →"
+  },
+  "popup_reconnect": {
+    "message": "Conectar a extensão de novo →"
+  },
+  "popup_ready_fields": {
+    "message": "$COUNT$ dados prontos",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_cv": {
+    "message": "Currículo: $LABEL$",
+    "placeholders": {
+      "label": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_synced": {
+    "message": "Sincronizado $WHEN$",
+    "placeholders": {
+      "when": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_today": {
+    "message": "hoje"
+  },
+  "popup_yesterday": {
+    "message": "ontem"
+  },
+  "popup_days_ago": {
+    "message": "há $DAYS$ dias",
+    "placeholders": {
+      "days": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_fill": {
+    "message": "Preencher esta página"
+  },
+  "popup_stale": {
+    "message": "Sua sessão expirou. O preenchimento continua funcionando, mas conecte a extensão de novo para analisar vagas."
+  },
+  "panel_no_profile": {
+    "message": "Nenhum currículo ainda. Adicione um aqui ou importe da sua conta Epimoni."
+  },
+  "panel_add_cv": {
+    "message": "Adicionar meu currículo"
+  },
+  "panel_tier_paid": {
+    "message": "Análises ilimitadas no seu plano."
+  },
+  "panel_tier_free": {
+    "message": "1 análise por hora na conta gratuita."
+  },
+  "panel_tier_anon": {
+    "message": "1 análise por hora, sem conta. Nenhum currículo fica guardado nos nossos servidores."
+  },
+  "panel_tier_spent": {
+    "message": "Análise já usada. A próxima em $MINUTES$ min.",
+    "placeholders": {
+      "minutes": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_stale_degraded": {
+    "message": "Sessão expirada: esta análise usou a cota gratuita."
+  },
+  "panel_keep_analysis": {
+    "message": "Crie uma conta para guardar suas análises →"
+  },
+  "panel_offline": {
+    "message": "Não foi possível conectar. Verifique sua rede e tente de novo."
+  },
+  "popup_no_profile": {
+    "message": "Nenhum currículo salvo ainda."
+  },
+  "popup_add_cv": {
+    "message": "Adicionar meu currículo"
+  },
+  "popup_edit_cv": {
+    "message": "Meu currículo"
+  },
+  "popup_cv_local": {
+    "message": "Currículo salvo nesta extensão"
+  },
+  "popup_cv_site": {
+    "message": "Currículo importado do Epimoni"
+  },
+  "popup_thin": {
+    "message": "Currículo incompleto: adicione uma experiência ou habilidades para analisar uma vaga."
+  },
+  "popup_tier_paid": {
+    "message": "Análises ilimitadas"
+  },
+  "popup_tier_free": {
+    "message": "1 análise por hora (conta gratuita)"
+  },
+  "popup_tier_anon": {
+    "message": "1 análise por hora, sem conta"
+  },
+  "popup_tier_spent": {
+    "message": "Análise usada. A próxima em $MINUTES$ min.",
+    "placeholders": {
+      "minutes": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_title": {
+    "message": "Meu currículo"
+  },
+  "opt_intro": {
+    "message": "Tudo isto fica neste computador. É daqui que suas candidaturas são preenchidas."
+  },
+  "opt_status_heading": {
+    "message": "Status"
+  },
+  "opt_from_account": {
+    "message": "Importar da minha conta Epimoni"
+  },
+  "opt_import": {
+    "message": "Importar um arquivo JSON"
+  },
+  "opt_export": {
+    "message": "Exportar"
+  },
+  "opt_import_ok": {
+    "message": "Currículo importado."
+  },
+  "opt_import_failed": {
+    "message": "Não foi possível ler o arquivo. Esperava-se um currículo em formato JSON."
+  },
+  "opt_import_empty": {
+    "message": "Esse arquivo não contém informações de currículo."
+  },
+  "opt_basics": {
+    "message": "Dados pessoais"
+  },
+  "opt_work": {
+    "message": "Experiência"
+  },
+  "opt_add_work": {
+    "message": "Adicionar uma experiência"
+  },
+  "opt_work_n": {
+    "message": "Experiência $N$",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_work_empty": {
+    "message": "Nenhuma experiência ainda."
+  },
+  "opt_education": {
+    "message": "Formação"
+  },
+  "opt_add_education": {
+    "message": "Adicionar uma formação"
+  },
+  "opt_education_n": {
+    "message": "Formação $N$",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_education_empty": {
+    "message": "Nenhuma formação ainda."
+  },
+  "opt_skills": {
+    "message": "Habilidades e idiomas"
+  },
+  "opt_skills_help": {
+    "message": "Habilidades, separadas por vírgulas ou uma por linha."
+  },
+  "opt_languages": {
+    "message": "Idiomas"
+  },
+  "opt_add_language": {
+    "message": "Adicionar um idioma"
+  },
+  "opt_language_n": {
+    "message": "Idioma $N$",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_languages_empty": {
+    "message": "Nenhum idioma ainda."
+  },
+  "opt_language": {
+    "message": "Idioma"
+  },
+  "opt_fluency": {
+    "message": "Nível"
+  },
+  "opt_start": {
+    "message": "Início"
+  },
+  "opt_end": {
+    "message": "Término"
+  },
+  "opt_details": {
+    "message": "Menção, especialização"
+  },
+  "opt_highlights": {
+    "message": "Atividades, uma por linha"
+  },
+  "opt_remove": {
+    "message": "Remover"
+  },
+  "opt_extras": {
+    "message": "O que seu currículo não tem"
+  },
+  "opt_extras_help": {
+    "message": "Pedido com frequência nos formulários, nunca no currículo. Fica neste computador."
+  },
+  "opt_privacy_heading": {
+    "message": "Seus dados"
+  },
+  "opt_privacy": {
+    "message": "Seu currículo fica guardado nesta extensão, neste computador. Ele só é enviado ao Epimoni quando você pede a análise de uma vaga."
+  },
+  "opt_unpair": {
+    "message": "Desconectar minha conta (o currículo é mantido)"
+  },
+  "opt_forget": {
+    "message": "Apagar tudo"
+  },
+  "opt_forget_confirm": {
+    "message": "Confirmar a exclusão"
+  },
+  "opt_save": {
+    "message": "Salvar"
+  },
+  "opt_saved": {
+    "message": "Salvo."
+  },
+  "opt_saved_thin": {
+    "message": "Salvo. Adicione uma experiência ou habilidades para analisar uma vaga."
+  },
+  "opt_unsaved": {
+    "message": "Alterações não salvas."
+  },
+  "opt_cv_untitled": {
+    "message": "Currículo sem título"
+  },
+  "opt_from_account_on": {
+    "message": "Conectado à sua conta Epimoni ($LABEL$)",
+    "placeholders": {
+      "label": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_source_site": {
+    "message": "Currículo importado do Epimoni, sem conta conectada."
+  },
+  "opt_source_local": {
+    "message": "Currículo escrito nesta extensão."
+  },
+  "opt_source_none": {
+    "message": "Nenhum currículo salvo: o preenchimento não vai fazer nada."
+  },
+  "opt_counts": {
+    "message": "$FIELDS$ dados · $WORK$ experiência(s) · $SKILLS$ habilidade(s)",
+    "placeholders": {
+      "fields": {
+        "content": "$1"
+      },
+      "work": {
+        "content": "$2"
+      },
+      "skills": {
+        "content": "$3"
+      }
+    }
+  },
+  "opt_thin": {
+    "message": "Ainda não é o bastante para analisar uma vaga: adicione uma experiência ou habilidades."
+  },
+  "opt_stale": {
+    "message": "Sua sessão do Epimoni expirou. O preenchimento continua funcionando."
+  },
+  "opt_tier_paid": {
+    "message": "Análises de vagas ilimitadas no seu plano."
+  },
+  "opt_tier_free": {
+    "message": "1 análise de vaga por hora na conta gratuita."
+  },
+  "opt_tier_anon": {
+    "message": "1 análise de vaga por hora, sem conta."
+  },
+  "opt_tier_spent": {
+    "message": "Análise usada. A próxima em $MINUTES$ min.",
+    "placeholders": {
+      "minutes": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_empty": {
+    "message": "Não foi possível comparar esta vaga com seu currículo. Sua cota não foi usada."
+  },
+  "panel_retry": {
+    "message": "Tentar de novo"
+  },
+  "opt_position": {
+    "message": "Cargo"
+  },
+  "opt_employer": {
+    "message": "Empresa"
+  },
+  "opt_library_heading": {
+    "message": "Meus currículos"
+  },
+  "opt_library_intro": {
+    "message": "Guarde alguns, por exemplo um curto e um detalhado, e escolha qual preenche suas candidaturas."
+  },
+  "opt_library_empty": {
+    "message": "Nenhum currículo ainda."
+  },
+  "opt_library_new": {
+    "message": "Novo currículo"
+  },
+  "opt_library_use": {
+    "message": "Usar"
+  },
+  "opt_library_active": {
+    "message": "Ativo"
+  },
+  "opt_library_rename": {
+    "message": "Renomear"
+  },
+  "opt_library_delete": {
+    "message": "Excluir"
+  },
+  "opt_library_delete_confirm": {
+    "message": "Confirmar a exclusão"
+  },
+  "opt_library_full": {
+    "message": "Limite de $COUNT$ currículos atingido. Exclua um para adicionar outro.",
+    "placeholders": {
+      "COUNT": {
+        "content": "$1",
+        "example": "20"
+      }
+    }
+  },
+  "opt_library_switched": {
+    "message": "Currículo ativo: $NAME$.",
+    "placeholders": {
+      "NAME": {
+        "content": "$1",
+        "example": "CV court"
+      }
+    }
+  },
+  "opt_library_saved_first": {
+    "message": "Suas alterações foram salvas antes da troca."
+  },
+  "opt_library_deleted": {
+    "message": "Currículo excluído."
+  },
+  "opt_source_account_badge": {
+    "message": "Conta Epimoni"
+  },
+  "opt_source_site_badge": {
+    "message": "Do Epimoni"
+  },
+  "opt_source_local_badge": {
+    "message": "Escrito aqui"
+  },
+  "opt_export_hint": {
+    "message": "Exportado em JSON Resume: legível por outras ferramentas de currículo e reimportável aqui."
+  },
+  "pair_title_account": {
+    "message": "Conectar esta conta Epimoni?"
+  },
+  "pair_title_cv": {
+    "message": "Adicionar este currículo à extensão?"
+  },
+  "pair_from_site": {
+    "message": "Esta solicitação vem de www.epimoni30.com."
+  },
+  "pair_account": {
+    "message": "Conta"
+  },
+  "pair_cv": {
+    "message": "Currículo"
+  },
+  "pair_warning_account": {
+    "message": "Só aceite se você acabou de clicar em “Conectar” no site e o endereço acima é seu. As análises de vagas serão feitas com esta conta."
+  },
+  "pair_warning_cv": {
+    "message": "Só aceite se você acabou de clicar em “Conectar” no site e este currículo é seu. Ele será usado para preencher seus formulários de candidatura."
+  },
+  "pair_accept": {
+    "message": "Aceitar"
+  },
+  "pair_refuse": {
+    "message": "Recusar"
+  },
+  "pair_done_title": {
+    "message": "Pronto"
+  },
+  "pair_done_account": {
+    "message": "Sua conta e seu currículo estão conectados. Você pode fechar esta aba."
+  },
+  "pair_done_cv": {
+    "message": "O currículo foi adicionado à sua biblioteca. Você pode fechar esta aba."
+  },
+  "pair_refused_title": {
+    "message": "Solicitação recusada"
+  },
+  "pair_refused": {
+    "message": "Nada foi alterado. Você pode fechar esta aba."
+  },
+  "pair_expired_title": {
+    "message": "Solicitação expirada"
+  },
+  "pair_expired": {
+    "message": "Esta solicitação não é mais válida. Comece a conexão de novo pelo site, se precisar."
+  },
+  "pair_failed_title": {
+    "message": "Não foi possível conectar"
+  },
+  "pair_library_full": {
+    "message": "Sua biblioteca de currículos está cheia. Exclua um currículo na extensão e conecte de novo."
+  },
+  "opt_file_heading": {
+    "message": "Arquivo do currículo (PDF)"
+  },
+  "opt_file_intro": {
+    "message": "Vai para o campo de envio de currículo dos formulários quando você os preenche. Se você não adicionar seu próprio PDF, a extensão cria um a partir deste currículo. Tudo fica neste computador."
+  },
+  "opt_file_none": {
+    "message": "Nenhum PDF anexado a este currículo."
+  },
+  "opt_file_current": {
+    "message": "$NAME$ · $SIZE$ KB",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      },
+      "size": {
+        "content": "$2"
+      }
+    }
+  },
+  "opt_file_choose": {
+    "message": "Anexar um PDF"
+  },
+  "opt_file_replace": {
+    "message": "Substituir"
+  },
+  "opt_file_save_first": {
+    "message": "Salve este currículo primeiro para anexar um PDF a ele."
+  },
+  "opt_file_saved": {
+    "message": "PDF anexado a este currículo."
+  },
+  "opt_file_removed": {
+    "message": "Seu PDF foi removido: o PDF criado a partir deste currículo fica no lugar dele."
+  },
+  "opt_file_error_type": {
+    "message": "Só são aceitos arquivos PDF."
+  },
+  "opt_file_error_size": {
+    "message": "Este PDF tem mais de 5 MB."
+  },
+  "opt_file_error": {
+    "message": "Não foi possível salvar o PDF."
+  },
+  "opt_file_badge": {
+    "message": "PDF anexado"
+  },
+  "pdf_profile": {
+    "message": "Perfil"
+  },
+  "pdf_work": {
+    "message": "Experiência profissional"
+  },
+  "pdf_education": {
+    "message": "Formação"
+  },
+  "pdf_projects": {
+    "message": "Projetos"
+  },
+  "pdf_certificates": {
+    "message": "Certificações"
+  },
+  "pdf_skills": {
+    "message": "Habilidades"
+  },
+  "pdf_languages": {
+    "message": "Idiomas"
+  },
+  "pdf_present": {
+    "message": "atual"
+  },
+  "panel_filled_with": {
+    "message": "Preenchido com"
+  },
+  "popup_cv_used": {
+    "message": "Currículo em uso"
+  },
+  "opt_file_generated": {
+    "message": "Criado a partir deste currículo: $NAME$ · $SIZE$ KB",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      },
+      "size": {
+        "content": "$2"
+      }
+    }
+  },
+  "opt_file_not_printable": {
+    "message": "Adicione seu nome e alguma experiência, formação ou habilidade para o PDF ser criado."
+  },
+  "opt_file_own": {
+    "message": "Usar meu próprio PDF"
+  },
+  "opt_file_preview": {
+    "message": "Visualizar"
+  },
+  "opt_file_use_generated": {
+    "message": "Voltar ao PDF criado a partir deste currículo"
+  },
+  "opt_file_badge_generated": {
+    "message": "PDF criado"
+  },
+  "panel_tracked": {
+    "message": "Adicionada às suas candidaturas."
+  },
+  "panel_tracked_applied": {
+    "message": "Candidatura marcada como enviada."
+  },
+  "panel_mark_applied": {
+    "message": "Enviei minha candidatura"
+  },
+  "panel_open_tracker": {
+    "message": "Ver minhas candidaturas"
+  },
+  "popup_tracker": {
+    "message": "Minhas candidaturas"
+  },
+  "trk_title": {
+    "message": "Minhas candidaturas"
+  },
+  "trk_intro": {
+    "message": "Cada formulário que a extensão preenche entra aqui. Esta lista fica neste computador."
+  },
+  "trk_empty": {
+    "message": "Nenhuma candidatura ainda. Preencha um formulário com a extensão e ele aparece aqui."
+  },
+  "trk_export": {
+    "message": "Exportar (CSV)"
+  },
+  "trk_clear": {
+    "message": "Limpar a lista"
+  },
+  "trk_clear_confirm": {
+    "message": "Clique de novo para apagar tudo"
+  },
+  "trk_all": {
+    "message": "Todas"
+  },
+  "trk_status": {
+    "message": "Status"
+  },
+  "trk_status_filled": {
+    "message": "Preenchida"
+  },
+  "trk_status_applied": {
+    "message": "Enviada"
+  },
+  "trk_status_interview": {
+    "message": "Entrevista"
+  },
+  "trk_status_offer": {
+    "message": "Proposta recebida"
+  },
+  "trk_status_rejected": {
+    "message": "Recusada"
+  },
+  "trk_filled_on": {
+    "message": "Preenchida em $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "trk_with_cv": {
+    "message": "com “$CV$”",
+    "placeholders": {
+      "cv": {
+        "content": "$1"
+      }
+    }
+  },
+  "trk_note": {
+    "message": "Adicionar uma nota"
+  },
+  "trk_note_placeholder": {
+    "message": "Contato, data da entrevista, retorno…"
+  },
+  "trk_delete": {
+    "message": "Excluir"
+  },
+  "trk_delete_confirm": {
+    "message": "Confirmar"
+  },
+  "trk_file": {
+    "message": "candidaturas"
+  },
+  "trk_col_title": {
+    "message": "Cargo"
+  },
+  "trk_col_company": {
+    "message": "Empresa"
+  },
+  "trk_col_site": {
+    "message": "Site"
+  },
+  "trk_col_url": {
+    "message": "Link"
+  },
+  "trk_col_status": {
+    "message": "Status"
+  },
+  "trk_col_filled": {
+    "message": "Preenchida em"
+  },
+  "trk_col_updated": {
+    "message": "Atualizada"
+  },
+  "trk_col_cv": {
+    "message": "Currículo"
+  },
+  "trk_col_note": {
+    "message": "Nota"
+  },
+  "panel_letter_found": {
+    "message": "Este formulário pede uma carta de apresentação."
+  },
+  "panel_letter_limit": {
+    "message": "Limite: $MAX$ caracteres.",
+    "placeholders": {
+      "max": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_letter_cta": {
+    "message": "Escrever minha carta com IA"
+  },
+  "panel_letter_writing": {
+    "message": "Escrevendo sua carta…"
+  },
+  "panel_letter_count": {
+    "message": "$N$ caracteres",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_letter_count_limit": {
+    "message": "$N$ / $MAX$ caracteres",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      },
+      "max": {
+        "content": "$2"
+      }
+    }
+  },
+  "panel_letter_insert": {
+    "message": "Colocar no formulário"
+  },
+  "panel_letter_inserted": {
+    "message": "Carta adicionada. Leia tudo antes de enviar."
+  },
+  "panel_letter_too_long": {
+    "message": "Mais longa do que o formulário aceita: copie e encurte."
+  },
+  "panel_letter_copy": {
+    "message": "Copiar"
+  },
+  "panel_letter_copied": {
+    "message": "Copiada"
+  },
+  "panel_letter_empty": {
+    "message": "Não foi possível escrever a carta. Tente de novo."
+  },
+  "dash_menu_cv": {
+    "message": "Meu currículo"
+  },
+  "dash_menu_applications": {
+    "message": "Minhas candidaturas"
+  },
+  "panel_skills_found": {
+    "message": "Suas habilidades citadas na vaga: $N$ de $TOTAL$",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "panel_skills_none": {
+    "message": "Nenhuma das suas habilidades aparece com as mesmas palavras na vaga."
+  },
+  "panel_skills_mark": {
+    "message": "Destacar na vaga"
+  },
+  "panel_skills_unmark": {
+    "message": "Remover o destaque"
+  },
+  "popup_ai_heading": {
+    "message": "Recursos de IA"
+  },
+  "popup_analyse": {
+    "message": "Analisar a vaga desta página"
+  },
+  "popup_letter": {
+    "message": "Escrever a carta de apresentação"
+  },
+  "popup_dashboard": {
+    "message": "Abrir o painel"
+  },
+  "popup_ai_needs_account": {
+    "message": "Para contas Epimoni conectadas à extensão."
+  },
+  "popup_ai_connect": {
+    "message": "Conectar minha conta Epimoni →"
+  },
+  "popup_ai_reconnect": {
+    "message": "Sua conexão com o Epimoni expirou."
+  },
+  "panel_ai_needs_account": {
+    "message": "Recurso de IA para contas Epimoni conectadas à extensão."
+  },
+  "panel_ai_connect": {
+    "message": "Conectar minha conta Epimoni →"
+  },
+  "panel_ai_reconnect": {
+    "message": "Sua conexão com o Epimoni expirou."
+  },
+  "panel_ai_reconnect_cta": {
+    "message": "Conectar de novo →"
+  },
+  "panel_no_advert": {
+    "message": "Nenhuma vaga foi encontrada nesta página."
+  },
+  "panel_no_letter_box": {
+    "message": "Este formulário não pede carta de apresentação."
+  },
+  "consent_title": {
+    "message": "Permitir o envio para a análise e a carta"
+  },
+  "consent_body": {
+    "message": "Para analisar uma vaga ou escrever uma carta, o Epimoni envia seu currículo e o texto da vaga para o servidor dele, no momento em que você pede. O Firefox pede seu consentimento antes."
+  },
+  "consent_core": {
+    "message": "Preencher formulários não envia nada e funciona sem este consentimento."
+  },
+  "consent_allow": {
+    "message": "Permitir"
+  },
+  "consent_done": {
+    "message": "Permitido. Você pode fechar esta aba."
+  },
+  "consent_refused": {
+    "message": "Nada foi permitido. O preenchimento continua funcionando; a análise e a carta ficam desativadas."
+  },
+  "consent_pair_note": {
+    "message": "O Firefox também vai pedir sua permissão para enviar seu currículo e a vaga quando você usar a análise ou a carta."
+  },
+  "ai_consent_note": {
+    "message": "O Firefox pede seu consentimento antes que seu currículo e a vaga sejam enviados ao Epimoni."
+  },
+  "ai_consent_cta": {
+    "message": "Permitir o envio"
+  }
+}

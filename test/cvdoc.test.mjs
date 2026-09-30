@@ -229,6 +229,9 @@ test('dates become ISO 8601, and a bare year stays a bare year', () => {
   assert.equal(toIso8601('en cours'), '');
   assert.equal(toIso8601(''), '');
   assert.equal(toIso8601('bientôt'), '', 'no year, nothing to say');
+  assert.equal(toIso8601('outubro 2021'), '2021-10');
+  assert.equal(toIso8601('aout 2021'), '2021-08', 'the pt "out" prefix does not take the French August');
+  assert.equal(toIso8601('até o momento'), '');
 });
 
 test('an ISO date keeps its month through the arithmetic too', () => {

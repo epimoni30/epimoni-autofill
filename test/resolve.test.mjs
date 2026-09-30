@@ -304,3 +304,45 @@ test('another document on the form rules the CV out', () => {
   ])
     assert.notEqual(key(label, { type: 'file' }), 'cv_file', label);
 });
+
+// ── Brazilian Portuguese ─────────────────────────────────────────────────────────────────
+//
+// Close enough to Spanish that most phrases carry over, but a Brazilian form asks a few
+// things no other pack has to refuse: the mother's and father's names, a "nome social",
+// and a birthplace, all next to the candidate's own name and city.
+
+test('Portuguese identity fields', () => {
+  assert.equal(key('nome completo'), 'full_name');
+  assert.equal(key('primeiro nome'), 'given_name');
+  assert.equal(key('sobrenome'), 'family_name');
+  assert.equal(key('telefone celular'), 'phone');
+  assert.equal(key('cep'), 'postal_code');
+  assert.equal(key('cidade'), 'city');
+  assert.equal(key('endereco'), 'street');
+  assert.equal(key('pretensao salarial'), 'salary_expectation');
+  assert.equal(key('carta de apresentacao', { tag: 'textarea' }), 'cover_letter');
+  assert.equal(key('anexe seu curriculo', { type: 'file' }), 'cv_file');
+});
+
+test('a Brazilian form asks for names that are not the candidate', () => {
+  assert.equal(key('nome da mae'), 'skip:no-match');
+  assert.equal(key('nome do pai'), 'skip:no-match');
+  assert.equal(key('nome social'), 'skip:no-match');
+  assert.equal(key('nome da empresa'), 'skip:no-match');
+  assert.equal(key('cidade natal'), 'skip:no-match');
+  assert.equal(key('endereco de e mail'), 'email');
+  assert.equal(key('confirme seu e mail'), 'email_confirm');
+});
+
+test('Portuguese blocks: admission dates, and "curso" is the field of study', () => {
+  assert.equal(blockKey('empresa', work0), 'work.company@0');
+  assert.equal(blockKey('cargo', work0), 'work.position@0');
+  assert.equal(blockKey('data de admissao', work0), 'work.start@0');
+  assert.equal(blockKey('data de saida', work0), 'work.end@0');
+  const edu = { section: 'education', index: 0, weak: false };
+  assert.equal(blockKey('curso', edu), 'education.field@0');
+  assert.equal(blockKey('instituicao de ensino', edu), 'education.institution@0');
+  assert.equal(blockKey('data de conclusao', edu), 'education.end@0');
+  assert.equal(resolver.sectionOf('experiencias profissionais'), 'work');
+  assert.equal(resolver.sectionOf('formacao academica'), 'education');
+});
