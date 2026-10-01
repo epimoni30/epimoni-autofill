@@ -23,7 +23,8 @@ extension, in French and English.
 - Language: French (default), with English and Spanish listings
 - Homepage: https://www.epimoni30.com/extension-chrome
 - Support: https://github.com/epimoni30/epimoni-autofill/issues
-- Privacy policy URL: the published copy of [`PRIVACY.md`](../PRIVACY.md).
+- Privacy policy URL: https://github.com/epimoni30/epimoni-autofill/blob/main/PRIVACY.md (the
+  published copy of [`PRIVACY.md`](../PRIVACY.md); the site's own policy links to it)
 
 ### Detailed description (français)
 
