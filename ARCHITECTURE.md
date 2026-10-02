@@ -99,7 +99,7 @@ The folder *is* the decision, and three rules keep it one:
 
 - Only the core worker imports the add-on, and only `epimoni/worker.js`, through four exports:
   `installEpimoni` (the site's listener), `handleEpimoni` (the messages it owns: `analyse`,
-  `letter`, `tier`, `unpair`, `report`), `epimoniState` (what a surface may say about the account) and
+  `letter`, `tailor`, `tailor:save`, `tier`, `unpair`, `report`), `epimoniState` (what a surface may say about the account) and
   `forgetEpimoni`. A message the core does not know is offered to the add-on, and one neither
   knows is answered `unknown`.
 - The add-on depends on the core, never the reverse. It reads `shared/store.js` and
@@ -422,6 +422,28 @@ accepts is never cut to fit: the insert button is disabled and the user can copy
 open a session), retry once on a 401, and on a 429 forget the cached allowance. The backend
 memoises the same CV, advert, template and limit without charging, and the worker caches the
 answer for the session, so reopening the panel costs nothing.
+
+## The tailored CV: proposals first, the user's choice second
+
+"Adapter mon CV à cette offre" (panel and popup) asks the backend's CV writer
+(`/ml/analyse/write-cv-doc`, the same one the site's editor uses) for rewrites of the CV
+against the advert on the page. It answers with change proposals keyed by field (`title`,
+`summary`, `skills`, `experience.N.bullets`…). `epimoni/tailor.js` turns them into a list to
+review: a change that only rewords what the CV says is ticked; one that adds material (a field
+that was empty, a list that grew, a bullet the role never had) is unticked and says so. A writer
+asked to fit an advert will, sometimes, give a role a task lifted from the advert, and a CV
+claiming experience its owner does not have is worse than no tailoring at all; only the owner
+can tell the two apart, so the default leaves them out.
+
+Two messages, so the money and the decision are separate. `tailor` makes the one metered call
+and caches the proposals for the session with the document they were made against. `tailor:save`
+spends nothing: it applies the ticked changes from that cache (by index, never from text a page
+sends) and saves the result as a new library entry (`source: 'tailored'`, `tailored_for` the
+advert) without making it the active CV. Saving again with other ticks updates the same entry.
+From there it is an ordinary CV: "Remplir avec ce CV" fills the page from it, which also puts
+its PDF in a CV upload, and the panel offers its PDF and the dashboard to read it over. A page
+already filled from a tailored CV is not offered to tailor it again: that would pay to rewrite
+a rewrite.
 
 ## Reading the advert: the heuristic is primary, JSON-LD only enriches
 

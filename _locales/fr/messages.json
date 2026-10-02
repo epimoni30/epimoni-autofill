@@ -1274,5 +1274,76 @@
   },
   "pdf_letter_file": {
     "message": "Lettre"
+  },
+  "popup_tailor": {
+    "message": "Adapter mon CV à cette offre"
+  },
+  "panel_tailor_offer": {
+    "message": "Une version de votre CV adaptée à cette offre ?"
+  },
+  "panel_tailor_cta": {
+    "message": "Adapter mon CV avec l'IA"
+  },
+  "panel_tailor_working": {
+    "message": "Adaptation de votre CV à l'offre…"
+  },
+  "panel_tailor_done": {
+    "message": "Nouveau CV ajouté à votre bibliothèque : « $LABEL$ ». Votre CV d'origine n'a pas changé.",
+    "placeholders": {
+      "label": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_tailor_use": {
+    "message": "Remplir avec ce CV"
+  },
+  "panel_tailor_pdf": {
+    "message": "Télécharger le PDF"
+  },
+  "panel_tailor_review": {
+    "message": "Relire et modifier"
+  },
+  "panel_tailor_in_use": {
+    "message": "Ce formulaire est rempli avec « $LABEL$ », votre CV adapté.",
+    "placeholders": {
+      "label": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_tailor_empty": {
+    "message": "L'IA n'a proposé aucune modification pour cette offre. Votre CV y correspond peut-être déjà bien."
+  },
+  "panel_tailor_full": {
+    "message": "Votre bibliothèque de CV est pleine. Supprimez un CV dans le tableau de bord, puis réessayez."
+  },
+  "tailored_label": {
+    "message": "Adapté · $FOR$",
+    "placeholders": {
+      "for": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_source_tailored_badge": {
+    "message": "Adapté à une offre"
+  },
+  "panel_tailor_review_intro": {
+    "message": "$N$ modifications proposées. Gardez celles qui sont vraies pour vous, puis créez le CV.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_tailor_adds": {
+    "message": "Ajoute du contenu absent de votre CV. Ne cochez que si c'est vrai."
+  },
+  "panel_tailor_make": {
+    "message": "Créer le CV adapté"
+  },
+  "panel_tailor_none": {
+    "message": "Cochez au moins une modification."
   }
 }

@@ -49,6 +49,7 @@ const SOURCE_BADGE = {
   account: 'opt_source_account_badge',
   site: 'opt_source_site_badge',
   local: 'opt_source_local_badge',
+  tailored: 'opt_source_tailored_badge',
 };
 const slug = (v) =>
   String(v || '')

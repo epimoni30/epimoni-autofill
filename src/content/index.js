@@ -485,12 +485,6 @@
     return row;
   }
 
-  /**
-   * The review surface. A summary panel rather than a chip floating beside each field:
-   * anchoring an overlay to a control inside a scrolling ATS form is a well-known way to
-   * end up with labels drifting over the page, and the thing the user actually needs is one
-   * place that answers "what did you just touch, and can I undo it".
-   */
   /** Under a fill nobody clicked for: why it happened, and the way to stop it on this site. */
   function autoLine() {
     const line = h('div', 'margin-top:8px;color:#71717a', t('panel_auto_filled'), ' ');
@@ -509,6 +503,12 @@
     return line;
   }
 
+  /**
+   * The review surface. A summary panel rather than a chip floating beside each field:
+   * anchoring an overlay to a control inside a scrolling ATS form is a well-known way to
+   * end up with labels drifting over the page, and the thing the user actually needs is one
+   * place that answers "what did you just touch, and can I undo it".
+   */
   function banner(kind, filled = [], counts = {}) {
     document.getElementById('epimoni-panel')?.remove();
     ui = null;
@@ -533,6 +533,9 @@
       'border-radius:12px',
       'box-shadow:0 8px 28px rgba(0,0,0,.14)',
       'padding:12px 14px',
+      // Fill summary, letter, tailored CV and analysis can outgrow a small window.
+      'max-height:calc(100vh - 32px)',
+      'overflow:auto',
     ].join(';');
 
     if (kind === 'no-profile') {
@@ -609,6 +612,7 @@
         if (!ui.letterBox) ui.letterBox = letterSection(panel, ui.offer);
       };
       ui.letter();
+      if (!ui.tailorBox) ui.tailorBox = tailorSection(panel, ui.offer);
     }
 
     const close = document.createElement('button');
@@ -880,6 +884,216 @@
     return wrap;
   }
 
+  /** The field a rewrite changed, in the user's words: "Expérience 2", "Compétences". */
+  function changedField(key) {
+    const m = /^experience\.(\d+)\./.exec(key);
+    if (m) return `${t('cvsection_work')} ${Number(m[1]) + 1}`;
+    const names = {
+      title: 'field_current_title',
+      summary: 'field_summary',
+      skills: 'opt_skills',
+      languages: 'opt_languages',
+      certifications: 'cvsection_certificates',
+    };
+    return names[key] ? t(names[key]) : key;
+  }
+
+  /**
+   * "Adapter mon CV à cette offre": the AI rewrites the CV for the advert on this page and the
+   * result is a new CV in the library, beside the original, which stays as it was. From here
+   * the user can fill this form from it (its PDF goes into the CV upload), download that PDF,
+   * or read it over in the dashboard. Spends only on a click.
+   */
+  function tailorSection(panel, before) {
+    if (!posting) posting = extractPosting(document, location.href);
+    if (!posting.ok) return null;
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'margin-top:12px;padding-top:10px;border-top:1px solid #e4e4e7';
+    if (before?.isConnected) panel.insertBefore(wrap, before);
+    else panel.appendChild(wrap);
+    const button = (text, primary) => {
+      const b = document.createElement('button');
+      b.textContent = text;
+      b.style.cssText = primary
+        ? 'margin:8px 6px 0 0;border:1px solid #7c5cff;background:#7c5cff;color:#fff;font-weight:600;border-radius:8px;padding:6px 10px;cursor:pointer;font:inherit'
+        : 'margin:8px 6px 0 0;border:1px solid #e4e4e7;background:#fafafa;border-radius:8px;padding:5px 10px;cursor:pointer;font:inherit;color:#18181b';
+      return b;
+    };
+    const line = (text, color = '#3f3f46') => {
+      const d = document.createElement('div');
+      d.style.color = color;
+      d.textContent = text;
+      wrap.appendChild(d);
+      return d;
+    };
+
+    const download = async (id) => {
+      const file = await send({ type: 'cv-file', id });
+      if (!file.data) return;
+      const bytes = Uint8Array.from(atob(file.data), (c) => c.charCodeAt(0));
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+      a.download = file.name;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    };
+
+    const idle = () => {
+      wrap.textContent = '';
+      // Filled from a CV already adapted (to this offer or another): adapting it again would
+      // spend a call to rewrite a rewrite. Say so, and keep what is useful.
+      const inUse = choices.find((c) => c.id === pageCvId);
+      if (inUse?.tailored) {
+        line(t('panel_tailor_in_use', [inUse.label || '']), '#15803d');
+        const pdf = button(t('panel_tailor_pdf'));
+        pdf.addEventListener(
+          'click',
+          byUser(() => download(inUse.id)),
+        );
+        const review = button(t('panel_tailor_review'));
+        review.addEventListener(
+          'click',
+          byUser(() => send({ type: 'open-options' })),
+        );
+        wrap.append(pdf, review);
+        return;
+      }
+      line(t('panel_tailor_offer'));
+      const go = button(t('panel_tailor_cta'));
+      wrap.appendChild(go);
+      if (!pageAi) {
+        go.disabled = true;
+        go.style.opacity = '0.5';
+        go.style.cursor = 'not-allowed';
+        needsAccount(wrap);
+        return;
+      }
+      go.addEventListener('click', byUser(run));
+    };
+
+    const failed = (res, again) => {
+      const WHY = {
+        quota: () => t('panel_quota', [String(Math.ceil((res.seconds || 0) / 60))]),
+        expired: () => t('panel_stale'),
+        'no-cv': () => t('panel_no_cv'),
+        'too-long': () => t('panel_too_long'),
+        network: () => t('panel_offline'),
+        empty: () => t('panel_tailor_empty'),
+        'library-full': () => t('panel_tailor_full'),
+      };
+      line((WHY[res.kind] || (() => t('panel_analyse_failed')))());
+      const retry = button(t('panel_retry'));
+      retry.addEventListener('click', byUser(again));
+      wrap.appendChild(retry);
+    };
+
+    async function run() {
+      wrap.textContent = '';
+      line(t('panel_tailor_working'), '#71717a');
+      const res = await send({
+        type: 'tailor',
+        posting,
+        cv_id: pageCvId,
+        host: location.hostname,
+        lang: chrome.i18n.getUILanguage().slice(0, 2),
+      });
+      wrap.textContent = '';
+      if (!res.ok) return failed(res, run);
+      if (res.saved) return done(res.saved);
+      review(res.proposals);
+    }
+
+    /**
+     * Every proposal with a box to tick. A rewrite of what the CV says is ticked; one that
+     * adds something the CV did not say (a bullet, a skill, a summary where there was none) is
+     * not, and says why: only the user knows whether they did it.
+     */
+    function review(proposals) {
+      wrap.textContent = '';
+      line(t('panel_tailor_review_intro', [String(proposals.length)]));
+      const boxes = [];
+      for (const p of proposals) {
+        const row = document.createElement('label');
+        row.style.cssText = 'display:flex;gap:7px;align-items:flex-start;margin-top:8px;cursor:pointer';
+        const box = document.createElement('input');
+        box.type = 'checkbox';
+        box.checked = !p.adds;
+        box.style.cssText = 'margin:3px 0 0;accent-color:#7c5cff';
+        boxes.push([box, p.i]);
+        const body = h(
+          'div',
+          'min-width:0;font-size:12px;color:#3f3f46',
+          h('b', null, changedField(p.key)),
+          p.adds ? h('div', 'color:#b45309', t('panel_tailor_adds')) : null,
+          h(
+            'div',
+            'white-space:pre-wrap;max-height:84px;overflow:auto;margin-top:2px;padding:4px 6px;background:#fafafa;border:1px solid #e4e4e7;border-radius:6px;color:#18181b',
+            p.improved,
+          ),
+          p.reason ? h('div', 'color:#71717a;margin-top:2px', p.reason) : null,
+        );
+        row.append(box, body);
+        wrap.appendChild(row);
+      }
+      const make = button(t('panel_tailor_make'), true);
+      const note = line('', '#b45309');
+      make.addEventListener(
+        'click',
+        byUser(async () => {
+          const accept = boxes.filter(([b]) => b.checked).map(([, i]) => i);
+          if (!accept.length) {
+            note.textContent = t('panel_tailor_none');
+            return;
+          }
+          make.disabled = true;
+          const saved = await send({ type: 'tailor:save', posting, cv_id: pageCvId, accept });
+          if (!saved.ok) {
+            make.disabled = false;
+            note.textContent = t(
+              saved.kind === 'library-full' ? 'panel_tailor_full' : 'panel_analyse_failed',
+            );
+            return;
+          }
+          done(saved);
+        }),
+      );
+      wrap.insertBefore(make, note);
+      // The panel can be long by now (fill, tracker, skills, letter): bring the list up.
+      wrap.scrollIntoView({ block: 'nearest' });
+    }
+
+    function done(saved) {
+      wrap.textContent = '';
+      line(t('panel_tailor_done', [saved.label]), '#15803d');
+      const use = button(t('panel_tailor_use'), true);
+      use.addEventListener(
+        'click',
+        byUser(async () => {
+          pageCvId = saved.cv_id;
+          await undoAll({ quiet: true });
+          await fill();
+        }),
+      );
+      const pdf = button(t('panel_tailor_pdf'));
+      pdf.addEventListener(
+        'click',
+        byUser(() => download(saved.cv_id)),
+      );
+      const reviewBtn = button(t('panel_tailor_review'));
+      reviewBtn.addEventListener(
+        'click',
+        byUser(() => send({ type: 'open-options' })),
+      );
+      wrap.append(use, pdf, reviewBtn);
+      wrap.scrollIntoView({ block: 'nearest' });
+    }
+
+    idle();
+    // The popup's "Adapter mon CV": the click there is the user's, so it runs from here.
+    if (ui) ui.runTailor = () => (pageAi ? run() : null);
+    return wrap;
+  }
+
   /**
    * "Vos compétences citées dans l'annonce": the free half of reading an advert. A plain match
    * of the CV's skills against the advert's text, on this machine, with a button that marks
@@ -1104,6 +1318,7 @@
       fill().then(() => {
         if (msg.after === 'analyse') (ui?.runAnalyse || (() => panelNote('panel_no_advert')))();
         else if (msg.after === 'letter') (ui?.runLetter || (() => panelNote('panel_no_letter_box')))();
+        else if (msg.after === 'tailor') (ui?.runTailor || (() => panelNote('panel_no_advert')))();
       });
       respond({ ok: true });
     }

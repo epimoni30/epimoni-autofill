@@ -1201,6 +1201,110 @@ check(
 );
 await viaPopup.close();
 
+// ── A CV tailored to the advert ─────────────────────────────────────────────────────────
+//
+// One paid call for proposals, which the user reviews: a rewrite is ticked, an addition (a
+// bullet the CV never had) is not. The CV is made from the ticked ones only, as a new CV beside
+// the original, which stays the active one. The page can then be filled from it (its PDF is
+// what a CV upload gets) and the PDF downloaded.
+await stubWorker({
+  status: 200,
+  body: {
+    ml: {
+      content: {
+        changes: [
+          {
+            key: 'title',
+            improved: 'Chargée de communication digitale',
+            reason: 'Le titre reprend le poste visé.',
+          },
+          { key: 'experience.0.bullets', improved: 'Animé les réseaux sociaux Instagram' },
+          { key: 'experience.4.title', improved: 'Inventé' },
+        ],
+      },
+    },
+  },
+});
+// A headline to rewrite: the stub CV has none, and a title where there was none is an addition.
+await sw.evaluate(async () => {
+  const { epimoni } = await chrome.storage.local.get('epimoni');
+  epimoni.cvs[0].cv.basics.label = 'Chargée de communication';
+  await chrome.storage.local.set({ epimoni });
+});
+const tailorPage = await fillPage('letter.html');
+const tailorCta = await sw.evaluate(() => chrome.i18n.getMessage('panel_tailor_cta'));
+const makeLabel = await sw.evaluate(() => chrome.i18n.getMessage('panel_tailor_make'));
+const useLabel = await sw.evaluate(() => chrome.i18n.getMessage('panel_tailor_use'));
+const listCvs = async () =>
+  (await extPage.evaluate(() => new Promise((r) => chrome.runtime.sendMessage({ type: 'cv:list' }, r))))
+    .cvs || [];
+await tailorPage.locator('#epimoni-panel').getByRole('button', { name: tailorCta }).click();
+await tailorPage
+  .locator('#epimoni-panel')
+  .getByRole('button', { name: makeLabel })
+  .waitFor({ timeout: 4000 })
+  .catch(() => {});
+const reviewView = await tailorPage.evaluate(() => {
+  const root = document.getElementById('epimoni-panel')?.shadowRoot;
+  return {
+    boxes: [...(root?.querySelectorAll('input[type="checkbox"]') || [])].map((b) => b.checked),
+    text: root?.textContent || '',
+  };
+});
+const addsLine = await sw.evaluate(() => chrome.i18n.getMessage('panel_tailor_adds'));
+check(
+  'tailoring shows the proposals first: the rewrite ticked, the addition unticked and flagged, nothing saved',
+  JSON.stringify(reviewView.boxes) === '[true,false]' &&
+    reviewView.text.includes(addsLine) &&
+    reviewView.text.includes('Le titre reprend le poste visé.') &&
+    !reviewView.text.includes('Inventé') &&
+    (await listCvs()).length === 1,
+  JSON.stringify(reviewView.boxes),
+);
+await tailorPage.locator('#epimoni-panel').getByRole('button', { name: makeLabel }).click();
+await tailorPage
+  .locator('#epimoni-panel')
+  .getByRole('button', { name: useLabel })
+  .waitFor({ timeout: 4000 })
+  .catch(() => {});
+const library = await listCvs();
+const madeCv = library.find((c) => c.tailored);
+check(
+  'the ticked changes make a new CV beside the original, which stays in use, for one paid call',
+  Boolean(madeCv) &&
+    library.find((c) => c.active)?.id === 'cv-test' &&
+    (await sw.evaluate(() => globalThis.__calls.filter((u) => u.includes('write-cv-doc')).length)) === 1,
+  JSON.stringify(library.map((c) => [c.label, c.active, c.tailored])),
+);
+await tailorPage.locator('#epimoni-panel').getByRole('button', { name: useLabel }).click();
+const inUseLine = await sw.evaluate(
+  (l) => chrome.i18n.getMessage('panel_tailor_in_use', [l]),
+  madeCv?.label || '',
+);
+await tailorPage.waitForTimeout(500);
+const afterUse = await tailorPage.evaluate(
+  () => document.getElementById('epimoni-panel')?.shadowRoot?.textContent || '',
+);
+check(
+  '"Remplir avec ce CV" refills the page from it, and the panel does not offer to tailor it again',
+  afterUse.includes(inUseLine) && !afterUse.includes(tailorCta),
+  afterUse.slice(0, 200),
+);
+const tailorPdfLabel = await sw.evaluate(() => chrome.i18n.getMessage('panel_tailor_pdf'));
+const [tailorDl] = await Promise.all([
+  tailorPage.waitForEvent('download', { timeout: 5000 }),
+  tailorPage.locator('#epimoni-panel').getByRole('button', { name: tailorPdfLabel }).click(),
+]);
+const tailorPdf = readFileSync(await tailorDl.path()).toString('latin1');
+check(
+  'the tailored CV downloads as a PDF with the ticked rewrite and without the unticked addition',
+  tailorPdf.startsWith('%PDF-1.4') &&
+    tailorPdf.includes('communication digitale') &&
+    !tailorPdf.includes('Instagram'),
+  tailorDl.suggestedFilename(),
+);
+await tailorPage.close();
+
 // ── No account at all ────────────────────────────────────────────────────────────────────
 //
 // The extension has to work for somebody who has never signed in: the CV lives here, the
@@ -1295,6 +1399,7 @@ const anonPopup = await extPage.evaluate(() => ({
   fill: document.getElementById('fill').disabled,
   analyse: document.getElementById('analyse').disabled,
   letter: document.getElementById('letter').disabled,
+  tailor: document.getElementById('tailor').disabled,
   connect: document.querySelector('#ai-note a')?.href || null,
 }));
 check(
@@ -1302,6 +1407,7 @@ check(
   !anonPopup.fill &&
     anonPopup.analyse &&
     anonPopup.letter &&
+    anonPopup.tailor &&
     (() => {
       if (!anonPopup.connect) return false;
       try {
@@ -1325,8 +1431,8 @@ const anonPanel = await anonPage.evaluate(() => {
   };
 });
 check(
-  'the panel shows the analysis and the letter disabled, each with the way to connect',
-  anonPanel.disabled === 2 && anonPanel.links >= 2,
+  'the panel shows the analysis, the letter and the tailored CV disabled, each with the way to connect',
+  anonPanel.disabled === 3 && anonPanel.links >= 3,
   JSON.stringify(anonPanel),
 );
 await anonPage.close();

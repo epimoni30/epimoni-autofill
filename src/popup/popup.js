@@ -1,5 +1,6 @@
 // The toolbar popup is a menu, and only that: which CV fills forms, the fast action (fill this
-// page), the AI actions (analyse the advert, write the cover letter), and the dashboard.
+// page) and whether this site fills on its own, the AI actions (analyse the advert, write the
+// cover letter, adapt the CV to the advert), and the dashboard.
 // Everything else (editing, the library, the applications) lives on the dashboard.
 //
 // The AI actions are for a paired Epimoni account and are shown disabled without one, with
@@ -90,6 +91,7 @@ async function renderAi(state) {
   const ready = Boolean(state.ai) && state.has_cv;
   el('analyse').disabled = !ready;
   el('letter').disabled = !ready;
+  el('tailor').disabled = !ready;
   if (!state.ai && state.consent) {
     // Paired, and the browser asks before the CV leaves it (Firefox). The request has to come
     // from a click on an extension page that stays open, which the popup is not.
@@ -177,6 +179,7 @@ async function renderSite(state) {
   el('fill').addEventListener('click', () => onPage(null));
   el('analyse').addEventListener('click', () => onPage('analyse'));
   el('letter').addEventListener('click', () => onPage('letter'));
+  el('tailor').addEventListener('click', () => onPage('tailor'));
   el('dashboard').addEventListener('click', () => openDashboard(state.has_cv ? '' : '#cv'));
 
   await renderCv(state);

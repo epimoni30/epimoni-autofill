@@ -1274,5 +1274,76 @@
   },
   "pdf_letter_file": {
     "message": "Carta"
+  },
+  "popup_tailor": {
+    "message": "Adaptar mi CV a esta oferta"
+  },
+  "panel_tailor_offer": {
+    "message": "¿Quiere una versión de su CV adaptada a esta oferta?"
+  },
+  "panel_tailor_cta": {
+    "message": "Adaptar mi CV con IA"
+  },
+  "panel_tailor_working": {
+    "message": "Adaptando su CV a la oferta…"
+  },
+  "panel_tailor_done": {
+    "message": "Nuevo CV añadido a su biblioteca: «$LABEL$». Su CV original no ha cambiado.",
+    "placeholders": {
+      "label": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_tailor_use": {
+    "message": "Rellenar con este CV"
+  },
+  "panel_tailor_pdf": {
+    "message": "Descargar el PDF"
+  },
+  "panel_tailor_review": {
+    "message": "Revisar y editar"
+  },
+  "panel_tailor_in_use": {
+    "message": "Este formulario está rellenado con «$LABEL$», su CV adaptado.",
+    "placeholders": {
+      "label": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_tailor_empty": {
+    "message": "La IA no ha propuesto cambios para esta oferta. Puede que su CV ya encaje bien."
+  },
+  "panel_tailor_full": {
+    "message": "Su biblioteca de CV está llena. Elimine un CV en el panel y vuelva a intentarlo."
+  },
+  "tailored_label": {
+    "message": "Adaptado · $FOR$",
+    "placeholders": {
+      "for": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_source_tailored_badge": {
+    "message": "Adaptado a una oferta"
+  },
+  "panel_tailor_review_intro": {
+    "message": "$N$ cambios propuestos. Conserve los que sean ciertos para usted y luego cree el CV.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_tailor_adds": {
+    "message": "Añade algo que su CV no dice. Márquelo solo si es cierto."
+  },
+  "panel_tailor_make": {
+    "message": "Crear el CV adaptado"
+  },
+  "panel_tailor_none": {
+    "message": "Marque al menos un cambio."
   }
 }

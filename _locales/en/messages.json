@@ -1274,5 +1274,76 @@
   },
   "pdf_letter_file": {
     "message": "Cover-letter"
+  },
+  "popup_tailor": {
+    "message": "Tailor my CV to this job"
+  },
+  "panel_tailor_offer": {
+    "message": "Want a version of your CV tailored to this job?"
+  },
+  "panel_tailor_cta": {
+    "message": "Tailor my CV with AI"
+  },
+  "panel_tailor_working": {
+    "message": "Tailoring your CV to the job…"
+  },
+  "panel_tailor_done": {
+    "message": "New CV added to your library: \"$LABEL$\". Your original CV is unchanged.",
+    "placeholders": {
+      "label": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_tailor_use": {
+    "message": "Fill with this CV"
+  },
+  "panel_tailor_pdf": {
+    "message": "Download the PDF"
+  },
+  "panel_tailor_review": {
+    "message": "Review and edit"
+  },
+  "panel_tailor_in_use": {
+    "message": "This form is filled from \"$LABEL$\", your tailored CV.",
+    "placeholders": {
+      "label": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_tailor_empty": {
+    "message": "The AI proposed no changes for this job. Your CV may already fit it well."
+  },
+  "panel_tailor_full": {
+    "message": "Your CV library is full. Delete a CV in the dashboard, then try again."
+  },
+  "tailored_label": {
+    "message": "Tailored · $FOR$",
+    "placeholders": {
+      "for": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_source_tailored_badge": {
+    "message": "Tailored to a job"
+  },
+  "panel_tailor_review_intro": {
+    "message": "$N$ suggested changes. Keep the ones that are true for you, then create the CV.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_tailor_adds": {
+    "message": "Adds something your CV does not say. Only tick it if it is true."
+  },
+  "panel_tailor_make": {
+    "message": "Create the tailored CV"
+  },
+  "panel_tailor_none": {
+    "message": "Tick at least one change."
   }
 }

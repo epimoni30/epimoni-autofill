@@ -98,6 +98,8 @@ const CONTENT_SCRIPT_TYPES = new Set([
   'tier',
   'analyse',
   'letter',
+  'tailor',
+  'tailor:save',
   'open-options',
   // Whether this page's site fills on its own, and the panel's "stop doing that here". Both
   // act on the sender's own tab, never on a host the message names.
@@ -263,7 +265,12 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
         respond({
           cvs: (await listCvs()).map((r) => {
             const doc = (state.cvs || []).find((c) => c.id === r.id)?.cv;
-            return { id: r.id, label: r.label || (doc && cvSummary(doc, {}).name) || null, active: r.active };
+            return {
+              id: r.id,
+              label: r.label || (doc && cvSummary(doc, {}).name) || null,
+              active: r.active,
+              tailored: r.tailored,
+            };
           }),
         });
         break;
@@ -534,7 +541,9 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
         // An analysis asked from a page that fills from another CV of the library compares
         // that CV, so the score is about the document the form was filled from.
         const st =
-          (msg.type === 'analyse' || msg.type === 'letter') && msg.cv_id ? await readAs(msg.cv_id) : state;
+          ['analyse', 'letter', 'tailor', 'tailor:save'].includes(msg.type) && msg.cv_id
+            ? await readAs(msg.cv_id)
+            : state;
         respond((await handleEpimoni(msg, st, sender)) ?? { ok: false, error: 'unknown' });
       }
     }

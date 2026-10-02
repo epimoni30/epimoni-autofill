@@ -1274,5 +1274,76 @@
   },
   "pdf_letter_file": {
     "message": "Carta"
+  },
+  "popup_tailor": {
+    "message": "Adaptar meu currículo a esta vaga"
+  },
+  "panel_tailor_offer": {
+    "message": "Quer uma versão do seu currículo adaptada a esta vaga?"
+  },
+  "panel_tailor_cta": {
+    "message": "Adaptar meu currículo com IA"
+  },
+  "panel_tailor_working": {
+    "message": "Adaptando seu currículo à vaga…"
+  },
+  "panel_tailor_done": {
+    "message": "Novo currículo adicionado à sua biblioteca: \"$LABEL$\". Seu currículo original não mudou.",
+    "placeholders": {
+      "label": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_tailor_use": {
+    "message": "Preencher com este currículo"
+  },
+  "panel_tailor_pdf": {
+    "message": "Baixar o PDF"
+  },
+  "panel_tailor_review": {
+    "message": "Revisar e editar"
+  },
+  "panel_tailor_in_use": {
+    "message": "Este formulário está preenchido com \"$LABEL$\", seu currículo adaptado.",
+    "placeholders": {
+      "label": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_tailor_empty": {
+    "message": "A IA não propôs alterações para esta vaga. Talvez seu currículo já combine bem com ela."
+  },
+  "panel_tailor_full": {
+    "message": "Sua biblioteca de currículos está cheia. Exclua um currículo no painel e tente de novo."
+  },
+  "tailored_label": {
+    "message": "Adaptado · $FOR$",
+    "placeholders": {
+      "for": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_source_tailored_badge": {
+    "message": "Adaptado a uma vaga"
+  },
+  "panel_tailor_review_intro": {
+    "message": "$N$ alterações sugeridas. Mantenha as que são verdadeiras para você e depois crie o currículo.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_tailor_adds": {
+    "message": "Acrescenta algo que seu currículo não diz. Marque só se for verdade."
+  },
+  "panel_tailor_make": {
+    "message": "Criar o currículo adaptado"
+  },
+  "panel_tailor_none": {
+    "message": "Marque pelo menos uma alteração."
   }
 }

@@ -17,6 +17,7 @@ import { track } from './telemetry.js';
 import { apiFetch, whoIs } from './api.js';
 import { entitlement, forgetEntitlement, resolveIdentity } from './identity.js';
 import { AI_DATA, missing } from './consent.js';
+import { applyRewrite, proposalsFrom } from './tailor.js';
 
 const SITE = 'https://www.epimoni30.com';
 
@@ -37,6 +38,10 @@ const SITE = 'https://www.epimoni30.com';
 const ANALYSE_PATH = '/api/v1/ml/analyse/cvVSoffer-doc';
 // The cover letter from the CV document and the advert's text, memoised on its inputs.
 const LETTER_PATH = '/api/v1/ml/analyse/motivation/generate-doc';
+// The CV rewritten for the advert: the same writer as the site's editor, from the document.
+// Not memoised server-side (a second take is the point there), so the cache below is the only
+// thing that keeps a reopened panel from paying twice.
+const TAILOR_PATH = '/api/v1/ml/analyse/write-cv-doc';
 
 /**
  * A cheap, stable fingerprint of a string. Not a security primitive: it names a cache entry.
@@ -608,6 +613,90 @@ async function letter(state, msg) {
 }
 
 /**
+ * The CV adapted to the advert on screen, in two steps: the proposals, then the user's choice.
+ *
+ * `tailor` spends the one call. The backend proposes rewrites (headline, summary, each role's
+ * title and bullets, skills); they are cached here with the document they were made against,
+ * and the surface gets them to review, every one that adds material marked (see `tailor.js`
+ * for why). `tailor:save` spends nothing: it applies the changes the user ticked, from the
+ * cache, never from text the page sends, and saves the result as a new CV beside the original,
+ * which stays the active one.
+ *
+ * Same order as the analysis: refuse for free, answer from cache, only then spend.
+ */
+const tailorKey = (state, text) => `tailor:${fingerprint(text)}:${fingerprint(JSON.stringify(state.cv))}`;
+
+async function tailorCv(state, msg) {
+  const refused = await aiRefusal(state);
+  if (refused) return refused;
+  const text = String(msg?.posting?.text || '').trim();
+  if (!state.cv || !cvIsAnalysable(state.cv)) return { ok: false, kind: 'no-cv' };
+  if (!text) return { ok: false, kind: 'no-posting' };
+
+  const key = tailorKey(state, text);
+  const hit = await cachedAnalysis(key);
+  if (hit) {
+    const saved = hit.saved && (state.cvs || []).some((c) => c.id === hit.saved.cv_id) ? hit.saved : null;
+    return { ok: true, proposals: hit.proposals, saved, mode: hit.mode, cached: true };
+  }
+
+  const got = await meteredCall(state, msg, TAILOR_PATH, {
+    content: state.cv,
+    offer_text: text,
+    builder_id: state.builder_id || null,
+  });
+  if (got.fail) return got.fail;
+  const { res, ident } = got;
+
+  const changes = Array.isArray(res.data?.ml?.content?.changes) ? res.data.ml.content.changes : [];
+  const proposals = proposalsFrom(state.cv, changes).map((p) => ({ ...p, reason: p.reason.slice(0, 300) }));
+  if (!proposals.length) return { ok: false, kind: 'empty', mode: ident.mode };
+  await cacheAnalysis(key, { changes, proposals, mode: ident.mode });
+  return { ok: true, proposals, saved: null, mode: ident.mode };
+}
+
+async function saveTailored(state, msg) {
+  const text = String(msg?.posting?.text || '').trim();
+  if (!state.cv || !text) return { ok: false, kind: 'expired' };
+  const key = tailorKey(state, text);
+  const hit = await cachedAnalysis(key);
+  if (!hit?.changes) return { ok: false, kind: 'expired' };
+  const chosen = new Set((Array.isArray(msg.accept) ? msg.accept : []).map(Number));
+  const offered = new Set(hit.proposals.map((p) => p.i));
+  const picked = hit.changes.filter((_, i) => chosen.has(i) && offered.has(i));
+  const { cv, applied } = applyRewrite(state.cv, picked);
+  if (!applied.length) return { ok: false, kind: 'none-chosen' };
+
+  const target = [msg.posting?.organisation, msg.posting?.title]
+    .map((x) => String(x || '').trim())
+    .filter(Boolean)
+    .join(' · ');
+  const label = (
+    chrome.i18n?.getMessage?.('tailored_label', [target || new URL(msg.url || SITE).host]) || target
+  ).slice(0, 120);
+  const saved = await saveCv({
+    // Saving again after changing the ticks updates the CV this advert already made.
+    id: hit.saved?.cv_id && (state.cvs || []).some((c) => c.id === hit.saved.cv_id) ? hit.saved.cv_id : null,
+    cv,
+    label,
+    profile: toProfile(cv),
+    source: 'tailored',
+    tailored_for: {
+      from: state.active_cv_id || null,
+      title: String(msg.posting?.title || '').slice(0, 200),
+      company: String(msg.posting?.organisation || '').slice(0, 200),
+      url: String(msg.url || '').slice(0, 1000),
+      at: Date.now(),
+    },
+    activate: false,
+  });
+  if (!saved) return { ok: false, kind: 'library-full' };
+  const result = { cv_id: saved.saved_id, label, count: applied.length };
+  await cacheAnalysis(key, { ...hit, saved: result });
+  return { ok: true, ...result };
+}
+
+/**
  * What the surfaces may say about the user's allowance, without spending anything.
  *
  * Asked when a panel or the popup opens, never on the fill path. It resolves an identity,
@@ -688,6 +777,11 @@ export async function handleEpimoni(msg, state, sender) {
       return analyse(state, msg);
     case 'letter':
       return letter(state, msg);
+    case 'tailor':
+      return tailorCv(state, msg);
+    case 'tailor:save':
+      // The page the CV is for is the tab that asked, never an address the message names.
+      return saveTailored(state, { ...msg, url: sender?.tab?.url || sender?.url || '' });
     case 'pair:pending':
     case 'pair:accept':
     case 'pair:refuse':
