@@ -783,6 +783,63 @@ await steps.waitForTimeout(800);
 const afterStop = await steps.evaluate(() => document.getElementById('li')?.value ?? null);
 check('after undo, a new question is left alone', afterStop === '', String(afterStop));
 await steps.close();
+
+// ── Automatic filling, on a site the user turned it on for ──────────────────────────────
+//
+// Off everywhere by default: the page is filled when the user clicks. Turned on for a site, an
+// application form is filled as it appears, here only after "Postuler" renders it at a new
+// address, and the panel says why and how to stop. 127.0.0.1 is declared by the dev build, so
+// this needs no permission; the registration path for other sites is test/sites.test.mjs.
+const autoOn = await askWorker({ type: 'site:enable', host: '127.0.0.1', scheme: 'http' });
+const autoStatus = await askWorker({ type: 'site:status', url: `${base}/late.html` });
+check(
+  'automatic filling turns on for a declared site without asking the browser',
+  autoOn.ok && autoOn.declared && autoStatus.auto && autoStatus.granted,
+  JSON.stringify({ autoOn, autoStatus }),
+);
+const late = await ctx.newPage();
+await late.goto(`${base}/late.html`, { waitUntil: 'load' });
+await late.waitForTimeout(1200);
+const beforeApply = await late.evaluate(() => document.getElementById('epimoni-panel') !== null);
+await late.click('#apply');
+await late
+  .waitForFunction(() => document.getElementById('epimoni-panel') !== null, { timeout: 5000 })
+  .catch(() => {});
+await late.waitForTimeout(300);
+const autoFilled = await late.evaluate(() => ({
+  values: ['prenom', 'nom', 'email', 'tel'].map((n) => document.querySelector(`[name="${n}"]`).value),
+  panel: document.getElementById('epimoni-panel')?.shadowRoot?.textContent || '',
+  submitted: Boolean(window.__submitted),
+}));
+const autoLine = await sw.evaluate(() => chrome.i18n.getMessage('panel_auto_filled'));
+check(
+  'nothing happens before the form exists, then the form is filled as it appears, unclicked',
+  !beforeApply &&
+    autoFilled.values.every(Boolean) &&
+    autoFilled.panel.includes(autoLine) &&
+    !autoFilled.submitted,
+  JSON.stringify({ beforeApply, ...autoFilled, panel: autoFilled.panel.slice(0, 120) }),
+);
+const offLabel = await sw.evaluate(() => chrome.i18n.getMessage('panel_auto_off'));
+await late.locator('#epimoni-panel').getByRole('button', { name: offLabel }).click();
+await late.waitForTimeout(300);
+const afterOff = await askWorker({ type: 'sites:list' });
+const late2 = await ctx.newPage();
+await late2.goto(`${base}/late.html`, { waitUntil: 'load' });
+await late2.waitForTimeout(600);
+await late2.click('#apply');
+await late2.waitForTimeout(1500);
+const offFilled = await late2.evaluate(() => ({
+  panel: document.getElementById('epimoni-panel') !== null,
+  prenom: document.querySelector('[name="prenom"]')?.value,
+}));
+check(
+  '"Désactiver" in the panel turns it off for the site, and the next visit waits for a click',
+  (afterOff.sites || []).length === 0 && !offFilled.panel && offFilled.prenom === '',
+  JSON.stringify({ afterOff, offFilled }),
+);
+await late.close();
+await late2.close();
 await opener.close();
 
 // ── The offer analysis, and the rule the whole design exists to keep ──────────────────────

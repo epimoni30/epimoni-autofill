@@ -1210,5 +1210,49 @@
         "content": "$1"
       }
     }
+  },
+  "popup_site_auto": {
+    "message": "Fill automatically on"
+  },
+  "popup_site_off": {
+    "message": "Automatic filling is off on this site."
+  },
+  "popup_site_refused": {
+    "message": "The browser did not grant access to this site. You can still fill the page with one click."
+  },
+  "panel_auto_filled": {
+    "message": "Filled automatically: you turned this on for this site."
+  },
+  "panel_auto_off": {
+    "message": "Turn off"
+  },
+  "panel_auto_is_off": {
+    "message": "Automatic filling is off on this site."
+  },
+  "dash_menu_sites": {
+    "message": "Sites"
+  },
+  "sites_title": {
+    "message": "Automatic filling"
+  },
+  "sites_intro": {
+    "message": "On these sites the extension fills application forms as soon as they appear, without waiting for your click. It never sends anything for you. To add a site, open the extension on that site and tick \"Fill automatically\"."
+  },
+  "sites_empty": {
+    "message": "No sites yet. Everywhere else, the extension fills a page when you click \"Fill this page\"."
+  },
+  "sites_since": {
+    "message": "On since $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "sites_declared": {
+    "message": "supported job board"
+  },
+  "sites_off": {
+    "message": "Turn off"
   }
 }

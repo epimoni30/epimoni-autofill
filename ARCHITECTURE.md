@@ -340,6 +340,30 @@ screen survives a re-fill.
 Only additions wake it. A control revealed by toggling `display` is not an added node, and a
 toolbar click still covers that case.
 
+## Automatic filling, one site at a time
+
+By default the extension offers rather than acts: a page is filled when the user clicks, and a
+declared job board only gets a content script that waits for that click. The popup's "Remplir
+automatiquement sur <site>" changes that for one site (`shared/sites.js`, key `epimoni_sites`):
+an application form there is filled as it appears, on load or when a single-page site renders
+it after "Postuler", once per address, with the panel saying why and offering "Désactiver".
+Same resolver, same refusals, same undo, and still no submit. An automatic fill that finds
+nothing says nothing, and one that fills a single field (a newsletter box, a search bar) is not
+recorded as an application.
+
+A declared board needs nothing more than the entry. Any other site needs the browser's
+permission for its origin, from `optional_host_permissions`, so nothing is asked at install;
+the popup asks inside the click, and tells the worker first (`site:pending`), because the
+browser's prompt can close the popup before the answer arrives and `permissions.onAdded`
+finishes the job. One dynamic content script (`epimoni-sites`) covers every granted site;
+`syncSiteScripts` keeps it equal to the list and to what the browser holds, after every change,
+when a permission is granted or withdrawn (chrome://extensions can do that too), and on startup
+and update. Turning a site off hands its permission back.
+
+A content script can ask whether its own site is on and turn its own site off (`site:auto`,
+`site:auto:off`, both computed from the sender's tab), and nothing else: turning a site on is
+an extension page's message only.
+
 ## The application tracker
 
 Every page the extension fills is an application the user may want to follow, so the fill

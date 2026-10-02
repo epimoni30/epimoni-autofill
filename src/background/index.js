@@ -46,6 +46,17 @@ import {
   putFile,
   toBase64,
 } from '../shared/files.js';
+import {
+  addSite,
+  clearSites,
+  declaredFor,
+  listSites,
+  originPattern,
+  removeSite,
+  siteIsAuto,
+  siteOf,
+  syncSiteScripts,
+} from '../shared/sites.js';
 import { epimoniState, forgetEpimoni, handleEpimoni, installEpimoni } from '../epimoni/worker.js';
 
 installEpimoni();
@@ -88,6 +99,10 @@ const CONTENT_SCRIPT_TYPES = new Set([
   'analyse',
   'letter',
   'open-options',
+  // Whether this page's site fills on its own, and the panel's "stop doing that here". Both
+  // act on the sender's own tab, never on a host the message names.
+  'site:auto',
+  'site:auto:off',
   // The site bridge's envelope. The add-on checks the sender is the site's top frame.
   'site',
   // The panel's "allow" link, on a browser that asks for data-collection consent.
@@ -124,6 +139,54 @@ async function cvFileOf(id, cv) {
     origin: 'generated',
   };
 }
+const PENDING_SITE = 'site_pending';
+
+/**
+ * Automatic filling on for a site. A site the manifest does not cover needs the browser's
+ * permission for its origin first, which only a click in the popup can ask for; without it
+ * this refuses rather than store a site that would never fill.
+ */
+async function turnSiteOn(site) {
+  const declared = declaredFor(site.host, chrome.runtime.getManifest());
+  if (!declared && !(await chrome.permissions.contains({ origins: [originPattern(site)] })))
+    return { ok: false, need: 'permission' };
+  await addSite(site);
+  await syncSiteScripts();
+  return { ok: true, declared };
+}
+
+/** Automatic filling off, and the site's permission handed back when we asked for it. */
+async function turnSiteOff(host) {
+  const removed = await removeSite(host);
+  const manifest = chrome.runtime.getManifest();
+  if (removed && !declaredFor(host, manifest)) {
+    const origins = ['https', 'http'].map((scheme) => originPattern({ host, scheme }));
+    await chrome.permissions.remove({ origins }).catch(() => {});
+  }
+  await syncSiteScripts();
+  return removed;
+}
+
+// The popup asked the browser for a site and may have been closed by the prompt: finish here.
+chrome.permissions.onAdded.addListener(async ({ origins = [] }) => {
+  const { [PENDING_SITE]: pending } = await chrome.storage.session.get(PENDING_SITE);
+  if (!pending || Date.now() - pending.at > 5 * 60 * 1000) return;
+  if (!origins.includes(originPattern(pending))) return;
+  await chrome.storage.session.remove(PENDING_SITE);
+  await addSite(pending);
+  await syncSiteScripts();
+});
+// Withdrawn from chrome://extensions: the site cannot fill any more, so it leaves the list
+// rather than sit there switched on and doing nothing.
+chrome.permissions.onRemoved.addListener(async ({ origins = [] }) => {
+  const manifest = chrome.runtime.getManifest();
+  for (const s of await listSites()) {
+    if (!declaredFor(s.host, manifest) && origins.includes(originPattern(s))) await removeSite(s.host);
+  }
+  await syncSiteScripts();
+});
+chrome.runtime.onStartup.addListener(() => syncSiteScripts().catch(() => {}));
+
 const EXTENSION_ORIGIN = chrome.runtime.getURL('');
 const fromExtensionPage = (sender) =>
   typeof sender?.url === 'string' && sender.url.startsWith(EXTENSION_ORIGIN);
@@ -377,9 +440,61 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
         chrome.runtime.openOptionsPage();
         respond({ ok: true });
         break;
+      case 'site:auto': {
+        const site = siteOf(sender.tab?.url || sender.url);
+        respond({ auto: Boolean(site && (await siteIsAuto(site.host))) });
+        break;
+      }
+      case 'site:auto:off': {
+        const site = siteOf(sender.tab?.url || sender.url);
+        respond({ ok: Boolean(site && (await turnSiteOff(site.host))) });
+        break;
+      }
+      case 'site:status': {
+        // The popup, about the tab it was opened over.
+        const site = siteOf(msg.url);
+        if (!site) {
+          respond({ ok: false });
+          break;
+        }
+        const declared = declaredFor(site.host, chrome.runtime.getManifest());
+        respond({
+          ok: true,
+          ...site,
+          declared,
+          auto: await siteIsAuto(site.host),
+          granted: declared || (await chrome.permissions.contains({ origins: [originPattern(site)] })),
+        });
+        break;
+      }
+      case 'site:pending': {
+        // Said just before the popup asks the browser for this site. The popup can be closed
+        // by the browser's own prompt, so the grant is finished in `permissions.onAdded`.
+        const site = siteOf(`${msg.scheme === 'http' ? 'http' : 'https'}://${msg.host}/`);
+        if (site) await chrome.storage.session.set({ [PENDING_SITE]: { ...site, at: Date.now() } });
+        respond({ ok: Boolean(site) });
+        break;
+      }
+      case 'site:enable': {
+        const site = siteOf(`${msg.scheme === 'http' ? 'http' : 'https'}://${msg.host}/`);
+        respond(site ? await turnSiteOn(site) : { ok: false });
+        break;
+      }
+      case 'site:disable':
+        respond({ ok: await turnSiteOff(String(msg.host || '').toLowerCase()) });
+        break;
+      case 'sites:list': {
+        const manifest = chrome.runtime.getManifest();
+        respond({
+          sites: (await listSites()).map((s) => ({ ...s, declared: declaredFor(s.host, manifest) })),
+        });
+        break;
+      }
       case 'forget':
         await clear();
         await clearApplications();
+        await clearSites();
+        await syncSiteScripts().catch(() => {});
         await clearFiles().catch(() => {});
         await forgetEpimoni();
         respond({ ok: true });
@@ -407,6 +522,8 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
  * Only on `install`, never on `update`, which would reopen a tab on every silent bump.
  */
 chrome.runtime.onInstalled.addListener(({ reason }) => {
+  // On an update too: the registered script must match the list the new version reads.
+  syncSiteScripts().catch(() => {});
   if (reason !== 'install') return;
   chrome.runtime.openOptionsPage();
 });

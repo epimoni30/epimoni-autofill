@@ -34,6 +34,8 @@
     send({ type: 'report', name: 'ext_seen', meta: { host: location.hostname, ...extra } });
 
   let lastRun = [];
+  // The address the last fill ran at, clicked or automatic: automatic filling leaves it alone.
+  let filledFor = null;
   // Which CV of the library this page is filled from. Null is the active one; the panel's
   // picker sets it for this page only, and the offer analysis follows it.
   let pageCvId = null;
@@ -239,8 +241,15 @@
     });
   }
 
-  async function fill() {
+  /**
+   * One fill of this page. `auto` is a fill nobody clicked for, on a site where the user turned
+   * automatic filling on: it says nothing when it has nothing to say (no CV yet, or a form
+   * with nothing it recognises), and a page it fills only one field of, a newsletter box or a
+   * search bar, is not recorded as an application.
+   */
+  async function fill({ auto = false } = {}) {
     watcher?.stop();
+    filledFor = location.href;
     const {
       profile,
       entries = {},
@@ -262,6 +271,7 @@
     // nothing typed in. It used to say "connect your Epimoni account", which is now advice
     // about only one of the three ways out of it.
     if (!profile || !Object.keys(profile).length) {
+      if (auto) return;
       banner('no-profile');
       return;
     }
@@ -278,6 +288,7 @@
     // automatic re-fill skips everything it has seen.
     const run = await engine(ctx, attached);
     run.entries = entries;
+    if (auto && !run.filled.length && !run.suggestions.length) return;
     if (DEV && run.errors.length) console.warn('[epimoni] fillers:', run.errors);
     remember(run);
     letterTarget = findLetter(run);
@@ -286,8 +297,9 @@
     lastSuggestions = run.suggestions;
     dismissed = 0;
     reportRun(run);
-    await track(lastRun.length);
+    await track(auto && lastRun.length < 2 ? 0 : lastRun.length);
     banner('filled', lastRun, {
+      auto,
       suggested: run.suggestions.length,
       ai: run.ai,
       ongoing: run.ongoing,
@@ -479,6 +491,24 @@
    * end up with labels drifting over the page, and the thing the user actually needs is one
    * place that answers "what did you just touch, and can I undo it".
    */
+  /** Under a fill nobody clicked for: why it happened, and the way to stop it on this site. */
+  function autoLine() {
+    const line = h('div', 'margin-top:8px;color:#71717a', t('panel_auto_filled'), ' ');
+    const off = document.createElement('button');
+    off.textContent = t('panel_auto_off');
+    off.style.cssText = 'border:0;background:none;padding:0;color:#7c5cff;font:inherit;cursor:pointer';
+    off.addEventListener(
+      'click',
+      byUser(async () => {
+        await send({ type: 'site:auto:off' });
+        stopAuto();
+        line.replaceChildren(t('panel_auto_is_off'));
+      }),
+    );
+    line.appendChild(off);
+    return line;
+  }
+
   function banner(kind, filled = [], counts = {}) {
     document.getElementById('epimoni-panel')?.remove();
     ui = null;
@@ -556,6 +586,7 @@
         'margin-top:10px;border:1px solid #e4e4e7;background:#fafafa;border-radius:8px;padding:5px 10px;cursor:pointer;font:inherit;color:#18181b';
       undo.addEventListener('click', byUser(undoAll));
       panel.appendChild(undo);
+      if (counts.auto) panel.appendChild(autoLine());
       if (tracked) panel.appendChild(trackerLine());
       ui = {
         host,
@@ -1103,4 +1134,39 @@
     const els = fillableElements(document);
     if (els.length >= 3) seen({ controls: els.length });
   }
+
+  /**
+   * Unless the user turned automatic filling on for this site, from the popup. Then an
+   * application form is filled as it appears: on load, or when a single-page site renders it
+   * after "Postuler", or at a new address. Once per address, so "tout annuler" is final for
+   * that page, and never over a fill the user already clicked for. The form growing after
+   * that is the re-fill's business (`watch`), as after a click.
+   */
+  let autoObserver = null;
+  let autoTimer = null;
+  let autoDoneFor = null;
+  const AUTO_MS = 30 * 60 * 1000;
+  function stopAuto() {
+    autoObserver?.disconnect();
+    autoObserver = null;
+    clearTimeout(autoTimer);
+  }
+  function autoCheck() {
+    if (autoDoneFor === location.href) return;
+    if (fillableElements(document).length < 3) return;
+    autoDoneFor = location.href;
+    if (filledFor === location.href) return;
+    fill({ auto: true });
+  }
+  send({ type: 'site:auto' }).then(({ auto }) => {
+    if (!auto) return;
+    autoCheck();
+    let pending = null;
+    autoObserver = new MutationObserver(() => {
+      clearTimeout(pending);
+      pending = setTimeout(autoCheck, 500);
+    });
+    autoObserver.observe(document.documentElement, { childList: true, subtree: true });
+    autoTimer = setTimeout(stopAuto, AUTO_MS);
+  });
 })();

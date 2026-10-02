@@ -116,9 +116,11 @@ test('the core worker runs with the add-on deleted, and never touches the networ
       onMessage: { addListener: (fn) => listeners.push(fn) },
       onMessageExternal: noop,
       onInstalled: noop,
+      onStartup: noop,
       openOptionsPage: () => {},
     },
     action: { onClicked: noop },
+    permissions: { onAdded: noop, onRemoved: noop },
     storage: {
       local: {
         get: async (k) => (local[k] === undefined ? {} : { [k]: local[k] }),

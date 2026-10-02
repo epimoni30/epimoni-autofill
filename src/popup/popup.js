@@ -118,6 +118,57 @@ async function renderAi(state) {
   } else note.textContent = t('popup_tier_free');
 }
 
+/**
+ * Automatic filling on this site: off by default everywhere, and turned on here, one site at a
+ * time. Outside the job boards the manifest declares, it needs the browser's permission for
+ * this one origin, asked for inside this click; the worker is told first because the browser's
+ * prompt can close the popup before the answer comes back.
+ */
+async function renderSite(state) {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  const site = tab?.url ? await send({ type: 'site:status', url: tab.url }) : {};
+  if (!site.ok) return;
+  const row = el('site-row');
+  const box = el('site-auto');
+  const note = el('site-note');
+  const text = el('site-text');
+  text.textContent = '';
+  const host = document.createElement('b');
+  host.textContent = site.host.replace(/^www\./, '');
+  text.append(t('popup_site_auto'), ' ', host);
+  box.checked = site.auto;
+  box.disabled = !state.has_cv;
+  row.hidden = false;
+  box.addEventListener('change', async () => {
+    note.textContent = '';
+    if (!box.checked) {
+      await send({ type: 'site:disable', host: site.host });
+      note.textContent = t('popup_site_off');
+      return;
+    }
+    if (!site.granted) {
+      send({ type: 'site:pending', host: site.host, scheme: site.scheme });
+      let granted = false;
+      try {
+        granted = await chrome.permissions.request({ origins: [`${site.scheme}://${site.host}/*`] });
+      } catch {}
+      if (!granted) {
+        box.checked = false;
+        note.textContent = t('popup_site_refused');
+        return;
+      }
+    }
+    const res = await send({ type: 'site:enable', host: site.host, scheme: site.scheme });
+    if (!res.ok) {
+      box.checked = false;
+      note.textContent = t('popup_site_refused');
+      return;
+    }
+    // On from now on, and for this page too: fill it now, as the next visit will.
+    onPage(null);
+  });
+}
+
 (async () => {
   localise();
   const state = await send({ type: 'state' });
@@ -129,5 +180,6 @@ async function renderAi(state) {
   el('dashboard').addEventListener('click', () => openDashboard(state.has_cv ? '' : '#cv'));
 
   await renderCv(state);
+  await renderSite(state);
   await renderAi(state);
 })();

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="fr">
+<!-- A job page whose application form is rendered only after "Postuler", at a new address, the
+     way a single-page careers site does it. Not in the measured list: at load there is no form,
+     and what is under test is automatic filling on a site where the user turned it on, which
+     only the end-to-end suite can drive. -->
+<meta charset="utf-8"><title>Chargée de communication - Acme</title>
+<body>
+<main>
+  <h1>Chargée de communication</h1>
+  <p>Acme recrute une chargée de communication en CDI à Lyon.</p>
+  <button type="button" id="apply">Postuler</button>
+  <div id="slot"></div>
+</main>
+<script>
+  document.getElementById('apply').addEventListener('click', () => {
+    history.pushState({}, '', `${location.pathname}?etape=candidature`);
+    setTimeout(() => {
+      const form = document.createElement('form');
+      form.id = 'candidature';
+      form.setAttribute('onsubmit', 'window.__submitted = true; return false');
+      form.innerHTML =
+        '<label for="p">Prénom</label><input id="p" name="prenom">' +
+        '<label for="n">Nom de famille</label><input id="n" name="nom">' +
+        '<label for="e">Adresse e-mail</label><input id="e" name="email" type="email">' +
+        '<label for="t">Téléphone portable</label><input id="t" name="tel" type="tel">' +
+        '<button type="submit">Envoyer ma candidature</button>';
+      document.getElementById('slot').appendChild(form);
+    }, 80);
+  });
+</script>
+</body></html>

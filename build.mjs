@@ -191,6 +191,7 @@ async function validateLocales(m) {
     'src/dashboard/index.js',
     'src/dashboard/cv.js',
     'src/dashboard/applications.js',
+    'src/dashboard/sites.js',
     'src/content/index.js',
     'src/epimoni/pair.js',
     'src/epimoni/pair.html',

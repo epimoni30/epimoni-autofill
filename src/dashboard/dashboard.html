@@ -102,6 +102,7 @@
   <div class="brand">Epimoni</div>
   <a href="#cv" data-nav="cv"><span data-i18n="dash_menu_cv"></span></a>
   <a href="#candidatures" data-nav="candidatures"><span data-i18n="dash_menu_applications"></span><span id="nav-count" class="count"></span></a>
+  <a href="#sites" data-nav="sites"><span data-i18n="dash_menu_sites"></span></a>
 </nav>
 <main>
 <div data-view="cv">
@@ -234,6 +235,14 @@
   <div class="trk-bar">
     <button type="button" id="trk-clear" class="link danger" data-i18n="trk_clear" hidden></button>
   </div>
+</div>
+<div data-view="sites" hidden>
+  <h1 data-i18n="sites_title"></h1>
+  <p class="muted" style="margin-top:0" data-i18n="sites_intro"></p>
+  <section>
+    <ul id="sites-list" class="cv-list"></ul>
+    <p id="sites-empty" class="muted" style="margin:0" data-i18n="sites_empty" hidden></p>
+  </section>
 </div>
 </main>
 </div>

@@ -25,6 +25,9 @@
   .note a { display: inline-block; margin-top: 2px; font-weight: 600; }
   .note .linkish { border: 0; padding: 0; margin-top: 2px; color: var(--accent); font-weight: 600; }
   #cv select { width: 100%; margin-top: 4px; }
+  .site { display: flex; gap: 8px; align-items: flex-start; font-size: 12px; cursor: pointer; }
+  .site input { margin: 2px 0 0; accent-color: var(--accent); }
+  .site b { font-weight: 600; overflow-wrap: anywhere; }
 </style>
 <body>
   <!-- Every string carries `data-i18n`, applied by popup.js. `chrome.i18n` cannot substitute
@@ -34,6 +37,11 @@
   <div id="cv" class="muted"></div>
   <div class="group">
     <button type="button" id="fill" class="action primary" data-i18n="popup_fill"></button>
+    <label class="site" id="site-row" hidden>
+      <input type="checkbox" id="site-auto">
+      <span id="site-text"></span>
+    </label>
+    <div id="site-note" class="note"></div>
   </div>
   <div class="group">
     <div class="label" data-i18n="popup_ai_heading"></div>

@@ -37,10 +37,12 @@ function stub({ responses }) {
       onMessageExternal: { addListener: (fn) => listeners.external.push(fn) },
       onMessage: { addListener: (fn) => listeners.internal.push(fn) },
       onInstalled: { addListener: (fn) => listeners.installed.push(fn) },
+      onStartup: { addListener: () => {} },
       getManifest: () => ({ version: '0.1.0' }),
       openOptionsPage: () => {},
     },
     action: { onClicked: { addListener: (fn) => listeners.action.push(fn) } },
+    permissions: { onAdded: { addListener: () => {} }, onRemoved: { addListener: () => {} } },
     tabs: { create: async () => {}, query: async () => [], sendMessage: async () => {} },
     scripting: { executeScript: async () => [] },
     storage: {

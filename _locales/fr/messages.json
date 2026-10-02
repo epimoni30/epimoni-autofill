@@ -1210,5 +1210,49 @@
         "content": "$1"
       }
     }
+  },
+  "popup_site_auto": {
+    "message": "Remplir automatiquement sur"
+  },
+  "popup_site_off": {
+    "message": "Remplissage automatique désactivé sur ce site."
+  },
+  "popup_site_refused": {
+    "message": "Le navigateur n'a pas donné l'accès à ce site. Vous pouvez toujours remplir la page d'un clic."
+  },
+  "panel_auto_filled": {
+    "message": "Rempli automatiquement : vous l'avez activé pour ce site."
+  },
+  "panel_auto_off": {
+    "message": "Désactiver"
+  },
+  "panel_auto_is_off": {
+    "message": "Remplissage automatique désactivé sur ce site."
+  },
+  "dash_menu_sites": {
+    "message": "Sites"
+  },
+  "sites_title": {
+    "message": "Remplissage automatique"
+  },
+  "sites_intro": {
+    "message": "Sur ces sites, l'extension remplit les formulaires de candidature dès qu'ils s'affichent, sans attendre votre clic. Elle n'envoie jamais rien à votre place. Pour ajouter un site, ouvrez l'extension sur ce site et cochez « Remplir automatiquement »."
+  },
+  "sites_empty": {
+    "message": "Aucun site pour l'instant. Partout ailleurs, l'extension remplit une page quand vous cliquez sur « Remplir cette page »."
+  },
+  "sites_since": {
+    "message": "Activé le $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "sites_declared": {
+    "message": "site d'emploi pris en charge"
+  },
+  "sites_off": {
+    "message": "Désactiver"
   }
 }

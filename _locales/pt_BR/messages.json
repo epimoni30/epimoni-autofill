@@ -1210,5 +1210,49 @@
         "content": "$1"
       }
     }
+  },
+  "popup_site_auto": {
+    "message": "Preencher automaticamente em"
+  },
+  "popup_site_off": {
+    "message": "Preenchimento automático desativado neste site."
+  },
+  "popup_site_refused": {
+    "message": "O navegador não liberou o acesso a este site. Você ainda pode preencher a página com um clique."
+  },
+  "panel_auto_filled": {
+    "message": "Preenchido automaticamente: você ativou isso para este site."
+  },
+  "panel_auto_off": {
+    "message": "Desativar"
+  },
+  "panel_auto_is_off": {
+    "message": "Preenchimento automático desativado neste site."
+  },
+  "dash_menu_sites": {
+    "message": "Sites"
+  },
+  "sites_title": {
+    "message": "Preenchimento automático"
+  },
+  "sites_intro": {
+    "message": "Nestes sites a extensão preenche os formulários de candidatura assim que aparecem, sem esperar o seu clique. Ela nunca envia nada por você. Para adicionar um site, abra a extensão nele e marque \"Preencher automaticamente\"."
+  },
+  "sites_empty": {
+    "message": "Nenhum site ainda. Em todos os outros, a extensão preenche uma página quando você clica em \"Preencher esta página\"."
+  },
+  "sites_since": {
+    "message": "Ativado em $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "sites_declared": {
+    "message": "site de vagas compatível"
+  },
+  "sites_off": {
+    "message": "Desativar"
   }
 }

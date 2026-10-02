@@ -16,6 +16,7 @@
     "https://www.epimoni30.com/*",
     "https://fpd66hmugz4o7j6g7t4obpxlca0bgrvk.lambda-url.eu-central-1.on.aws/*"
   ],
+  "optional_host_permissions": ["https://*/*", "http://*/*"],
   "externally_connectable": {
     "matches": ["https://www.epimoni30.com/*"]
   },

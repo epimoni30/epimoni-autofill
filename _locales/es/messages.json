@@ -1210,5 +1210,49 @@
         "content": "$1"
       }
     }
+  },
+  "popup_site_auto": {
+    "message": "Rellenar automáticamente en"
+  },
+  "popup_site_off": {
+    "message": "Relleno automático desactivado en este sitio."
+  },
+  "popup_site_refused": {
+    "message": "El navegador no ha dado acceso a este sitio. Puede seguir rellenando la página con un clic."
+  },
+  "panel_auto_filled": {
+    "message": "Rellenado automáticamente: lo activó para este sitio."
+  },
+  "panel_auto_off": {
+    "message": "Desactivar"
+  },
+  "panel_auto_is_off": {
+    "message": "Relleno automático desactivado en este sitio."
+  },
+  "dash_menu_sites": {
+    "message": "Sitios"
+  },
+  "sites_title": {
+    "message": "Relleno automático"
+  },
+  "sites_intro": {
+    "message": "En estos sitios la extensión rellena los formularios de candidatura en cuanto aparecen, sin esperar a su clic. Nunca envía nada por usted. Para añadir un sitio, abra la extensión en ese sitio y marque «Rellenar automáticamente»."
+  },
+  "sites_empty": {
+    "message": "Aún no hay sitios. En todos los demás, la extensión rellena una página cuando hace clic en «Rellenar esta página»."
+  },
+  "sites_since": {
+    "message": "Activado el $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "sites_declared": {
+    "message": "portal de empleo compatible"
+  },
+  "sites_off": {
+    "message": "Desactivar"
   }
 }
