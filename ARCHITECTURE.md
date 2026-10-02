@@ -52,6 +52,8 @@ src/shared/cvdoc.js     the CV document: read it, write it, flatten it, translat
 src/shared/store.js     the CV library and everything else remembered; one writer, one copy
 src/shared/files.js     the PDF a user attached to a CV, in the extension's own IndexedDB
 src/shared/pdf.js       a CV as a PDF, written by hand: the file sent when the user attached none
+src/shared/pdftext.js   the text of a PDF, read locally (pdfcrypt.js opens empty-password ones)
+src/shared/sites.js     the sites where the user turned automatic filling on
 src/shared/applications.js  the application tracker: one entry per job page filled, local only
 src/background/index.js the core worker: the library, the fill profile, the toolbar click
 src/dashboard/          the extension's one page, behind a menu: the CV (cv.js, the only surface
@@ -73,6 +75,8 @@ src/epimoni/worker.js   pairing with the site, the offer analysis, the allowance
 src/epimoni/identity.js which token a metered call goes out with, and what it may do
 src/epimoni/api.js      the backend, named statuses, and the anonymous session
 src/epimoni/telemetry.js  counts-only usage events, riding on a token already held
+src/epimoni/tailor.js   the CV writer's proposals → a list to review → a tailored copy
+src/epimoni/import.js   the backend parser's fields → a CvDoc
 src/epimoni/bridge.js   the site's door on every browser: postMessage ↔ worker, forwards ping/pair/pair-status only
 ```
 
@@ -99,7 +103,7 @@ The folder *is* the decision, and three rules keep it one:
 
 - Only the core worker imports the add-on, and only `epimoni/worker.js`, through four exports:
   `installEpimoni` (the site's listener), `handleEpimoni` (the messages it owns: `analyse`,
-  `letter`, `tailor`, `tailor:save`, `tier`, `unpair`, `report`), `epimoniState` (what a surface may say about the account) and
+  `letter`, `tailor`, `tailor:save`, `cv:import-text`, `tier`, `unpair`, `report`), `epimoniState` (what a surface may say about the account) and
   `forgetEpimoni`. A message the core does not know is offered to the add-on, and one neither
   knows is answered `unknown`.
 - The add-on depends on the core, never the reverse. It reads `shared/store.js` and
@@ -468,6 +472,26 @@ France Travail states the job title on the heading, the apply button, the print 
 locate link, so identical short lines are deduplicated. Short ones only: two identical
 *paragraphs* belong to whoever wrote the advert. Note what this deliberately is not: a list of
 per-board button labels, which would be an adapter wearing a different hat.
+
+## Importing the CV someone already has
+
+The dashboard's "Importer mon CV existant" turns a PDF, or pasted text, into a CV without
+retyping it. Reading the PDF is core and local (`shared/pdftext.js`): objects and object
+streams, FlateDecode through the browser's `DecompressionStream`, each font's ToUnicode map and
+glyph widths, and the graphics and text matrices, so that a writer that draws every glyph on
+its own (`q … cm BT … Tm <00xx> Tj ET Q`, common in CV builders) still comes out as words
+with spaces, line by line. Files "protected" with an empty user password, which CV builders
+produce and every viewer opens without asking, are decrypted (`shared/pdfcrypt.js`: RC4 and
+AES-128 through MD5, AES-256 through WebCrypto's SHA-2); one that needs a real password, a scan
+with no text layer, and a file that is not a PDF are each refused with their own message, and
+the text can still be pasted. The fixtures in `test/fixtures/pdf/` are one synthetic CV printed
+by Chrome and rewritten by qpdf in each of those shapes.
+
+The text is shown, editable, before anything leaves the machine. Sorting it into fields is the
+add-on (`cv:import-text`, extension pages only, a paired account): the backend's verbatim
+parser (`/ml/cv-extract-text`), which copies and never rewrites, mapped by `epimoni/import.js`.
+The result is a new active CV, opened in the editor to check, and the PDF it came from is kept
+as its file, so forms receive the document the person made.
 
 ## The CV document, and the library that holds several
 

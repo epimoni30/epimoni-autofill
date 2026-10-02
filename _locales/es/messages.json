@@ -1345,5 +1345,67 @@
   },
   "panel_tailor_none": {
     "message": "Marque al menos un cambio."
+  },
+  "opt_pdf_import_heading": {
+    "message": "Importar mi CV actual"
+  },
+  "opt_pdf_import_intro": {
+    "message": "Elija su CV en PDF: su texto se lee en este ordenador y usted lo revisa. Después, la IA de Epimoni lo ordena en secciones sin reescribir una palabra. Su PDF sigue siendo el que se envía a los formularios."
+  },
+  "opt_pdf_import_choose": {
+    "message": "Elegir mi CV (PDF)"
+  },
+  "opt_pdf_import_paste": {
+    "message": "o pegar el texto"
+  },
+  "opt_pdf_import_text_label": {
+    "message": "El texto de su CV (corríjalo si hace falta)"
+  },
+  "opt_pdf_import_go": {
+    "message": "Crear el CV con IA"
+  },
+  "opt_pdf_import_needs_account": {
+    "message": "Ordenar con IA requiere una cuenta de Epimoni conectada. Sin ella, puede rellenar las secciones de abajo a mano."
+  },
+  "opt_pdf_import_reading": {
+    "message": "Leyendo el PDF…"
+  },
+  "opt_pdf_import_read": {
+    "message": "$N$ palabras leídas. Revise el texto y luego cree el CV.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_pdf_import_not_pdf": {
+    "message": "Este archivo no es un PDF."
+  },
+  "opt_pdf_import_encrypted": {
+    "message": "Este PDF está protegido con contraseña. Ábralo, copie su texto y péguelo aquí."
+  },
+  "opt_pdf_import_no_text": {
+    "message": "Este PDF no contiene texto legible (seguramente es una imagen o un escaneo). Pegue mejor el texto de su CV."
+  },
+  "opt_pdf_import_unreadable": {
+    "message": "No se ha podido leer este PDF. Pegue mejor el texto de su CV."
+  },
+  "opt_pdf_import_too_short": {
+    "message": "El texto es demasiado corto para ser un CV."
+  },
+  "opt_pdf_import_too_long": {
+    "message": "El texto es demasiado largo (30 000 caracteres como máximo)."
+  },
+  "opt_pdf_import_working": {
+    "message": "La IA está ordenando su CV en secciones…"
+  },
+  "opt_pdf_import_empty": {
+    "message": "No se ha reconocido ninguna sección en este texto."
+  },
+  "opt_pdf_import_failed": {
+    "message": "La importación no ha funcionado. Vuelva a intentarlo en un momento."
+  },
+  "opt_pdf_import_done": {
+    "message": "CV creado. Revise cada sección de abajo y luego guarde."
   }
 }

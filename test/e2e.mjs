@@ -1305,6 +1305,73 @@ check(
 );
 await tailorPage.close();
 
+// ── Importing the CV the person already has ─────────────────────────────────────────────
+//
+// The PDF is read in the dashboard, here an AES-256 "protected" one with an empty password, as
+// CV builders make them; its text is shown to edit; the AI sorts it (stubbed); the new CV is
+// the active one and carries the original PDF as its file.
+await stubWorker({
+  status: 200,
+  body: {
+    structured: {
+      contact: { name: 'Camille Dupont-Mercier', email: 'camille.dupont@example.org' },
+      title: 'Cheffe de projet digital',
+      experiences: [
+        {
+          title: 'Cheffe de projet digital',
+          company: 'Maison Lemoine',
+          period: "2019 – aujourd'hui",
+          bullets: ["Refonte du tunnel d'achat, +18 % de conversion."],
+        },
+      ],
+      skills: ['Gestion de projet', 'SEO', 'Figma'],
+    },
+  },
+});
+const importer = await ctx.newPage();
+await importer.goto(`chrome-extension://${extId}/dashboard.html#cv`);
+await importer.waitForSelector('#pdf-import-choose');
+await importer.setInputFiles(
+  '#pdf-import-input',
+  fileURLToPath(new URL('./fixtures/pdf/aes-256.pdf', import.meta.url)),
+);
+await importer
+  .waitForFunction(() => document.getElementById('pdf-import-text').value.length > 100, null, {
+    timeout: 5000,
+  })
+  .catch(() => {});
+const readBack = await importer.evaluate(() => ({
+  text: document.getElementById('pdf-import-text').value,
+  shown: !document.getElementById('pdf-import-review').hidden,
+}));
+check(
+  'the dashboard reads an encrypted CV PDF locally and shows its text to check first',
+  readBack.shown &&
+    readBack.text.includes("Refonte du tunnel d'achat, +18 % de conversion.") &&
+    (await sw.evaluate(() => globalThis.__calls.filter((u) => u.includes('cv-extract-text')).length)) === 0,
+  readBack.text.slice(0, 80),
+);
+await importer.click('#pdf-import-go');
+const doneMsg = await sw.evaluate(() => chrome.i18n.getMessage('opt_pdf_import_done'));
+await importer
+  .waitForFunction((m) => document.getElementById('pdf-import-msg').textContent === m, doneMsg, {
+    timeout: 5000,
+  })
+  .catch(() => {});
+const imported = await importer.evaluate(
+  () => new Promise((r) => chrome.runtime.sendMessage({ type: 'cv:list' }, r)),
+);
+const newCv = (imported.cvs || []).find((c) => c.label === 'aes-256');
+check(
+  'the sorted CV is created, made active, opened in the editor, and keeps the PDF as its file',
+  Boolean(newCv?.active) &&
+    newCv.file?.origin === 'upload' &&
+    (await importer.inputValue('#b_name')) === 'Camille Dupont-Mercier' &&
+    (await sw.evaluate(() => globalThis.__calls.filter((u) => u.includes('cv-extract-text')).length)) === 1,
+  JSON.stringify(newCv),
+);
+await importer.close();
+
 // ── No account at all ────────────────────────────────────────────────────────────────────
 //
 // The extension has to work for somebody who has never signed in: the CV lives here, the

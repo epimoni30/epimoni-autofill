@@ -122,6 +122,25 @@
     <div class="muted" style="margin-top:6px; font-size:12px" data-i18n="opt_export_hint"></div>
   </section>
 
+  <section id="pdf-import-card">
+    <h2 data-i18n="opt_pdf_import_heading"></h2>
+    <p class="muted" style="margin:-4px 0 10px" data-i18n="opt_pdf_import_intro"></p>
+    <div class="actions">
+      <button type="button" id="pdf-import-choose" data-i18n="opt_pdf_import_choose"></button>
+      <button type="button" id="pdf-import-paste" class="link" data-i18n="opt_pdf_import_paste"></button>
+      <input id="pdf-import-input" type="file" accept="application/pdf,.pdf" hidden>
+    </div>
+    <div id="pdf-import-msg" class="muted" role="status" style="margin-top:6px"></div>
+    <div id="pdf-import-review" hidden style="margin-top:10px">
+      <label for="pdf-import-text" data-i18n="opt_pdf_import_text_label"></label>
+      <textarea id="pdf-import-text" style="min-height:220px"></textarea>
+      <div class="actions" style="margin-top:8px">
+        <button type="button" id="pdf-import-go" class="primary" data-i18n="opt_pdf_import_go"></button>
+        <span id="pdf-import-ai" class="muted"></span>
+      </div>
+    </div>
+  </section>
+
   <section id="library-card">
     <h2 data-i18n="opt_library_heading"></h2>
     <p class="muted" style="margin:-4px 0 10px" data-i18n="opt_library_intro"></p>

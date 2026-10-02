@@ -1345,5 +1345,67 @@
   },
   "panel_tailor_none": {
     "message": "Marque pelo menos uma alteração."
+  },
+  "opt_pdf_import_heading": {
+    "message": "Importar meu currículo atual"
+  },
+  "opt_pdf_import_intro": {
+    "message": "Escolha seu currículo em PDF: o texto é lido neste computador e você o revisa. Depois, a IA da Epimoni organiza tudo em seções sem reescrever uma palavra. Seu PDF continua sendo o arquivo enviado aos formulários."
+  },
+  "opt_pdf_import_choose": {
+    "message": "Escolher meu currículo (PDF)"
+  },
+  "opt_pdf_import_paste": {
+    "message": "ou colar o texto"
+  },
+  "opt_pdf_import_text_label": {
+    "message": "O texto do seu currículo (corrija se precisar)"
+  },
+  "opt_pdf_import_go": {
+    "message": "Criar o currículo com IA"
+  },
+  "opt_pdf_import_needs_account": {
+    "message": "Organizar com IA exige uma conta Epimoni conectada. Sem conta, você pode preencher as seções abaixo manualmente."
+  },
+  "opt_pdf_import_reading": {
+    "message": "Lendo o PDF…"
+  },
+  "opt_pdf_import_read": {
+    "message": "$N$ palavras lidas. Revise o texto e depois crie o currículo.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_pdf_import_not_pdf": {
+    "message": "Este arquivo não é um PDF."
+  },
+  "opt_pdf_import_encrypted": {
+    "message": "Este PDF está protegido por senha. Abra-o, copie o texto e cole aqui."
+  },
+  "opt_pdf_import_no_text": {
+    "message": "Este PDF não tem texto legível (provavelmente é uma imagem ou um escaneamento). Cole o texto do seu currículo."
+  },
+  "opt_pdf_import_unreadable": {
+    "message": "Não foi possível ler este PDF. Cole o texto do seu currículo."
+  },
+  "opt_pdf_import_too_short": {
+    "message": "O texto é curto demais para ser um currículo."
+  },
+  "opt_pdf_import_too_long": {
+    "message": "O texto é longo demais (no máximo 30.000 caracteres)."
+  },
+  "opt_pdf_import_working": {
+    "message": "A IA está organizando seu currículo em seções…"
+  },
+  "opt_pdf_import_empty": {
+    "message": "Nenhuma seção foi reconhecida neste texto."
+  },
+  "opt_pdf_import_failed": {
+    "message": "A importação não deu certo. Tente de novo em instantes."
+  },
+  "opt_pdf_import_done": {
+    "message": "Currículo criado. Confira cada seção abaixo e depois salve."
   }
 }

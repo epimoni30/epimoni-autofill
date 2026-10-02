@@ -18,6 +18,7 @@ import { apiFetch, whoIs } from './api.js';
 import { entitlement, forgetEntitlement, resolveIdentity } from './identity.js';
 import { AI_DATA, missing } from './consent.js';
 import { applyRewrite, proposalsFrom } from './tailor.js';
+import { fromExtraction } from './import.js';
 
 const SITE = 'https://www.epimoni30.com';
 
@@ -42,6 +43,9 @@ const LETTER_PATH = '/api/v1/ml/analyse/motivation/generate-doc';
 // Not memoised server-side (a second take is the point there), so the cache below is the only
 // thing that keeps a reopened panel from paying twice.
 const TAILOR_PATH = '/api/v1/ml/analyse/write-cv-doc';
+// A CV's raw text (read from the user's PDF on this machine, or pasted) sorted into fields by
+// the verbatim parser. Off the hourly quota, capped on its own window server-side.
+const IMPORT_PATH = '/api/v1/ml/cv-extract-text';
 
 /**
  * A cheap, stable fingerprint of a string. Not a security primitive: it names a cache entry.
@@ -697,6 +701,32 @@ async function saveTailored(state, msg) {
 }
 
 /**
+ * A new CV from raw text, from the dashboard only. The text never comes from a web page: the
+ * dashboard read it from a PDF the user chose, or the user pasted it, and saw it before this.
+ * Saved as a new CV and made the active one, since importing your CV means "this is my CV".
+ */
+async function importText(state, msg) {
+  const refused = await aiRefusal(state);
+  if (refused) return refused;
+  const text = String(msg?.text || '').trim();
+  if (text.split(/\s+/).length < 30) return { ok: false, kind: 'too-short' };
+  if (text.length > 30000) return { ok: false, kind: 'too-long' };
+  const got = await meteredCall(state, msg, IMPORT_PATH, { text });
+  if (got.fail) return got.fail;
+  const cv = fromExtraction(got.res.data?.structured);
+  if (!fieldCurrent(cv.basics.name) && !cv.work.length && !cv.skills.length)
+    return { ok: false, kind: 'empty' };
+  const saved = await saveCv({
+    cv,
+    label: String(msg.label || '').slice(0, 120) || null,
+    profile: toProfile(cv),
+    source: 'local',
+  });
+  if (!saved) return { ok: false, kind: 'library-full' };
+  return { ok: true, id: saved.saved_id };
+}
+
+/**
  * What the surfaces may say about the user's allowance, without spending anything.
  *
  * Asked when a panel or the popup opens, never on the fill path. It resolves an identity,
@@ -779,6 +809,10 @@ export async function handleEpimoni(msg, state, sender) {
       return letter(state, msg);
     case 'tailor':
       return tailorCv(state, msg);
+    case 'cv:import-text':
+      // An extension page only: the core worker refuses it from a content script, since it is
+      // not in CONTENT_SCRIPT_TYPES.
+      return importText(state, msg);
     case 'tailor:save':
       // The page the CV is for is the tab that asked, never an address the message names.
       return saveTailored(state, { ...msg, url: sender?.tab?.url || sender?.url || '' });

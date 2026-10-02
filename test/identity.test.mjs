@@ -84,6 +84,7 @@ const ANALYSE = '/api/v1/ml/analyse/cvVSoffer-doc?lang=fr';
 const ME = '/api/v1/users/me';
 const LETTER = '/api/v1/ml/analyse/motivation/generate-doc?lang=fr';
 const TAILOR = '/api/v1/ml/analyse/write-cv-doc?lang=fr';
+const IMPORT = '/api/v1/ml/cv-extract-text?lang=fr';
 /** What a pairing from a signed-in site session leaves in storage. */
 const pairAccount = (h, extra = {}) => {
   h.local.epimoni = {
@@ -262,6 +263,40 @@ test('a tailored CV is refused without an account, proposed once, and made only 
   const resaved = await ask(h.listeners, { type: 'tailor:save', posting, accept: [0, 1] }, page);
   assert.equal(resaved.cv_id, saved.cv_id);
   assert.equal((await ask(h.listeners, { type: 'cv:list' })).cvs.length, 2);
+});
+
+test('importing CV text needs an account, is refused from a page, and makes the active CV', async () => {
+  const structured = {
+    contact: { name: 'Léa Import', email: 'lea@example.org' },
+    experiences: [
+      { title: 'Analyste', company: 'Acme', period: '2020 – 2024', bullets: ['Tableaux de bord'] },
+    ],
+    skills: ['SQL'],
+  };
+  const h = await loadWorker({ responses: { [IMPORT]: { json: { structured } } } });
+  const text = 'Léa Import analyste données '.repeat(10);
+  assert.equal((await ask(h.listeners, { type: 'cv:import-text', text, lang: 'fr' })).kind, 'not-paired');
+  pairAccount(h);
+  const page = { id: 'test-ext', tab: { id: 4 }, url: 'https://jobs.example.org/apply' };
+  assert.equal(
+    (await ask(h.listeners, { type: 'cv:import-text', text, lang: 'fr' }, page)).error,
+    'forbidden',
+  );
+  assert.equal(
+    (await ask(h.listeners, { type: 'cv:import-text', text: 'trop court', lang: 'fr' })).kind,
+    'too-short',
+  );
+  assert.equal(h.calls.filter((c) => c.path === IMPORT).length, 0, 'nothing is sent before the checks pass');
+
+  const res = await ask(h.listeners, { type: 'cv:import-text', text, label: 'CV-Lea', lang: 'fr' });
+  assert.equal(res.ok, true);
+  const { cvs } = await ask(h.listeners, { type: 'cv:list' });
+  const made = cvs.find((c) => c.id === res.id);
+  assert.equal(made.active, true);
+  assert.equal(made.label, 'CV-Lea');
+  const profile = (await ask(h.listeners, { type: 'profile' })).profile;
+  assert.equal(profile.email, 'lea@example.org');
+  assert.equal(h.calls.find((c) => c.path === IMPORT).token, 'account-1');
 });
 
 test('a paired account spends its own token, and gets the link back to the site', async () => {

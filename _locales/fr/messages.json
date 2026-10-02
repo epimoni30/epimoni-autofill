@@ -1345,5 +1345,67 @@
   },
   "panel_tailor_none": {
     "message": "Cochez au moins une modification."
+  },
+  "opt_pdf_import_heading": {
+    "message": "Importer mon CV existant"
+  },
+  "opt_pdf_import_intro": {
+    "message": "Choisissez votre CV en PDF : son texte est lu sur cet ordinateur et vous le relisez. L'IA d'Epimoni le range ensuite dans les rubriques, sans réécrire un mot. Votre PDF reste celui envoyé aux formulaires."
+  },
+  "opt_pdf_import_choose": {
+    "message": "Choisir mon CV (PDF)"
+  },
+  "opt_pdf_import_paste": {
+    "message": "ou coller le texte"
+  },
+  "opt_pdf_import_text_label": {
+    "message": "Le texte de votre CV (corrigez-le si besoin)"
+  },
+  "opt_pdf_import_go": {
+    "message": "Créer le CV avec l'IA"
+  },
+  "opt_pdf_import_needs_account": {
+    "message": "Le rangement par l'IA demande un compte Epimoni connecté. Sans compte, vous pouvez remplir les rubriques ci-dessous à la main."
+  },
+  "opt_pdf_import_reading": {
+    "message": "Lecture du PDF…"
+  },
+  "opt_pdf_import_read": {
+    "message": "$N$ mots lus. Relisez le texte, puis créez le CV.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_pdf_import_not_pdf": {
+    "message": "Ce fichier n'est pas un PDF."
+  },
+  "opt_pdf_import_encrypted": {
+    "message": "Ce PDF est protégé par un mot de passe. Ouvrez-le, copiez son texte et collez-le ici."
+  },
+  "opt_pdf_import_no_text": {
+    "message": "Ce PDF ne contient pas de texte lisible (c'est sans doute une image ou un scan). Collez plutôt le texte de votre CV."
+  },
+  "opt_pdf_import_unreadable": {
+    "message": "Ce PDF n'a pas pu être lu. Collez plutôt le texte de votre CV."
+  },
+  "opt_pdf_import_too_short": {
+    "message": "Le texte est trop court pour être un CV."
+  },
+  "opt_pdf_import_too_long": {
+    "message": "Le texte est trop long (30 000 caractères au plus)."
+  },
+  "opt_pdf_import_working": {
+    "message": "L'IA range votre CV dans les rubriques…"
+  },
+  "opt_pdf_import_empty": {
+    "message": "Aucune rubrique n'a été reconnue dans ce texte."
+  },
+  "opt_pdf_import_failed": {
+    "message": "L'import n'a pas abouti. Réessayez dans un instant."
+  },
+  "opt_pdf_import_done": {
+    "message": "CV créé. Vérifiez chaque rubrique ci-dessous, puis enregistrez."
   }
 }

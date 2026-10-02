@@ -1345,5 +1345,67 @@
   },
   "panel_tailor_none": {
     "message": "Tick at least one change."
+  },
+  "opt_pdf_import_heading": {
+    "message": "Import my existing CV"
+  },
+  "opt_pdf_import_intro": {
+    "message": "Choose your CV as a PDF: its text is read on this computer and you check it. Epimoni's AI then sorts it into sections without rewriting a word. Your PDF stays the file sent to forms."
+  },
+  "opt_pdf_import_choose": {
+    "message": "Choose my CV (PDF)"
+  },
+  "opt_pdf_import_paste": {
+    "message": "or paste the text"
+  },
+  "opt_pdf_import_text_label": {
+    "message": "Your CV's text (fix it if needed)"
+  },
+  "opt_pdf_import_go": {
+    "message": "Create the CV with AI"
+  },
+  "opt_pdf_import_needs_account": {
+    "message": "Sorting with AI needs a connected Epimoni account. Without one, you can fill in the sections below by hand."
+  },
+  "opt_pdf_import_reading": {
+    "message": "Reading the PDF…"
+  },
+  "opt_pdf_import_read": {
+    "message": "$N$ words read. Check the text, then create the CV.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_pdf_import_not_pdf": {
+    "message": "This file is not a PDF."
+  },
+  "opt_pdf_import_encrypted": {
+    "message": "This PDF is password protected. Open it, copy its text and paste it here."
+  },
+  "opt_pdf_import_no_text": {
+    "message": "This PDF has no readable text (it is probably an image or a scan). Paste your CV's text instead."
+  },
+  "opt_pdf_import_unreadable": {
+    "message": "This PDF could not be read. Paste your CV's text instead."
+  },
+  "opt_pdf_import_too_short": {
+    "message": "The text is too short to be a CV."
+  },
+  "opt_pdf_import_too_long": {
+    "message": "The text is too long (30,000 characters at most)."
+  },
+  "opt_pdf_import_working": {
+    "message": "The AI is sorting your CV into sections…"
+  },
+  "opt_pdf_import_empty": {
+    "message": "No section was recognised in this text."
+  },
+  "opt_pdf_import_failed": {
+    "message": "The import did not go through. Try again in a moment."
+  },
+  "opt_pdf_import_done": {
+    "message": "CV created. Check each section below, then save."
   }
 }

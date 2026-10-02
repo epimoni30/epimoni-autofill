@@ -15,7 +15,7 @@
     "email": "contact.epimoni30@gmail.com"
   },
   "scripts": {
-    "test": "node --test test/resolve.test.mjs test/pair.test.mjs test/posting.test.mjs test/cvdoc.test.mjs test/store.test.mjs test/identity.test.mjs test/bundle.test.mjs test/boundary.test.mjs test/pdf.test.mjs test/applications.test.mjs test/keywords.test.mjs test/platform.test.mjs test/bridge.test.mjs test/consent.test.mjs test/sites.test.mjs test/tailor.test.mjs",
+    "test": "node --test test/resolve.test.mjs test/pair.test.mjs test/posting.test.mjs test/cvdoc.test.mjs test/store.test.mjs test/identity.test.mjs test/bundle.test.mjs test/boundary.test.mjs test/pdf.test.mjs test/applications.test.mjs test/keywords.test.mjs test/platform.test.mjs test/bridge.test.mjs test/consent.test.mjs test/sites.test.mjs test/tailor.test.mjs test/pdftext.test.mjs test/import.test.mjs",
     "lint": "biome check .",
     "format": "biome check --write .",
     "measure": "node test/measure.mjs",

@@ -21,6 +21,7 @@ import {
   normalizeCvDoc,
   toJsonResume,
 } from '../shared/cvdoc.js';
+import { initImporter } from './importer.js';
 
 const send = (msg) => new Promise((r) => chrome.runtime.sendMessage(msg, (x) => r(x || {})));
 const el = (id) => document.getElementById(id);
@@ -540,6 +541,7 @@ async function save({ quiet = false } = {}) {
 /** Called once by the dashboard, when the page opens. */
 export async function initCv() {
   await load();
+  await initImporter(load);
 
   for (const id of [
     'b_name',
