@@ -68,20 +68,33 @@
     .cv-row { flex-wrap: wrap; }
     .cv-row .grow { flex: 1 0 100%; }
   }
-  /* The applications view. */
+  /* The applications view: a board, one column per status. It takes the page's width. */
+  .shell:has([data-view="candidatures"]:not([hidden])) { max-width: 1480px; }
+  main:has([data-view="candidatures"]:not([hidden])) { max-width: none; }
   .trk-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 16px 0 12px; }
-  .chip { border-radius: 999px; padding: 3px 11px; font-size: 13px; }
-  .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .apps { list-style: none; margin: 0; padding: 0; }
-  .app { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; }
-  .app-head { display: flex; gap: 12px; align-items: flex-start; }
-  .app-main { flex: 1; min-width: 0; }
+  .board { display: grid; grid-template-columns: repeat(5, minmax(172px, 1fr)); gap: 10px; overflow-x: auto; padding-bottom: 6px; align-items: start; }
+  .col { background: transparent; border: 1px solid var(--line); border-radius: 12px; padding: 10px; margin: 0; min-height: 160px; transition: background .12s, border-color .12s; }
+  .col.over { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); }
+  .col-head { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin: 0 2px 8px; }
+  .col-head .count { color: var(--muted); font-weight: 400; font-size: 12px; }
+  .apps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; min-height: 40px; }
+  .app { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 11px; cursor: grab; display: flex; flex-direction: column; gap: 3px; }
+  .app.dragging { opacity: .45; }
   .app-title { font-weight: 600; overflow-wrap: anywhere; }
   .app-meta { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
-  .app-foot { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-  .app select { width: auto; }
+  .app-meta.where { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .app select { width: 100%; margin-top: 4px; padding: 4px 6px; font-size: 12px; }
+  .app textarea { min-height: 54px; font-size: 13px; margin-top: 4px; }
+  .app-foot { display: flex; flex-wrap: wrap; gap: 4px; justify-content: space-between; }
+  .app-foot button.link { font-size: 12px; padding: 2px 0; }
+  .add-form { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin: 0 0 12px; }
+  .add-form .row { grid-template-columns: 2fr 1.4fr 2fr 1fr; align-items: end; }
   .empty { background: var(--card); border: 1px dashed var(--line); border-radius: 12px; padding: 24px; text-align: center; }
-  @media (max-width: 560px) { .app-head { flex-direction: column; } }
+  @media (max-width: 760px) {
+    .board { grid-template-columns: 1fr; overflow-x: visible; }
+    .col { min-height: 0; }
+    .add-form .row { grid-template-columns: 1fr; }
+  }
 </style>
 <body>
 <div class="shell">
@@ -199,10 +212,24 @@
   <h1 data-i18n="trk_title"></h1>
   <p class="muted" style="margin-top:0" data-i18n="trk_intro"></p>
   <div class="trk-bar">
-    <div id="trk-filters" class="trk-bar grow" style="margin:0"></div>
+    <button type="button" id="trk-add" class="primary" aria-expanded="false" aria-controls="trk-add-form" data-i18n="trk_add"></button>
+    <span class="grow"></span>
     <button type="button" id="trk-export" data-i18n="trk_export"></button>
   </div>
-  <ul id="trk-apps" class="apps"></ul>
+  <form id="trk-add-form" class="add-form" hidden novalidate>
+    <div class="row">
+      <div><label for="trk-add-title" data-i18n="trk_col_title"></label><input id="trk-add-title" autocomplete="off" maxlength="200"></div>
+      <div><label for="trk-add-company" data-i18n="trk_col_company"></label><input id="trk-add-company" autocomplete="off" maxlength="200"></div>
+      <div><label for="trk-add-url" data-i18n="trk_add_url"></label><input id="trk-add-url" type="url" inputmode="url" autocomplete="off" placeholder="https://"></div>
+      <div><label for="trk-add-status" data-i18n="trk_col_status"></label><select id="trk-add-status"></select></div>
+    </div>
+    <div class="actions" style="margin-top:10px">
+      <button type="submit" class="primary" data-i18n="trk_add_save"></button>
+      <button type="button" id="trk-add-cancel" class="link" data-i18n="trk_add_cancel"></button>
+      <span id="trk-add-msg" class="warn" role="status"></span>
+    </div>
+  </form>
+  <div id="trk-board" class="board" hidden></div>
   <div id="trk-empty" class="empty muted" data-i18n="trk_empty" hidden></div>
   <div class="trk-bar">
     <button type="button" id="trk-clear" class="link danger" data-i18n="trk_clear" hidden></button>

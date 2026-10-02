@@ -97,3 +97,34 @@ test('the CSV quotes what needs quoting and opens in Excel as UTF-8', async () =
   assert.match(csv, /"Chargée ""digital"", Nantes","Ouest","jobs.example.org"/);
   assert.match(csv, /"Remplie"/);
 });
+
+test('an application added by hand needs a title, and gets a key of its own without an address', async () => {
+  assert.equal(await apps.addApplication({ title: '   ' }), null);
+  const a = await apps.addApplication({ title: 'Data analyst', company: 'Acme', status: 'interview' });
+  assert.equal(a.status, 'interview');
+  assert.equal(a.url, '');
+  assert.ok(a.key.startsWith('manual:'));
+  const b = await apps.addApplication({ title: 'Data analyst', company: 'Acme' });
+  assert.notEqual(a.key, b.key, 'two hand-added entries are two applications');
+  assert.equal(b.status, 'applied', 'by hand means it was sent, unless said otherwise');
+  assert.equal((await apps.listApplications()).length, 2);
+});
+
+test('an application added by hand with an address is the one a later fill of that page updates', async () => {
+  const url = 'https://jobs.example.org/apply/99?utm_source=mail';
+  const added = await apps.addApplication({ title: 'Cheffe de projet', url, status: 'applied' });
+  assert.equal(added.host, 'jobs.example.org');
+  const again = await apps.addApplication({ title: 'Autre', url: 'https://jobs.example.org/apply/99' });
+  assert.equal(again.id, added.id, 'the same page is not added twice');
+  const filled = await apps.recordApplication({ url, title: 'Postuler', fields: 4 });
+  assert.equal(filled.id, added.id);
+  assert.equal(filled.status, 'applied', 'a fill never moves the status back');
+  assert.equal(filled.title, 'Cheffe de projet');
+  assert.equal((await apps.listApplications()).length, 1);
+});
+
+test('an address that is not a web page is refused rather than stored', async () => {
+  assert.equal(await apps.addApplication({ title: 'X', url: 'javascript:alert(1)' }), null);
+  assert.equal(await apps.addApplication({ title: 'X', url: 'not a url' }), null);
+  assert.equal((await apps.listApplications()).length, 0);
+});

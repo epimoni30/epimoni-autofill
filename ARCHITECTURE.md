@@ -344,8 +344,15 @@ toolbar click still covers that case.
 
 Every page the extension fills is an application the user may want to follow, so the fill
 records it (`shared/applications.js`), and the dashboard's applications view
-(`dashboard.html#candidatures`) shows the list with a status, a note
-and a CSV export. It is core: local storage, no account, no network, like the fill that feeds it.
+(`dashboard.html#candidatures`) shows them as a board, one column per status, with a note on
+each card and a CSV export. A card moves by drag and drop, and also by the status menu it
+carries: dragging needs a mouse, and the menu is what a keyboard, a screen reader or a touch
+screen uses.
+
+An application the extension did not fill (sent by e-mail, or from a page it never saw) is
+added by hand (`app:add`, from the dashboard only). With an address it takes that page's key,
+so a later fill of the page updates it rather than adding a twin; without one it gets a key of
+its own and no link. It is core: local storage, no account, no network, like the fill that feeds it.
 
 An entry is one job page, keyed on its address with tracking parameters and the fragment
 removed (`applicationKey`), so a second fill or a wizard's second step updates it rather than

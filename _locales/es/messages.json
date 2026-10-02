@@ -946,10 +946,10 @@
     "message": "Mis candidaturas"
   },
   "trk_intro": {
-    "message": "Cada formulario que rellena la extensión se añade aquí. Esta lista se queda en este ordenador."
+    "message": "Cada formulario que rellena la extensión llega aquí. Arrastre una tarjeta a otra columna cuando su candidatura avance. Esta lista se queda en este ordenador."
   },
   "trk_empty": {
-    "message": "Aún no hay candidaturas. Rellene un formulario con la extensión y aparecerá aquí."
+    "message": "Aún no hay candidaturas. Rellene un formulario con la extensión o añada una a mano."
   },
   "trk_export": {
     "message": "Exportar (CSV)"
@@ -1184,5 +1184,31 @@
   },
   "ai_consent_cta": {
     "message": "Permitir el envío"
+  },
+  "trk_add": {
+    "message": "Añadir una candidatura"
+  },
+  "trk_add_url": {
+    "message": "Enlace de la oferta (opcional)"
+  },
+  "trk_add_save": {
+    "message": "Añadir"
+  },
+  "trk_add_cancel": {
+    "message": "Cancelar"
+  },
+  "trk_add_need_title": {
+    "message": "Indique al menos el nombre del puesto."
+  },
+  "trk_add_bad_url": {
+    "message": "Ese enlace no es una dirección web válida."
+  },
+  "trk_added_on": {
+    "message": "Añadida el $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
   }
 }

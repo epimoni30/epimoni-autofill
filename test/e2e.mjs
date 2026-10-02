@@ -696,6 +696,62 @@ check(
   trackerView.cards >= 1 && trackerView.steps === 'applied' && trackerView.raw.length === 0,
   JSON.stringify(trackerView),
 );
+// The board: a column per status, a card moved by dragging it, and one added by hand.
+const board = await tracker.evaluate(() => ({
+  cols: [...document.querySelectorAll('.col')].map((c) => c.dataset.status),
+  inApplied: [...document.querySelectorAll('.col[data-status="applied"] .app a')].some((a) =>
+    a.href.includes('steps.html'),
+  ),
+}));
+check(
+  'the applications are a board, one column per status, the sent one under "Envoyée"',
+  board.cols.join() === 'filled,applied,interview,offer,rejected' && board.inApplied,
+  JSON.stringify(board),
+);
+await tracker
+  .locator('.col[data-status="applied"] .app', { has: tracker.locator('a[href*="steps.html"]') })
+  .dragTo(tracker.locator('.col[data-status="interview"]'));
+await tracker.waitForTimeout(300);
+const dragged = ((await askWorker({ type: 'app:list' })).apps || []).find((a) =>
+  a.url.includes('steps.html'),
+);
+const draggedShown = await tracker.evaluate(() =>
+  [...document.querySelectorAll('.col[data-status="interview"] .app a')].some((a) =>
+    a.href.includes('steps.html'),
+  ),
+);
+check(
+  'dragging a card to another column moves the application, saved',
+  dragged?.status === 'interview' && draggedShown,
+  JSON.stringify([dragged?.status, draggedShown]),
+);
+await tracker.click('#trk-add');
+await tracker.click('#trk-add-form button[type="submit"]');
+const needTitle = await tracker.textContent('#trk-add-msg');
+await tracker.fill('#trk-add-title', 'Analyste données');
+await tracker.fill('#trk-add-company', 'Acme');
+await tracker.fill('#trk-add-url', 'jobs.example.org/offre/12');
+await tracker.click('#trk-add-form button[type="submit"]');
+await tracker.waitForTimeout(300);
+const added = ((await askWorker({ type: 'app:list' })).apps || []).find(
+  (a) => a.title === 'Analyste données',
+);
+const addedView = await tracker.evaluate(() => ({
+  formHidden: document.getElementById('trk-add-form').hidden,
+  inApplied: [...document.querySelectorAll('.col[data-status="applied"] .app-title')].some(
+    (a) => a.textContent === 'Analyste données',
+  ),
+}));
+check(
+  'an application added by hand needs a title, then lands under "Envoyée" with its link',
+  Boolean(needTitle) &&
+    added?.manual === true &&
+    added.url === 'https://jobs.example.org/offre/12' &&
+    added.status === 'applied' &&
+    addedView.formHidden &&
+    addedView.inApplied,
+  JSON.stringify({ needTitle, added, addedView }),
+);
 // One page, two views: the menu switches between them, and the CV's save bar belongs to the
 // CV view only.
 const views = async () =>

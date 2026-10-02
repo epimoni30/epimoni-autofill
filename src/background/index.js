@@ -27,6 +27,7 @@ import {
 } from '../shared/cvdoc.js';
 import { cvIsPrintable, pdfName, renderCvPdf } from '../shared/pdf.js';
 import {
+  addApplication,
   applicationFor,
   clearApplications,
   deleteApplication,
@@ -345,6 +346,13 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
         }
         const next = app.status === 'filled' ? await updateApplication(app.id, { status: 'applied' }) : app;
         respond({ ok: true, status: next.status });
+        break;
+      }
+      case 'app:add': {
+        // From the dashboard only (not a content-script type): an application the extension
+        // did not fill. The address, when given, is the user's own typing, not a tab's.
+        const app = await addApplication(msg);
+        respond(app ? { ok: true, app } : { ok: false });
         break;
       }
       case 'app:list':

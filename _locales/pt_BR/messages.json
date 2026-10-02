@@ -946,10 +946,10 @@
     "message": "Minhas candidaturas"
   },
   "trk_intro": {
-    "message": "Cada formulário que a extensão preenche entra aqui. Esta lista fica neste computador."
+    "message": "Cada formulário que a extensão preenche chega aqui. Arraste um cartão para outra coluna quando a candidatura avançar. Esta lista fica neste computador."
   },
   "trk_empty": {
-    "message": "Nenhuma candidatura ainda. Preencha um formulário com a extensão e ele aparece aqui."
+    "message": "Nenhuma candidatura ainda. Preencha um formulário com a extensão ou adicione uma manualmente."
   },
   "trk_export": {
     "message": "Exportar (CSV)"
@@ -1184,5 +1184,31 @@
   },
   "ai_consent_cta": {
     "message": "Permitir o envio"
+  },
+  "trk_add": {
+    "message": "Adicionar candidatura"
+  },
+  "trk_add_url": {
+    "message": "Link da vaga (opcional)"
+  },
+  "trk_add_save": {
+    "message": "Adicionar"
+  },
+  "trk_add_cancel": {
+    "message": "Cancelar"
+  },
+  "trk_add_need_title": {
+    "message": "Informe pelo menos o cargo."
+  },
+  "trk_add_bad_url": {
+    "message": "Esse link não é um endereço web válido."
+  },
+  "trk_added_on": {
+    "message": "Adicionada em $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
   }
 }

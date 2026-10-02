@@ -946,10 +946,10 @@
     "message": "Mes candidatures"
   },
   "trk_intro": {
-    "message": "Chaque formulaire rempli par l'extension est ajouté ici. Cette liste reste sur cet ordinateur."
+    "message": "Chaque formulaire rempli par l'extension arrive ici. Glissez une carte d'une colonne à l'autre quand votre candidature avance. Cette liste reste sur cet ordinateur."
   },
   "trk_empty": {
-    "message": "Aucune candidature pour l'instant. Remplissez un formulaire avec l'extension : il apparaîtra ici."
+    "message": "Aucune candidature pour l'instant. Remplissez un formulaire avec l'extension, ou ajoutez-en une à la main."
   },
   "trk_export": {
     "message": "Exporter (CSV)"
@@ -1184,5 +1184,31 @@
   },
   "ai_consent_cta": {
     "message": "Autoriser l'envoi"
+  },
+  "trk_add": {
+    "message": "Ajouter une candidature"
+  },
+  "trk_add_url": {
+    "message": "Lien de l'offre (facultatif)"
+  },
+  "trk_add_save": {
+    "message": "Ajouter"
+  },
+  "trk_add_cancel": {
+    "message": "Annuler"
+  },
+  "trk_add_need_title": {
+    "message": "Indiquez au moins l'intitulé du poste."
+  },
+  "trk_add_bad_url": {
+    "message": "Ce lien n'est pas une adresse web valide."
+  },
+  "trk_added_on": {
+    "message": "Ajoutée le $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
   }
 }

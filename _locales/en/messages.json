@@ -946,10 +946,10 @@
     "message": "My applications"
   },
   "trk_intro": {
-    "message": "Every form the extension fills is added here. This list stays on this computer."
+    "message": "Every form the extension fills lands here. Drag a card to the next column as your application moves on. This list stays on this computer."
   },
   "trk_empty": {
-    "message": "No applications yet. Fill a form with the extension and it will show up here."
+    "message": "No applications yet. Fill a form with the extension, or add one by hand."
   },
   "trk_export": {
     "message": "Export (CSV)"
@@ -1184,5 +1184,31 @@
   },
   "ai_consent_cta": {
     "message": "Allow sending"
+  },
+  "trk_add": {
+    "message": "Add an application"
+  },
+  "trk_add_url": {
+    "message": "Job ad link (optional)"
+  },
+  "trk_add_save": {
+    "message": "Add"
+  },
+  "trk_add_cancel": {
+    "message": "Cancel"
+  },
+  "trk_add_need_title": {
+    "message": "Enter at least the job title."
+  },
+  "trk_add_bad_url": {
+    "message": "That link is not a valid web address."
+  },
+  "trk_added_on": {
+    "message": "Added on $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
   }
 }
