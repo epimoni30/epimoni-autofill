@@ -181,6 +181,57 @@ await editor.goto(`chrome-extension://${extId}/dashboard.html`, { waitUntil: 'lo
 await editor.waitForTimeout(500);
 await shoot(editor, 'cv-editor');
 
+// The applications board, with a search in progress: what the fills feed.
+await sw.evaluate(async (lang) => {
+  const now = Date.now();
+  const day = 86400000;
+  const rows =
+    {
+      fr: [
+        ['filled', 'Cheffe de projet digital', 'Decathlon', 'candidat.francetravail.fr'],
+        ['applied', 'Responsable marketing produit', 'Leroy Merlin', 'www.hellowork.com'],
+        ['applied', 'Product owner', 'Doctolib', 'www.welcometothejungle.com'],
+        ['applied', 'Chargée de communication', 'Mairie de Lyon', ''],
+        ['interview', 'Chef de projet e-commerce', 'Fnac Darty', 'www.apec.fr'],
+        ['offer', 'Digital project manager', 'Back Market', 'www.linkedin.com'],
+        ['rejected', 'Consultante SI', 'Capgemini', 'fr.indeed.com'],
+      ],
+      en: [
+        ['filled', 'Digital project manager', 'Decathlon', 'candidat.francetravail.fr'],
+        ['applied', 'Product marketing lead', 'Leroy Merlin', 'www.hellowork.com'],
+        ['applied', 'Product owner', 'Doctolib', 'www.welcometothejungle.com'],
+        ['applied', 'Communications officer', 'City of Lyon', ''],
+        ['interview', 'E-commerce project lead', 'Fnac Darty', 'www.apec.fr'],
+        ['offer', 'Digital project manager', 'Back Market', 'www.linkedin.com'],
+        ['rejected', 'IT consultant', 'Capgemini', 'fr.indeed.com'],
+      ],
+    }[lang] || [];
+  const apps = rows.map(([status, title, company, host], i) => ({
+    id: `app-demo-${i}`,
+    key: host ? `${host}/job/${i}` : `manual:${i}`,
+    url: host ? `https://${host}/job/${i}` : '',
+    host,
+    title,
+    company,
+    from_advert: Boolean(host),
+    manual: !host,
+    cv_id: 'cv-demo',
+    cv_label: host ? 'CV principal' : null,
+    fields: host ? 8 : 0,
+    status,
+    created_at: now - (i + 1) * day,
+    updated_at: now - i * 3600000,
+    note:
+      i === 4 ? (lang === 'fr' ? 'Entretien jeudi 10 h avec la DRH' : 'Interview Thursday 10am with HR') : '',
+  }));
+  await chrome.storage.local.set({ epimoni_apps: apps });
+}, LANG);
+const board = await ctx.newPage();
+await board.setViewportSize(SIZE);
+await board.goto(`chrome-extension://${extId}/dashboard.html#candidatures`, { waitUntil: 'load' });
+await board.waitForTimeout(500);
+await shoot(board, 'applications');
+
 const tile = await ctx.newPage();
 await tile.setViewportSize({ width: 440, height: 280 });
 await tile.goto(`${base}/store/promo.html?lang=${LANG}`, { waitUntil: 'load' });

@@ -1,6 +1,6 @@
 # Epimoni Autofill privacy policy
 
-*Last updated: 27 September 2026. [Version française plus bas.](#fr)*
+*Last updated: 2 October 2026. [Version française plus bas.](#fr)*
 
 Epimoni Autofill is a browser extension that fills job application forms from a CV you keep in
 the extension. This page says what it stores, what it sends, and to whom. It describes the
@@ -15,7 +15,8 @@ The data controller is Epimoni30, Untere Roostmatt 8, CH-6300 Zug, Switzerland
 - Filling a form sends nothing anywhere. Your CV stays in your browser, and the extension
   matches it to the form on your own machine.
 - Something leaves your browser only when you press a button that says so. "Analyse this
-  offer" sends your CV and the job advert to Epimoni's server for a comparison.
+  offer" sends your CV and the job advert to Epimoni's server for a comparison; the cover letter,
+  the CV tailored to a job and the import of an existing CV work the same way.
 - The extension never submits a form, never reads password or payment fields, and does not sell
   or share your data.
 
@@ -26,9 +27,11 @@ devices:
 
 - the CVs you type, import or bring over from epimoni30.com, and which one is active;
 - the suggestions you dismissed, so they are not offered again;
-- the list of applications the extension filled (the page's address, the job title and company
-  when the page shows them, the dates, the status and any note you add), which you can export
-  or delete from the extension's "My applications" page;
+- the list of applications the extension filled, and the ones you add by hand (the page's
+  address, the job title and company when the page shows them or you type them, the dates, the
+  status and any note you add), which you can export or delete from the extension's "My
+  applications" page;
+- the sites where you turned on automatic filling;
 - if you connected an Epimoni account: your name, account id and the sign-in token that lets
   the extension act for that account. The site can only offer to connect; the extension asks
   you on its own page first, showing the account's email address;
@@ -44,10 +47,15 @@ You can also delete a CV, or everything, from the extension's CV page.
 
 ## What is read on the web pages you visit
 
-On the job sites listed in the Chrome Web Store entry, and on any other page only when you click
-the toolbar icon, the extension reads the page's form fields and labels, to know what to put
+On the job sites listed in the Chrome Web Store entry, on the sites where you turned on automatic
+filling, and on any other page only when you click the toolbar icon, the extension reads the
+page's form fields and labels, to know what to put
 where, and the text of the job advert, to offer an analysis. That reading happens in your
 browser. Nothing from the page is sent unless you ask for an analysis.
+
+Automatic filling is off everywhere until you turn it on for a site, from the extension's menu
+on that site. Outside the listed job sites, your browser then asks you to allow the extension on
+that one site, and turning it off hands that access back.
 
 When you fill a form that has a CV upload, the extension puts your CV's PDF in it (the one you
 attached, or the one made from your CV), as if you had picked it yourself. The page can then read
@@ -62,8 +70,13 @@ All requests go to Epimoni's own server (an AWS endpoint in the EU, Frankfurt re
 |---|---|---|
 | You click "Analyse this offer" | your active CV, the text of the advert, a sign-in or session token | to compare the two and show a score |
 | You click "Write my letter with AI" | your active CV, the text of the advert, the form's character limit, a sign-in or session token | to write a cover letter, which is shown to you and goes into the form only if you click to insert it |
+| You click "Tailor my CV with AI" | your CV, the text of the advert, a sign-in token | to propose changes to your CV for that job, which you review; only the ones you keep make a new CV, and your original is not changed |
+| You click "Create the CV with AI" on the extension's CV page | the text of your CV, read from your PDF on your computer or pasted, after you have seen it; a sign-in token | to sort it into the sections of a CV, copied as written. Nothing is stored on the server |
 | You open the extension's menu while connected | your sign-in token | to show your remaining allowance |
 | If you are connected or have run an analysis: when a supported job board shows an application form, after a fill, and when you leave that page | the site's host name; how many form fields the page has and how many were filled, accepted or dismissed; which *kinds* of field were filled (for example "email", "phone") | to find the sites where filling fails |
+
+Reading a PDF to import it, saving a cover letter as a PDF, and the application board all happen
+on your computer and send nothing.
 
 The usage statistics in the last row never contain what you typed, what was filled, field labels
 or page content. Nothing is sent by an install that has never run an analysis or been connected
@@ -85,7 +98,7 @@ your permission in Firefox's add-on settings.
 ## What the extension does not do
 
 - It does not collect browsing history, and it does not run on pages outside the listed job
-  sites unless you click its icon there.
+  sites unless you click its icon there or turned on automatic filling for that site.
 - It does not sell data, show advertising, or pass data to anyone except as described above.
 - It does not use your data for anything unrelated to filling applications and analysing offers,
   in line with the Chrome Web Store User Data Policy, including its Limited Use requirements.
@@ -107,7 +120,7 @@ the extension's changelog.
 
 # Politique de confidentialité d'Epimoni Autofill
 
-*Mise à jour : 25 septembre 2026.*
+*Mise à jour : 2 octobre 2026.*
 
 Epimoni Autofill est une extension de navigateur qui remplit les formulaires de candidature à
 partir d'un CV conservé dans l'extension. Cette page dit ce qu'elle enregistre, ce qu'elle envoie
@@ -122,7 +135,9 @@ Responsable du traitement : Epimoni30, Untere Roostmatt 8, CH-6300 Zoug, Suisse
 - Remplir un formulaire n'envoie rien. Votre CV reste dans votre navigateur, et
   l'association avec le formulaire se fait sur votre machine.
 - Rien ne quitte votre navigateur tant que vous n'appuyez pas sur un bouton qui le dit.
-  « Analyser cette offre » envoie votre CV et l'annonce au serveur d'Epimoni pour les comparer.
+  « Analyser cette offre » envoie votre CV et l'annonce au serveur d'Epimoni pour les comparer ;
+  la lettre de motivation, le CV adapté à une offre et l'import d'un CV existant fonctionnent de
+  la même façon.
 - L'extension n'envoie jamais un formulaire à votre place, ne lit ni mot de passe ni données de
   paiement, et ne vend ni ne partage vos données.
 
@@ -133,9 +148,11 @@ appareils :
 
 - les CV saisis, importés ou récupérés depuis epimoni30.com, et celui qui est actif ;
 - les suggestions que vous avez écartées, pour ne pas les reproposer ;
-- la liste des candidatures remplies par l'extension (l'adresse de la page, l'intitulé du poste
-  et l'entreprise quand la page les affiche, les dates, le statut et vos notes), que vous pouvez
-  exporter ou supprimer depuis la page « Mes candidatures » de l'extension ;
+- la liste des candidatures remplies par l'extension, et de celles que vous ajoutez à la main
+  (l'adresse de la page, l'intitulé du poste et l'entreprise quand la page les affiche ou que
+  vous les saisissez, les dates, le statut et vos notes), que vous pouvez exporter ou supprimer
+  depuis la page « Mes candidatures » de l'extension ;
+- les sites sur lesquels vous avez activé le remplissage automatique ;
 - si vous avez connecté un compte Epimoni : votre nom, l'identifiant du compte et le jeton de
   connexion qui permet à l'extension d'agir pour ce compte. Le site peut seulement proposer la
   connexion ; l'extension vous la fait d'abord confirmer sur sa propre page, en affichant
@@ -152,10 +169,15 @@ pouvez aussi supprimer un CV, ou tout, depuis la page CV de l'extension.
 
 ## Ce qui est lu sur les pages visitées
 
-Sur les sites d'emploi indiqués dans la fiche Chrome Web Store, et sur toute autre page
-uniquement quand vous cliquez sur l'icône, l'extension lit les champs et libellés du
+Sur les sites d'emploi indiqués dans la fiche Chrome Web Store, sur les sites où vous avez activé
+le remplissage automatique, et sur toute autre page uniquement quand vous cliquez sur l'icône, l'extension lit les champs et libellés du
 formulaire, pour savoir quoi mettre où, et le texte de l'annonce, pour proposer une analyse.
 Cette lecture se fait dans votre navigateur. Rien n'est envoyé sans demande d'analyse.
+
+Le remplissage automatique est désactivé partout tant que vous ne l'activez pas pour un site,
+depuis le menu de l'extension sur ce site. Hors des sites d'emploi indiqués, votre navigateur
+vous demande alors d'autoriser l'extension sur ce seul site, et le désactiver lui retire cet
+accès.
 
 Quand vous remplissez un formulaire qui demande un CV, l'extension dépose le PDF de votre CV
 dans le champ (celui que vous avez joint, ou celui créé à partir de votre CV), comme si vous
@@ -172,8 +194,13 @@ Francfort).
 |---|---|---|
 | Vous cliquez « Analyser cette offre » | votre CV actif, le texte de l'annonce, un jeton de connexion ou de session | comparer les deux et afficher un score |
 | Vous cliquez « Rédiger ma lettre avec l'IA » | votre CV actif, le texte de l'annonce, la limite de caractères du formulaire, un jeton de connexion ou de session | rédiger une lettre de motivation, qui vous est montrée et n'entre dans le formulaire que si vous cliquez pour l'insérer |
+| Vous cliquez « Adapter mon CV avec l'IA » | votre CV, le texte de l'annonce, un jeton de connexion | proposer des modifications de votre CV pour ce poste, que vous relisez ; seules celles que vous gardez forment un nouveau CV, et l'original n'est pas modifié |
+| Vous cliquez « Créer le CV avec l'IA » sur la page CV de l'extension | le texte de votre CV, lu dans votre PDF sur votre ordinateur ou collé, après que vous l'avez vu ; un jeton de connexion | le ranger dans les rubriques d'un CV, recopié tel quel. Rien n'est conservé sur le serveur |
 | Vous ouvrez le menu de l'extension en étant connecté | votre jeton de connexion | afficher le quota restant |
 | Si vous êtes connecté ou avez lancé une analyse : quand un site d'emploi pris en charge affiche un formulaire de candidature, après un remplissage, et quand vous quittez cette page | le nom du site ; le nombre de champs du formulaire, et combien ont été remplis, acceptés ou écartés ; les *types* de champs remplis (par exemple « e-mail », « téléphone ») | repérer les sites où le remplissage échoue |
+
+La lecture d'un PDF à importer, l'enregistrement d'une lettre en PDF et le tableau des
+candidatures se font sur votre ordinateur et n'envoient rien.
 
 Ces statistiques ne contiennent jamais ce que vous avez saisi, ce qui a été rempli, les libellés
 ni le contenu des pages. Une installation qui n'a jamais lancé d'analyse ni été connectée à un
@@ -196,7 +223,8 @@ réglages des modules de Firefox.
 ## Ce que l'extension ne fait pas
 
 - Elle ne collecte pas l'historique de navigation et ne s'exécute pas hors des sites d'emploi
-  indiqués, sauf si vous cliquez sur son icône.
+  indiqués, sauf si vous cliquez sur son icône ou avez activé le remplissage automatique sur ce
+  site.
 - Elle ne vend pas de données, n'affiche pas de publicité et ne transmet rien à quiconque hors
   des cas décrits ci-dessus.
 - Elle n'utilise vos données que pour remplir des candidatures et analyser des offres,
