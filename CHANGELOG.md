@@ -29,9 +29,14 @@ carries the same number, and the release workflow refuses a tag that does not ma
   no password, as some CV builders make them), you check the text, and Epimoni's AI sorts it
   into sections without rewriting it (connected account). The PDF stays the file sent to forms.
 
+- A "Fill with Epimoni" button on pages with an application form: one click fills. On by
+  default on the supported job boards; on every other site after you allow it once, from the
+  menu or the Sites page. After any fill, the panel offers "Always fill here" in one click.
+
 ### Changed
 
 - The in-page panel scrolls when it is taller than the window.
+- With no CV yet, the menu leads with "Add my CV", and says why the per-site switch waits.
 
 ## [0.1.0] - 2026-09-28
 

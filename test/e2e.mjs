@@ -784,6 +784,53 @@ const afterStop = await steps.evaluate(() => document.getElementById('li')?.valu
 check('after undo, a new question is left alone', afterStop === '', String(afterStop));
 await steps.close();
 
+// ── The "Remplir avec Epimoni" button ────────────────────────────────────────────────────
+//
+// Offered on a page once it holds an application form, here only after "Postuler" renders it;
+// the page is filled on the button's click and not before. After that fill, the panel offers to
+// make the site fill on its own, which on a declared site takes one click.
+const offerPage = await ctx.newPage();
+await offerPage.goto(`${base}/late.html`, { waitUntil: 'load' });
+await offerPage.waitForTimeout(1200);
+const pillBefore = await offerPage.evaluate(() => Boolean(document.getElementById('epimoni-offer')));
+await offerPage.click('#apply');
+await offerPage.waitForSelector('#epimoni-offer', { timeout: 4000 }).catch(() => {});
+const pillShown = await offerPage.evaluate(() => ({
+  pill: document.getElementById('epimoni-offer')?.shadowRoot?.textContent || '',
+  prenom: document.querySelector('[name="prenom"]')?.value,
+}));
+const offerLabel = await sw.evaluate(() => chrome.i18n.getMessage('offer_fill'));
+check(
+  'the button appears once an application form does, and fills nothing on its own',
+  !pillBefore && pillShown.pill.includes(offerLabel) && pillShown.prenom === '',
+  JSON.stringify({ pillBefore, ...pillShown }),
+);
+await offerPage.locator('#epimoni-offer').getByRole('button', { name: offerLabel }).click();
+await offerPage
+  .waitForFunction(() => document.getElementById('epimoni-panel'), null, { timeout: 5000 })
+  .catch(() => {});
+const afterPill = await offerPage.evaluate(() => ({
+  values: ['prenom', 'nom', 'email', 'tel'].map((n) => document.querySelector(`[name="${n}"]`).value),
+  pill: Boolean(document.getElementById('epimoni-offer')),
+  submitted: Boolean(window.__submitted),
+}));
+check(
+  'one click on the button fills the form, the button gives way to the panel, nothing is sent',
+  afterPill.values.every(Boolean) && !afterPill.pill && !afterPill.submitted,
+  JSON.stringify(afterPill),
+);
+const alwaysLabel = await sw.evaluate(() => chrome.i18n.getMessage('panel_always_on'));
+await offerPage.locator('#epimoni-panel').getByRole('button', { name: alwaysLabel }).click();
+await offerPage.waitForTimeout(300);
+const alwaysOn = await askWorker({ type: 'site:status', url: `${base}/late.html` });
+check(
+  '"Toujours remplir ici" turns automatic filling on for the site in one click',
+  alwaysOn.auto === true,
+  JSON.stringify(alwaysOn),
+);
+await askWorker({ type: 'site:disable', host: '127.0.0.1' });
+await offerPage.close();
+
 // ── Automatic filling, on a site the user turned it on for ──────────────────────────────
 //
 // Off everywhere by default: the page is filled when the user clicks. Turned on for a site, an

@@ -368,6 +368,26 @@ A content script can ask whether its own site is on and turn its own site off (`
 `site:auto:off`, both computed from the sender's tab), and nothing else: turning a site on is
 an extension page's message only.
 
+## The "Remplir avec Epimoni" button
+
+Setting up shouldn't mean finding a checkbox in a menu. When a page holds an application form,
+a small button appears in the bottom corner (`src/offer/offer.js`), and one click fills the
+page, the same request as a click on the toolbar icon. It never fills on its own, it hides
+for the site in that tab when closed, it gives way to the panel, and it is not shown where
+automatic filling is on. Without a CV it says so and opens the import.
+
+`offer.js` is separate from `content.js` on purpose: it may run on every page the user
+visits, so it carries no lexicon, decides from cheap evidence (three visible fields, one about
+identity, and a CV upload or the page talking about applying; never a page with a password
+field), and stops once it has decided. The filler is injected by the worker on the click.
+
+It ships on the declared job boards. On every other site it needs the browser's access to all
+sites, which is never asked at install: the user turns it on from the popup or the Sites page
+(`chrome.permissions.request` inside the click), the worker registers `epimoni-offer` for
+`https://*/*` minus the declared boards and epimoni30.com, and withdraws it when the grant
+goes. With that grant every site is also allowed for automatic filling, so the panel's
+« Toujours remplir ici », offered after any fill, takes one click there too.
+
 ## The application tracker
 
 Every page the extension fills is an application the user may want to follow, so the fill

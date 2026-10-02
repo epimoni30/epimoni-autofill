@@ -466,7 +466,7 @@
     "message": "Aucun CV enregistré pour l'instant."
   },
   "popup_add_cv": {
-    "message": "Renseigner mon CV"
+    "message": "Ajouter mon CV"
   },
   "popup_edit_cv": {
     "message": "Mon CV"
@@ -1233,7 +1233,7 @@
     "message": "Sites"
   },
   "sites_title": {
-    "message": "Remplissage automatique"
+    "message": "Sites"
   },
   "sites_intro": {
     "message": "Sur ces sites, l'extension remplit les formulaires de candidature dès qu'ils s'affichent, sans attendre votre clic. Elle n'envoie jamais rien à votre place. Pour ajouter un site, ouvrez l'extension sur ce site et cochez « Remplir automatiquement »."
@@ -1407,5 +1407,53 @@
   },
   "opt_pdf_import_done": {
     "message": "CV créé. Vérifiez chaque rubrique ci-dessous, puis enregistrez."
+  },
+  "offer_fill": {
+    "message": "Remplir avec Epimoni"
+  },
+  "offer_add_cv": {
+    "message": "Ajouter mon CV pour remplir"
+  },
+  "offer_close": {
+    "message": "Ne pas proposer sur ce site pour l'instant"
+  },
+  "panel_always_offer": {
+    "message": "Remplir ce site tout seul la prochaine fois ?"
+  },
+  "panel_always_on": {
+    "message": "Toujours remplir ici"
+  },
+  "panel_always_done": {
+    "message": "C'est noté : ce site sera rempli automatiquement."
+  },
+  "panel_always_needs_menu": {
+    "message": "Pour ce site, Chrome doit d'abord donner son accord : ouvrez le menu de l'extension et cochez « Remplir automatiquement »."
+  },
+  "popup_site_needs_cv": {
+    "message": "Disponible dès que vous avez ajouté un CV."
+  },
+  "popup_everywhere_on": {
+    "message": "Afficher le bouton « Remplir avec Epimoni » sur tous les sites de candidature"
+  },
+  "popup_everywhere_done": {
+    "message": "C'est fait : le bouton apparaîtra sur les formulaires de candidature."
+  },
+  "sites_offer_heading": {
+    "message": "Le bouton « Remplir avec Epimoni »"
+  },
+  "sites_offer_intro": {
+    "message": "Quand une page contient un formulaire de candidature, un bouton apparaît en bas à droite : un clic, et le formulaire est rempli. Il est déjà actif sur les sites d'emploi pris en charge. Pour l'avoir aussi sur les sites carrière des entreprises, Chrome vous demandera l'accès à tous les sites : l'extension n'y lit que la présence d'un formulaire et ne remplit rien sans votre clic."
+  },
+  "sites_offer_on": {
+    "message": "L'activer sur tous les sites"
+  },
+  "sites_offer_off": {
+    "message": "Le retirer des autres sites"
+  },
+  "sites_offer_is_on": {
+    "message": "Actif sur tous les sites."
+  },
+  "sites_offer_is_off": {
+    "message": "Actif sur les sites d'emploi pris en charge uniquement."
   }
 }

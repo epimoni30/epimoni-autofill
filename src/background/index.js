@@ -51,10 +51,12 @@ import {
   clearSites,
   declaredFor,
   listSites,
+  offerEverywhere,
   originPattern,
   removeSite,
   siteIsAuto,
   siteOf,
+  syncOfferScript,
   syncSiteScripts,
 } from '../shared/sites.js';
 import { epimoniState, forgetEpimoni, handleEpimoni, installEpimoni } from '../epimoni/worker.js';
@@ -105,6 +107,10 @@ const CONTENT_SCRIPT_TYPES = new Set([
   // act on the sender's own tab, never on a host the message names.
   'site:auto',
   'site:auto:off',
+  'site:auto:on',
+  // The "Remplir avec Epimoni" button: whether to offer, and the click.
+  'offer:state',
+  'offer:fill',
   // The letter on screen as a PDF, made here from the text the page shows and the CV's name.
   'letter:pdf',
   // The site bridge's envelope. The add-on checks the sender is the site's top frame.
@@ -180,16 +186,25 @@ chrome.permissions.onAdded.addListener(async ({ origins = [] }) => {
   await addSite(pending);
   await syncSiteScripts();
 });
+chrome.permissions.onAdded.addListener(() => syncOfferScript().catch(() => {}));
 // Withdrawn from chrome://extensions: the site cannot fill any more, so it leaves the list
 // rather than sit there switched on and doing nothing.
-chrome.permissions.onRemoved.addListener(async ({ origins = [] }) => {
+chrome.permissions.onRemoved.addListener(async () => {
   const manifest = chrome.runtime.getManifest();
   for (const s of await listSites()) {
-    if (!declaredFor(s.host, manifest) && origins.includes(originPattern(s))) await removeSite(s.host);
+    if (
+      !declaredFor(s.host, manifest) &&
+      !(await chrome.permissions.contains({ origins: [originPattern(s)] }))
+    )
+      await removeSite(s.host);
   }
   await syncSiteScripts();
+  await syncOfferScript().catch(() => {});
 });
-chrome.runtime.onStartup.addListener(() => syncSiteScripts().catch(() => {}));
+chrome.runtime.onStartup.addListener(() => {
+  syncSiteScripts().catch(() => {});
+  syncOfferScript().catch(() => {});
+});
 
 const EXTENSION_ORIGIN = chrome.runtime.getURL('');
 const fromExtensionPage = (sender) =>
@@ -483,6 +498,52 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
         respond({ auto: Boolean(site && (await siteIsAuto(site.host))) });
         break;
       }
+      case 'site:auto:on': {
+        // The panel's "Toujours remplir ici", for the sender's own site. Without the browser's
+        // permission for it (an undeclared site, no all-sites grant) this refuses, and the
+        // panel sends the user to the menu, where the permission can be asked.
+        const site = siteOf(sender.tab?.url || sender.url);
+        respond(site ? await turnSiteOn(site) : { ok: false });
+        break;
+      }
+      case 'offer:state': {
+        const site = siteOf(sender.tab?.url || sender.url);
+        respond({
+          ok: Boolean(site),
+          has_cv: Boolean(state.cv),
+          auto: Boolean(site && (await siteIsAuto(site.host))),
+        });
+        break;
+      }
+      case 'offer:fill': {
+        // The button's click: fill the tab it is on, as the toolbar icon would. The filler is
+        // already there on a declared board; anywhere else it is injected now, which the
+        // all-sites grant that showed the button allows.
+        const tabId = sender.tab?.id;
+        if (tabId === undefined) {
+          respond({ ok: false });
+          break;
+        }
+        try {
+          await chrome.tabs.sendMessage(tabId, { type: 'fill' });
+        } catch {
+          try {
+            await chrome.scripting.executeScript({
+              target: { tabId, allFrames: true },
+              files: ['content.js'],
+            });
+            await chrome.tabs.sendMessage(tabId, { type: 'fill' });
+          } catch {
+            respond({ ok: false });
+            break;
+          }
+        }
+        respond({ ok: true });
+        break;
+      }
+      case 'offer:everywhere':
+        respond({ on: await offerEverywhere() });
+        break;
       case 'site:auto:off': {
         const site = siteOf(sender.tab?.url || sender.url);
         respond({ ok: Boolean(site && (await turnSiteOff(site.host))) });
@@ -533,6 +594,8 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
         await clearApplications();
         await clearSites();
         await syncSiteScripts().catch(() => {});
+        await chrome.permissions.remove({ origins: ['https://*/*'] }).catch(() => {});
+        await syncOfferScript().catch(() => {});
         await clearFiles().catch(() => {});
         await forgetEpimoni();
         respond({ ok: true });
@@ -564,6 +627,7 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
 chrome.runtime.onInstalled.addListener(({ reason }) => {
   // On an update too: the registered script must match the list the new version reads.
   syncSiteScripts().catch(() => {});
+  syncOfferScript().catch(() => {});
   if (reason !== 'install') return;
   chrome.runtime.openOptionsPage();
 });

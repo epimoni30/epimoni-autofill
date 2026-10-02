@@ -257,7 +257,15 @@
 </div>
 <div data-view="sites" hidden>
   <h1 data-i18n="sites_title"></h1>
-  <p class="muted" style="margin-top:0" data-i18n="sites_intro"></p>
+  <section id="offer-card">
+    <h2 data-i18n="sites_offer_heading"></h2>
+    <p class="muted" style="margin:-4px 0 10px" data-i18n="sites_offer_intro"></p>
+    <div class="actions">
+      <button type="button" id="offer-toggle"></button>
+      <span id="offer-state" class="muted"></span>
+    </div>
+  </section>
+  <p class="muted" style="margin-top:18px" data-i18n="sites_intro"></p>
   <section>
     <ul id="sites-list" class="cv-list"></ul>
     <p id="sites-empty" class="muted" style="margin:0" data-i18n="sites_empty" hidden></p>

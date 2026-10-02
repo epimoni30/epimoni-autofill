@@ -109,11 +109,14 @@ export async function clearSites() {
  * list of origins the browser holds is readable in one place.
  */
 export async function syncSiteScripts(manifest = chrome.runtime.getManifest()) {
-  const granted = new Set((await chrome.permissions.getAll()).origins || []);
-  const matches = (await load())
-    .filter((s) => !declaredFor(s.host, manifest))
-    .map(originPattern)
-    .filter((p) => granted.has(p));
+  // Asked one origin at a time, not read off `getAll`: a site is also covered when the user
+  // granted every site for the button (`ALL_SITES`), which no per-site entry would show.
+  const matches = [];
+  for (const s of await load()) {
+    if (declaredFor(s.host, manifest)) continue;
+    const p = originPattern(s);
+    if (await chrome.permissions.contains({ origins: [p] })) matches.push(p);
+  }
   const existing = await chrome.scripting.getRegisteredContentScripts({ ids: [SCRIPT_ID] });
   if (!matches.length) {
     if (existing.length) await chrome.scripting.unregisterContentScripts({ ids: [SCRIPT_ID] });
@@ -130,4 +133,41 @@ export async function syncSiteScripts(manifest = chrome.runtime.getManifest()) {
   if (existing.length) await chrome.scripting.updateContentScripts([script]);
   else await chrome.scripting.registerContentScripts([script]);
   return matches;
+}
+
+/**
+ * The "Remplir avec Epimoni" button on every site: the one place the extension asks for all
+ * sites, and only when the user turns the button on (never at install). With that grant, the
+ * small `offer.js` is registered everywhere except where the manifest already runs it; the
+ * filler itself is still injected only on a click.
+ */
+export const ALL_SITES = ['https://*/*'];
+const OFFER_ID = 'epimoni-offer';
+
+export async function offerEverywhere() {
+  return chrome.permissions.contains({ origins: ALL_SITES });
+}
+
+export async function syncOfferScript(manifest = chrome.runtime.getManifest()) {
+  const on = await offerEverywhere();
+  const existing = await chrome.scripting.getRegisteredContentScripts({ ids: [OFFER_ID] });
+  if (!on) {
+    if (existing.length) await chrome.scripting.unregisterContentScripts({ ids: [OFFER_ID] });
+    return false;
+  }
+  const declared = (manifest.content_scripts || [])
+    .filter((cs) => cs.js?.includes('offer.js'))
+    .flatMap((cs) => cs.matches || []);
+  const script = {
+    id: OFFER_ID,
+    js: ['offer.js'],
+    matches: ALL_SITES,
+    excludeMatches: ['https://www.epimoni30.com/*', ...declared],
+    allFrames: false,
+    runAt: 'document_idle',
+    persistAcrossSessions: true,
+  };
+  if (existing.length) await chrome.scripting.updateContentScripts([script]);
+  else await chrome.scripting.registerContentScripts([script]);
+  return true;
 }

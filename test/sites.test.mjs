@@ -15,7 +15,13 @@ globalThis.chrome = {
       remove: async (k) => delete mem[k],
     },
   },
-  permissions: { getAll: async () => ({ origins: [...granted] }) },
+  permissions: {
+    getAll: async () => ({ origins: [...granted] }),
+    contains: async ({ origins }) =>
+      origins.every(
+        (o) => granted.includes(o) || (o.startsWith('https://') && granted.includes('https://*/*')),
+      ),
+  },
   scripting: {
     getRegisteredContentScripts: async ({ ids }) => registered.filter((s) => ids.includes(s.id)),
     registerContentScripts: async (list) => {
@@ -91,4 +97,26 @@ test('the registered script covers exactly the granted, undeclared sites', async
   await sites.removeSite('jobs.example.org');
   assert.deepEqual(await sites.syncSiteScripts(MANIFEST), []);
   assert.equal(registered.length, 0, 'nothing left to match, nothing registered');
+});
+
+test('an all-sites grant covers every listed site, and turns the button on everywhere but where it is declared', async () => {
+  await sites.addSite({ host: 'careers.acme.fr' });
+  granted = ['https://*/*'];
+  assert.deepEqual(await sites.syncSiteScripts(MANIFEST), ['https://careers.acme.fr/*']);
+  const manifest = {
+    content_scripts: [{ js: ['content.js', 'offer.js'], matches: ['https://*.hellowork.com/*'] }],
+  };
+  assert.equal(await sites.syncOfferScript(manifest), true);
+  const offer = registered.find((r) => r.id === 'epimoni-offer');
+  assert.deepEqual(offer.js, ['offer.js']);
+  assert.deepEqual(offer.matches, ['https://*/*']);
+  assert.ok(offer.excludeMatches.includes('https://*.hellowork.com/*'), 'not twice on a declared board');
+  assert.ok(offer.excludeMatches.includes('https://www.epimoni30.com/*'));
+  granted = [];
+  assert.equal(await sites.syncOfferScript(manifest), false);
+  assert.equal(
+    registered.some((r) => r.id === 'epimoni-offer'),
+    false,
+    'withdrawn, unregistered',
+  );
 });

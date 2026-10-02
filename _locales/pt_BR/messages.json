@@ -1233,7 +1233,7 @@
     "message": "Sites"
   },
   "sites_title": {
-    "message": "Preenchimento automático"
+    "message": "Sites"
   },
   "sites_intro": {
     "message": "Nestes sites a extensão preenche os formulários de candidatura assim que aparecem, sem esperar o seu clique. Ela nunca envia nada por você. Para adicionar um site, abra a extensão nele e marque \"Preencher automaticamente\"."
@@ -1407,5 +1407,53 @@
   },
   "opt_pdf_import_done": {
     "message": "Currículo criado. Confira cada seção abaixo e depois salve."
+  },
+  "offer_fill": {
+    "message": "Preencher com Epimoni"
+  },
+  "offer_add_cv": {
+    "message": "Adicionar meu currículo para preencher"
+  },
+  "offer_close": {
+    "message": "Não oferecer neste site por enquanto"
+  },
+  "panel_always_offer": {
+    "message": "Preencher este site sozinho da próxima vez?"
+  },
+  "panel_always_on": {
+    "message": "Sempre preencher aqui"
+  },
+  "panel_always_done": {
+    "message": "Pronto: este site será preenchido automaticamente."
+  },
+  "panel_always_needs_menu": {
+    "message": "Para este site, o Chrome precisa autorizar primeiro: abra o menu da extensão e marque \"Preencher automaticamente\"."
+  },
+  "popup_site_needs_cv": {
+    "message": "Disponível assim que você adicionar um currículo."
+  },
+  "popup_everywhere_on": {
+    "message": "Mostrar o botão \"Preencher com Epimoni\" em todos os sites de candidatura"
+  },
+  "popup_everywhere_done": {
+    "message": "Pronto: o botão aparecerá nos formulários de candidatura."
+  },
+  "sites_offer_heading": {
+    "message": "O botão \"Preencher com Epimoni\""
+  },
+  "sites_offer_intro": {
+    "message": "Quando uma página tem um formulário de candidatura, um botão aparece no canto inferior: um clique e o formulário é preenchido. Ele já está ativo nos sites de vagas compatíveis. Para tê-lo também nos sites de carreira das empresas, o Chrome pedirá acesso a todos os sites: ali a extensão só verifica se há um formulário e não preenche nada sem o seu clique."
+  },
+  "sites_offer_on": {
+    "message": "Ativar em todos os sites"
+  },
+  "sites_offer_off": {
+    "message": "Remover dos outros sites"
+  },
+  "sites_offer_is_on": {
+    "message": "Ativo em todos os sites."
+  },
+  "sites_offer_is_off": {
+    "message": "Ativo apenas nos sites de vagas compatíveis."
   }
 }

@@ -33,7 +33,12 @@ function stubChrome() {
       getManifest: () => ({ version: '0.1.0' }),
     },
     action: { onClicked: { addListener: (fn) => listeners.action.push(fn) } },
-    permissions: { onAdded: { addListener: () => {} }, onRemoved: { addListener: () => {} } },
+    permissions: {
+      onAdded: { addListener: () => {} },
+      onRemoved: { addListener: () => {} },
+      contains: async () => false,
+      remove: async () => true,
+    },
     tabs: {
       create: async ({ url }) => {
         tabs.push(url);

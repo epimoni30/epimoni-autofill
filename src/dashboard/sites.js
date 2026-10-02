@@ -36,7 +36,28 @@ function row(s) {
   return li;
 }
 
+/**
+ * The button on every site. Turning it on asks the browser for all sites, inside this click;
+ * turning it off hands that access back. The worker follows the grant either way.
+ */
+async function renderOffer() {
+  const btn = el('offer-toggle');
+  const { on } = await send({ type: 'offer:everywhere' });
+  btn.textContent = t(on ? 'sites_offer_off' : 'sites_offer_on');
+  btn.className = on ? '' : 'primary';
+  el('offer-state').textContent = t(on ? 'sites_offer_is_on' : 'sites_offer_is_off');
+  btn.onclick = async () => {
+    try {
+      if (on) await chrome.permissions.remove({ origins: ['https://*/*'] });
+      else await chrome.permissions.request({ origins: ['https://*/*'] });
+    } catch {}
+    // The worker registers or drops the script on the permission event; give it a moment.
+    setTimeout(renderOffer, 300);
+  };
+}
+
 export async function refreshSites() {
+  await renderOffer();
   const { sites = [] } = await send({ type: 'sites:list' });
   const list = el('sites-list');
   list.textContent = '';

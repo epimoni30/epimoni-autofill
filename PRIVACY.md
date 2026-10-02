@@ -53,6 +53,11 @@ page's form fields and labels, to know what to put
 where, and the text of the job advert, to offer an analysis. That reading happens in your
 browser. Nothing from the page is sent unless you ask for an analysis.
 
+If you turn on the "Fill with Epimoni" button for every site, your browser asks you for access
+to all sites. On each page a small script then only checks whether there is an application
+form, to show the button; it reads nothing else, sends nothing, and fills nothing until you
+click. You can turn it off from the extension's Sites page.
+
 Automatic filling is off everywhere until you turn it on for a site, from the extension's menu
 on that site. Outside the listed job sites, your browser then asks you to allow the extension on
 that one site, and turning it off hands that access back.
@@ -173,6 +178,12 @@ Sur les sites d'emploi indiqués dans la fiche Chrome Web Store, sur les sites o
 le remplissage automatique, et sur toute autre page uniquement quand vous cliquez sur l'icône, l'extension lit les champs et libellés du
 formulaire, pour savoir quoi mettre où, et le texte de l'annonce, pour proposer une analyse.
 Cette lecture se fait dans votre navigateur. Rien n'est envoyé sans demande d'analyse.
+
+Si vous activez le bouton « Remplir avec Epimoni » sur tous les sites, votre navigateur vous
+demande l'accès à tous les sites. Sur chaque page, un petit script vérifie alors seulement s'il
+y a un formulaire de candidature, pour afficher le bouton ; il ne lit rien d'autre, n'envoie
+rien et ne remplit rien avant votre clic. Vous pouvez le désactiver depuis la page Sites de
+l'extension.
 
 Le remplissage automatique est désactivé partout tant que vous ne l'activez pas pour un site,
 depuis le menu de l'extension sur ce site. Hors des sites d'emploi indiqués, votre navigateur

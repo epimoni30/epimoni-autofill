@@ -1233,7 +1233,7 @@
     "message": "Sites"
   },
   "sites_title": {
-    "message": "Automatic filling"
+    "message": "Sites"
   },
   "sites_intro": {
     "message": "On these sites the extension fills application forms as soon as they appear, without waiting for your click. It never sends anything for you. To add a site, open the extension on that site and tick \"Fill automatically\"."
@@ -1407,5 +1407,53 @@
   },
   "opt_pdf_import_done": {
     "message": "CV created. Check each section below, then save."
+  },
+  "offer_fill": {
+    "message": "Fill with Epimoni"
+  },
+  "offer_add_cv": {
+    "message": "Add my CV to fill this"
+  },
+  "offer_close": {
+    "message": "Not on this site for now"
+  },
+  "panel_always_offer": {
+    "message": "Fill this site on its own next time?"
+  },
+  "panel_always_on": {
+    "message": "Always fill here"
+  },
+  "panel_always_done": {
+    "message": "Done: this site will be filled automatically."
+  },
+  "panel_always_needs_menu": {
+    "message": "For this site, Chrome has to agree first: open the extension's menu and tick \"Fill automatically\"."
+  },
+  "popup_site_needs_cv": {
+    "message": "Available once you have added a CV."
+  },
+  "popup_everywhere_on": {
+    "message": "Show the \"Fill with Epimoni\" button on every application site"
+  },
+  "popup_everywhere_done": {
+    "message": "Done: the button will show on application forms."
+  },
+  "sites_offer_heading": {
+    "message": "The \"Fill with Epimoni\" button"
+  },
+  "sites_offer_intro": {
+    "message": "When a page holds an application form, a button shows in the bottom corner: one click and the form is filled. It is already on for the supported job boards. To have it on company careers sites too, Chrome will ask for access to all sites: there the extension only checks whether a form is present, and fills nothing without your click."
+  },
+  "sites_offer_on": {
+    "message": "Turn it on for every site"
+  },
+  "sites_offer_off": {
+    "message": "Remove it from other sites"
+  },
+  "sites_offer_is_on": {
+    "message": "On for every site."
+  },
+  "sites_offer_is_off": {
+    "message": "On for the supported job boards only."
   }
 }

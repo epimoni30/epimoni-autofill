@@ -60,7 +60,16 @@ async function renderCv(state) {
   const host = el('cv');
   host.textContent = '';
   if (!state.has_cv) {
+    // The one thing to do first, as a button rather than a sentence: everything else in this
+    // menu waits on it.
     host.textContent = t('popup_no_profile');
+    const add = document.createElement('button');
+    add.type = 'button';
+    add.className = 'action primary';
+    add.style.marginTop = '8px';
+    add.textContent = t('popup_add_cv');
+    add.addEventListener('click', () => openDashboard('#cv'));
+    host.appendChild(add);
     return;
   }
   const { cvs = [] } = await send({ type: 'cv:list' });
@@ -141,6 +150,8 @@ async function renderSite(state) {
   box.checked = site.auto;
   box.disabled = !state.has_cv;
   row.hidden = false;
+  // Greyed out with no reason reads as broken: say what it waits for.
+  if (!state.has_cv) note.textContent = t('popup_site_needs_cv');
   box.addEventListener('change', async () => {
     note.textContent = '';
     if (!box.checked) {
@@ -171,6 +182,23 @@ async function renderSite(state) {
   });
 }
 
+/**
+ * The button on every site: offered once, here, until it is on. The browser's "all sites"
+ * prompt is asked inside this click, never at install.
+ */
+async function renderEverywhere() {
+  const { on } = await send({ type: 'offer:everywhere' });
+  if (on) return;
+  el('everywhere').hidden = false;
+  el('everywhere-on').addEventListener('click', async () => {
+    let granted = false;
+    try {
+      granted = await chrome.permissions.request({ origins: ['https://*/*'] });
+    } catch {}
+    el('everywhere').textContent = t(granted ? 'popup_everywhere_done' : 'popup_site_refused');
+  });
+}
+
 (async () => {
   localise();
   const state = await send({ type: 'state' });
@@ -184,5 +212,6 @@ async function renderSite(state) {
 
   await renderCv(state);
   await renderSite(state);
+  await renderEverywhere();
   await renderAi(state);
 })();

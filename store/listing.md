@@ -42,6 +42,7 @@ VOTRE CV, UNE FOIS
 • Exportez-le à tout moment au format JSON Résumé, lisible par d'autres outils.
 
 UN REMPLISSAGE PRUDENT
+• Sur une page de candidature, un bouton « Remplir avec Epimoni » apparaît : un clic suffit.
 • Chaque champ rempli est listé dans un panneau, avec « Tout annuler ».
 • Expériences et formations remplies bloc par bloc, dates adaptées au formulaire.
 • Aucune case cochée, aucun bouton « Ajouter » pressé, aucun mot de passe ni moyen de paiement
@@ -88,6 +89,7 @@ YOUR CV, ONCE
 • Export it any time as JSON Résumé, readable by other tools.
 
 CAREFUL FILLING
+• On an application page, a "Fill with Epimoni" button shows up: one click is enough.
 • Every field filled is listed in a panel, with "Undo all".
 • Work history and education filled block by block, dates fitted to the form.
 • No box ticked, no "Add" button pressed, no password or payment field touched. When in doubt,
@@ -133,7 +135,7 @@ Open source, Apache 2.0 licence.
 | `storage` | Keeps the user's CVs and settings on their own computer (`storage.local`, never synced), and a per-session cache so an analysis is not paid for twice. |
 | Host: epimoni30.com | Lets the user bring their CV over from their Epimoni account (`externally_connectable`, origin checked). The site can only ask; the user confirms on an extension page. |
 | Host: the API endpoint (`*.lambda-url.eu-central-1.on.aws`) | The AI features the user requests (offer analysis, cover letter, tailored CV, sorting an imported CV's text into sections) are computed on Epimoni's server. |
-| Optional host access (`https://*/*`, `http://*/*`), one site at a time | Never asked at install. When the user ticks "Fill automatically on <site>" in the popup, the browser asks for that one site only, and the form-filling script then runs there on page load so an application form is filled as it appears. Turned off from the panel, the popup or the dashboard, the site's access is handed back. |
+| Optional host access (`https://*/*`, `http://*/*`): all sites for the button, or one site at a time | Never asked at install. When the user turns on the "Fill with Epimoni" button for every site (popup or Sites page), the browser asks for all sites: a small script then only checks whether a page holds an application form and shows the button; nothing is read further or filled without the user's click. When the user ticks "Fill automatically on <site>" in the popup, the browser asks for that one site only, and the form-filling script then runs there on page load so an application form is filled as it appears. Turned off from the panel, the popup or the dashboard, the site's access is handed back. |
 | Content scripts on France Travail, HelloWork, APEC, Welcome to the Jungle, Indeed, LinkedIn Jobs | These job boards host the application forms the extension fills and the adverts it can analyse. The script reads forms locally and sends nothing on its own. |
 
 - Remote code: no. All code is in the package; the server returns data (scores, text), never code.

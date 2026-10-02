@@ -42,7 +42,12 @@ function stub({ responses }) {
       openOptionsPage: () => {},
     },
     action: { onClicked: { addListener: (fn) => listeners.action.push(fn) } },
-    permissions: { onAdded: { addListener: () => {} }, onRemoved: { addListener: () => {} } },
+    permissions: {
+      onAdded: { addListener: () => {} },
+      onRemoved: { addListener: () => {} },
+      contains: async () => false,
+      remove: async () => true,
+    },
     tabs: { create: async () => {}, query: async () => [], sendMessage: async () => {} },
     scripting: { executeScript: async () => [] },
     storage: {

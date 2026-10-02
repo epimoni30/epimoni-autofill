@@ -36,6 +36,8 @@
   let lastRun = [];
   // The address the last fill ran at, clicked or automatic: automatic filling leaves it alone.
   let filledFor = null;
+  // Whether this site fills on its own: the panel offers to turn it on when it does not.
+  let siteAuto = false;
   // Which CV of the library this page is filled from. Null is the active one; the panel's
   // picker sets it for this page only, and the offer analysis follows it.
   let pageCvId = null;
@@ -266,6 +268,7 @@
     pageEntries = entries;
     // The names of the other CVs, for the picker. Only when there is more than one.
     choices = (await send({ type: 'cv:choices' })).cvs || [];
+    siteAuto = Boolean((await send({ type: 'site:auto' })).auto);
     if (DEV) console.log('[epimoni] profile fields:', profile ? Object.keys(profile).length : 0);
     // Nothing to fill from. That is one state, whatever the reason: no account, no hand-off,
     // nothing typed in. It used to say "connect your Epimoni account", which is now advice
@@ -485,6 +488,29 @@
     return row;
   }
 
+  /**
+   * Under a fill the user asked for: the one click that makes this site fill on its own next
+   * time. On a supported job board, or once the user allowed every site for the button, it is
+   * done here; on any other site the browser has to be asked first, which only the extension's
+   * menu can do, so the line says where.
+   */
+  function alwaysLine() {
+    const line = h('div', 'margin-top:8px;color:#71717a', t('panel_always_offer'), ' ');
+    const on = document.createElement('button');
+    on.textContent = t('panel_always_on');
+    on.style.cssText = 'border:0;background:none;padding:0;color:#7c5cff;font:inherit;cursor:pointer';
+    on.addEventListener(
+      'click',
+      byUser(async () => {
+        const res = await send({ type: 'site:auto:on' });
+        if (res.ok) siteAuto = true;
+        line.replaceChildren(t(res.ok ? 'panel_always_done' : 'panel_always_needs_menu'));
+      }),
+    );
+    line.appendChild(on);
+    return line;
+  }
+
   /** Under a fill nobody clicked for: why it happened, and the way to stop it on this site. */
   function autoLine() {
     const line = h('div', 'margin-top:8px;color:#71717a', t('panel_auto_filled'), ' ');
@@ -590,6 +616,7 @@
       undo.addEventListener('click', byUser(undoAll));
       panel.appendChild(undo);
       if (counts.auto) panel.appendChild(autoLine());
+      else if (!siteAuto) panel.appendChild(alwaysLine());
       if (tracked) panel.appendChild(trackerLine());
       ui = {
         host,

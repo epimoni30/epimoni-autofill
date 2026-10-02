@@ -93,6 +93,8 @@ await writeFile(join(DIST, 'popup.js'), await read('src/popup/popup.js'));
 // account) and the application tracker, behind one menu. Its scripts are ES modules copied as
 // they are to dist/src/dashboard, where `../shared/` resolves exactly as it does in src/.
 await writeFile(join(DIST, 'dashboard.html'), await read('src/dashboard/dashboard.html'));
+// The "Remplir avec Epimoni" button: a plain script, no imports, loaded by name.
+await cp(join(ROOT, 'src/offer/offer.js'), join(DIST, 'offer.js'));
 await cp(join(ROOT, 'src/dashboard'), join(DIST, 'src/dashboard'), {
   recursive: true,
   filter: (f) => !f.endsWith('.html'),
@@ -193,6 +195,7 @@ async function validateLocales(m) {
     'src/dashboard/applications.js',
     'src/dashboard/sites.js',
     'src/dashboard/importer.js',
+    'src/offer/offer.js',
     'src/content/index.js',
     'src/epimoni/pair.js',
     'src/epimoni/pair.html',
@@ -289,7 +292,7 @@ if (DEV) {
   manifest.name = `DEV ${manifest.name.replace('__MSG_ext_name__', 'Epimoni')}`;
   const LOCAL = ['http://127.0.0.1/*', 'http://localhost/*'];
   manifest.content_scripts.push({
-    js: ['content.js'],
+    js: ['content.js', 'offer.js'],
     all_frames: true,
     run_at: 'document_idle',
     matches: LOCAL,

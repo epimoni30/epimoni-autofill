@@ -120,7 +120,7 @@ test('the core worker runs with the add-on deleted, and never touches the networ
       openOptionsPage: () => {},
     },
     action: { onClicked: noop },
-    permissions: { onAdded: noop, onRemoved: noop },
+    permissions: { onAdded: noop, onRemoved: noop, contains: async () => false, remove: async () => true },
     storage: {
       local: {
         get: async (k) => (local[k] === undefined ? {} : { [k]: local[k] }),
