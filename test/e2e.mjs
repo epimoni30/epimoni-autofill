@@ -1063,7 +1063,15 @@ check(
 //
 // One metered call, held to the form's limit, never written into the form on its own.
 const LETTER = ['Madame, Monsieur,', 'Votre annonce a retenu toute mon attention.', 'Cordialement.'];
-await stubWorker({ status: 200, body: { ml: { ml_id: 'ml-letter', content: { paragraphs: LETTER } } } });
+await stubWorker({
+  status: 200,
+  body: {
+    ml: {
+      ml_id: 'ml-letter',
+      content: { paragraphs: LETTER, objet: 'Candidature au poste de data analyst' },
+    },
+  },
+});
 const letterCalls = () =>
   sw.evaluate(() => (globalThis.__calls || []).filter((u) => u.includes('motivation/generate-doc')).length);
 const askLetter = () =>
@@ -1143,6 +1151,21 @@ const inserted = await letterPage.evaluate(() => ({
 check(
   '"Insérer" puts the letter in the box, and nothing is sent',
   inserted.box === LETTER.join('\n\n') && !inserted.submitted,
+);
+// The same letter as a file, made here from the text and the CV's name and contact.
+const pdfLabel = await sw.evaluate(() => chrome.i18n.getMessage('panel_letter_pdf'));
+const [letterDl] = await Promise.all([
+  letterPage.waitForEvent('download', { timeout: 5000 }),
+  letterPage.locator('#epimoni-panel').getByRole('button', { name: pdfLabel }).click(),
+]);
+const letterPdf = readFileSync(await letterDl.path()).toString('latin1');
+check(
+  '"Télécharger en PDF" saves the letter as a PDF, with its subject line and every paragraph',
+  letterDl.suggestedFilename().startsWith('Lettre-') &&
+    letterPdf.startsWith('%PDF-1.4') &&
+    letterPdf.includes('(Candidature au poste de data analyst)') &&
+    letterPdf.includes('(Votre annonce a retenu toute mon attention.)'),
+  letterDl.suggestedFilename(),
 );
 await letterPage.getByRole('button', { name: undoLabel }).click();
 const letterUndone = await letterPage.evaluate(() => document.getElementById('lm').value);

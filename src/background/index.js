@@ -25,7 +25,7 @@ import {
   toJsonResume,
   toProfile,
 } from '../shared/cvdoc.js';
-import { cvIsPrintable, pdfName, renderCvPdf } from '../shared/pdf.js';
+import { cvIsPrintable, pdfName, renderCvPdf, renderLetterPdf } from '../shared/pdf.js';
 import {
   addApplication,
   applicationFor,
@@ -103,6 +103,8 @@ const CONTENT_SCRIPT_TYPES = new Set([
   // act on the sender's own tab, never on a host the message names.
   'site:auto',
   'site:auto:off',
+  // The letter on screen as a PDF, made here from the text the page shows and the CV's name.
+  'letter:pdf',
   // The site bridge's envelope. The add-on checks the sender is the site's top frame.
   'site',
   // The panel's "allow" link, on a browser that asks for data-collection consent.
@@ -440,6 +442,35 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
         chrome.runtime.openOptionsPage();
         respond({ ok: true });
         break;
+      case 'letter:pdf': {
+        const st = msg.cv_id ? await readAs(msg.cv_id) : state;
+        const basics = st.cv ? toJsonResume(st.cv).basics || {} : {};
+        const paragraphs = (Array.isArray(msg.paragraphs) ? msg.paragraphs : [])
+          .map((p) => String(p || '').slice(0, 5000))
+          .slice(0, 30);
+        if (!paragraphs.some((p) => p.trim())) {
+          respond({ ok: false });
+          break;
+        }
+        const lang = chrome.i18n.getUILanguage();
+        const when = new Date().toLocaleDateString(lang, { day: 'numeric', month: 'long', year: 'numeric' });
+        const city = basics.location?.city;
+        const bytes = renderLetterPdf(
+          {
+            paragraphs,
+            subject: String(msg.subject || '').slice(0, 300),
+            company: String(msg.company || '').slice(0, 200),
+            date: city ? chrome.i18n.getMessage('pdf_letter_place_date', [city, when]) || when : when,
+          },
+          basics,
+        );
+        respond({
+          ok: true,
+          name: pdfName({ basics }, chrome.i18n.getMessage('pdf_letter_file') || 'Lettre'),
+          data: toBase64(bytes),
+        });
+        break;
+      }
       case 'site:auto': {
         const site = siteOf(sender.tab?.url || sender.url);
         respond({ auto: Boolean(site && (await siteIsAuto(site.host))) });

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // A CV as a PDF, written by hand: the file a form's CV upload receives when the user has not
-// attached one of their own.
+// attached one of their own. Also the cover letter, when the user wants it as a file.
 //
 // No dependency, on purpose. The extension ships no bundler and no third-party code, and a
 // PDF library with its fonts would be most of the package. What a CV needs is small: text in
@@ -316,25 +316,20 @@ function layout(resume, labels) {
 }
 
 /**
- * The whole file, as bytes.
+ * The whole file, as bytes, from pages of drawing operations.
  *
  * Objects: 1 catalog, 2 page tree, 3 and 4 the fonts, 5 the document info, then a page and its
  * content stream for each page. The file is 7-bit ASCII throughout (strings are escaped), so a
  * character offset is a byte offset and the cross-reference table can be computed from lengths.
  */
-export function renderCvPdf(resume, labels) {
-  // A missing title falls back to English rather than leaving a section unnamed.
-  const titles = { ...FALLBACK_LABELS };
-  for (const [k, v] of Object.entries(labels || {})) if (v) titles[k] = v;
-  const pages = layout(resume || {}, titles);
+function writePdf(pages, { title, author }) {
   const objects = [];
   const pageIds = pages.map((_, i) => 6 + 2 * i);
   objects[1] = '<< /Type /Catalog /Pages 2 0 R >>';
   objects[2] = `<< /Type /Pages /Kids [${pageIds.map((id) => `${id} 0 R`).join(' ')}] /Count ${pages.length} >>`;
   objects[3] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>';
   objects[4] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>';
-  const name = encodable(resume?.basics?.name || '');
-  objects[5] = `<< /Title ${literal(name || 'CV')} /Author ${literal(name)} /Creator (Epimoni Autofill) >>`;
+  objects[5] = `<< /Title ${literal(title)} /Author ${literal(author)} /Creator (Epimoni Autofill) >>`;
   pages.forEach((ops, i) => {
     const stream = ops.join('\n');
     objects[pageIds[i]] =
@@ -359,6 +354,77 @@ export function renderCvPdf(resume, labels) {
   return bytes;
 }
 
+/** The CV as a PDF. A missing section title falls back to English rather than going unnamed. */
+export function renderCvPdf(resume, labels) {
+  const titles = { ...FALLBACK_LABELS };
+  for (const [k, v] of Object.entries(labels || {})) if (v) titles[k] = v;
+  const name = encodable(resume?.basics?.name || '');
+  return writePdf(layout(resume || {}, titles), { title: name || 'CV', author: name });
+}
+
+/**
+ * A cover letter as a PDF: the sender's name and contact at the top, the place and date, the
+ * company, the subject line, then the letter's paragraphs as written, and the name again.
+ *
+ * `letter`: `{ paragraphs: string[], subject?, company?, date? }`, the date already worded in
+ * the user's language ("Lyon, le 2 octobre 2026"). `basics` is the CV's, in JSON Résumé shape.
+ * The text is the user's, generated and read by them; this only sets it on a page.
+ */
+export function renderLetterPdf(letter, basics = {}) {
+  const pages = [];
+  let ops = [];
+  let y = PAGE_H - MARGIN;
+  const newPage = () => {
+    ops = [];
+    pages.push(ops);
+    y = PAGE_H - MARGIN;
+  };
+  newPage();
+  const text = (x, str, size, { bold = false, color = INK } = {}) => {
+    ops.push(
+      `BT /${bold ? 'F2' : 'F1'} ${num(size)} Tf ${color} rg ${num(x)} ${num(y)} Td ${literal(str)} Tj ET`,
+    );
+  };
+  const para = (str, size, { bold = false, color = INK, lead = 1.45 } = {}) => {
+    for (const line of wrap(str, size, TEXT_W, bold)) {
+      if (y - size * lead < MARGIN) newPage();
+      y -= size * lead;
+      text(MARGIN, line, size, { bold, color });
+    }
+  };
+
+  const name = encodable(basics.name || '');
+  if (name) para(name, 13, { bold: true });
+  const contact = joined(basics.email, basics.phone, basics.location?.city);
+  if (contact.length) para(contact.join('  ·  '), 9.5, { color: MUTED });
+
+  if (letter.date) {
+    y -= 18;
+    const d = encodable(letter.date);
+    y -= 10.5 * 1.45;
+    text(PAGE_W - MARGIN - textWidth(d, 10.5), d, 10.5);
+  }
+  if (letter.company) {
+    y -= 8;
+    para(letter.company, 10.5, { bold: true });
+  }
+  if (letter.subject) {
+    y -= 16;
+    para(letter.subject, 10.5, { bold: true });
+  }
+  y -= 14;
+  for (const p of letter.paragraphs || []) {
+    if (!String(p || '').trim()) continue;
+    para(p, 10.5);
+    y -= 8;
+  }
+  if (name) {
+    y -= 10;
+    para(name, 10.5);
+  }
+  return writePdf(pages, { title: encodable(letter.subject || '') || 'Lettre', author: name });
+}
+
 /** Enough to be worth sending an employer: a name, and something besides it. */
 export function cvIsPrintable(resume) {
   const r = resume || {};
@@ -367,13 +433,13 @@ export function cvIsPrintable(resume) {
   );
 }
 
-/** A file name from the person's name: "CV-Camille-Dupont.pdf". */
-export function pdfName(resume) {
+/** A file name from the person's name: "CV-Camille-Dupont.pdf", or "Lettre-…" with a prefix. */
+export function pdfName(resume, prefix = 'CV') {
   const slug = encodable(resume?.basics?.name || '')
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
     .replace(/[^A-Za-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
     .slice(0, 60);
-  return slug ? `CV-${slug}.pdf` : 'CV.pdf';
+  return slug ? `${prefix}-${slug}.pdf` : `${prefix}.pdf`;
 }

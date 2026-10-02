@@ -1156,7 +1156,7 @@
     "message": "No se ha encontrado ninguna oferta en esta página."
   },
   "panel_no_letter_box": {
-    "message": "Este formulario no pide carta de presentación."
+    "message": "No se ha encontrado ninguna oferta en esta página para redactar una carta."
   },
   "consent_title": {
     "message": "Permitir el envío para el análisis y la carta"
@@ -1254,5 +1254,25 @@
   },
   "sites_off": {
     "message": "Desactivar"
+  },
+  "panel_letter_offer": {
+    "message": "¿Necesita una carta de presentación para esta oferta?"
+  },
+  "panel_letter_pdf": {
+    "message": "Descargar en PDF"
+  },
+  "pdf_letter_place_date": {
+    "message": "$CITY$, $DATE$",
+    "placeholders": {
+      "city": {
+        "content": "$1"
+      },
+      "date": {
+        "content": "$2"
+      }
+    }
+  },
+  "pdf_letter_file": {
+    "message": "Carta"
   }
 }

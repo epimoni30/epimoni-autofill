@@ -722,11 +722,16 @@
    * the AI tier is the same as for an ambiguous field: it proposes, the user decides. A letter
    * longer than the box accepts is not cut to fit; it is shown with the count, to shorten.
    */
+  /**
+   * The cover letter for the advert on this page. Offered wherever there is an advert: with a
+   * letter box on the form it can be put in it, and without one (a form that wants the letter
+   * as a file, or none at all yet) it can be copied or saved as a PDF.
+   */
   function letterSection(panel, before) {
-    if (!letterTarget) return null;
     if (!posting) posting = extractPosting(document, location.href);
     if (!posting.ok) return null;
-    const { el: box, max } = letterTarget;
+    const box = letterTarget?.el || null;
+    const max = letterTarget?.max || null;
 
     const wrap = document.createElement('div');
     wrap.style.cssText = 'margin-top:12px;padding-top:10px;border-top:1px solid #e4e4e7';
@@ -750,7 +755,7 @@
 
     const idle = () => {
       wrap.textContent = '';
-      line(t('panel_letter_found'));
+      line(t(box ? 'panel_letter_found' : 'panel_letter_offer'));
       if (max) line(t('panel_letter_limit', [String(max)]), '#71717a');
       const go = button(t('panel_letter_cta'), true);
       wrap.appendChild(go);
@@ -799,7 +804,7 @@
         wrap.appendChild(retry);
         return;
       }
-      const fits = !(box.maxLength > 0 && res.text.length > box.maxLength);
+      const fits = !(box && box.maxLength > 0 && res.text.length > box.maxLength);
       line(
         max
           ? t('panel_letter_count_limit', [String(res.chars), String(max)])
@@ -814,6 +819,7 @@
       if (!fits) line(t('panel_letter_too_long'), '#b45309');
       const insert = button(t('panel_letter_insert'), true);
       insert.disabled = !fits;
+      if (!box) insert.hidden = true;
       insert.addEventListener(
         'click',
         byUser(async () => {
@@ -843,7 +849,29 @@
           navigator.clipboard?.writeText(res.text).then(() => (copy.textContent = t('panel_letter_copied'))),
         ),
       );
-      wrap.append(insert, copy);
+      // A PDF made on this computer from the letter and the CV's name and contact: for a form
+      // that wants the letter as a file, or for sending it some other way.
+      const pdf = button(t('panel_letter_pdf'));
+      pdf.addEventListener(
+        'click',
+        byUser(async () => {
+          const file = await send({
+            type: 'letter:pdf',
+            paragraphs: res.paragraphs || res.text.split(/\n\n+/),
+            subject: res.subject || '',
+            company: posting.organisation || '',
+            cv_id: pageCvId,
+          });
+          if (!file.data) return;
+          const bytes = Uint8Array.from(atob(file.data), (c) => c.charCodeAt(0));
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+          a.download = file.name;
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+        }),
+      );
+      wrap.append(insert, copy, pdf);
     }
 
     idle();

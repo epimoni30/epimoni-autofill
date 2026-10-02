@@ -1156,7 +1156,7 @@
     "message": "No job advert was found on this page."
   },
   "panel_no_letter_box": {
-    "message": "This form does not ask for a cover letter."
+    "message": "No job ad found on this page to write a letter for."
   },
   "consent_title": {
     "message": "Allow sending for the analysis and the letter"
@@ -1254,5 +1254,25 @@
   },
   "sites_off": {
     "message": "Turn off"
+  },
+  "panel_letter_offer": {
+    "message": "Need a cover letter for this job?"
+  },
+  "panel_letter_pdf": {
+    "message": "Download as PDF"
+  },
+  "pdf_letter_place_date": {
+    "message": "$CITY$, $DATE$",
+    "placeholders": {
+      "city": {
+        "content": "$1"
+      },
+      "date": {
+        "content": "$2"
+      }
+    }
+  },
+  "pdf_letter_file": {
+    "message": "Cover-letter"
   }
 }

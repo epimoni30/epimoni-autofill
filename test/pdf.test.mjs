@@ -6,7 +6,15 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { toJsonResume } from '../src/shared/cvdoc.js';
-import { cvIsPrintable, encodable, pdfName, renderCvPdf, textWidth, wrap } from '../src/shared/pdf.js';
+import {
+  cvIsPrintable,
+  encodable,
+  pdfName,
+  renderCvPdf,
+  renderLetterPdf,
+  textWidth,
+  wrap,
+} from '../src/shared/pdf.js';
 
 const LABELS = {
   profile: 'Profil',
@@ -107,4 +115,37 @@ test('a name alone is not sent to an employer', () => {
 test('the file is named after the person, without accents', () => {
   assert.equal(pdfName({ basics: { name: 'Inès Garnier-Léon' } }), 'CV-Ines-Garnier-Leon.pdf');
   assert.equal(pdfName({}), 'CV.pdf');
+});
+
+test('a cover letter is a well-formed PDF with the sender, the subject and every paragraph', () => {
+  const letter = {
+    paragraphs: [
+      'Madame, Monsieur,',
+      'Votre annonce pour le poste de chargée de communication a retenu toute mon attention. '.repeat(6),
+      'Je vous prie d’agréer mes salutations distinguées.',
+    ],
+    subject: 'Objet : candidature au poste de chargée de communication',
+    company: 'Acme',
+    date: 'Lyon, le 2 octobre 2026',
+  };
+  const src = text(renderLetterPdf(letter, resume.basics));
+  assert.ok(src.startsWith('%PDF-1.4\n') && src.endsWith('%%EOF\n'));
+  assert.deepEqual(xrefProblems(src), []);
+  assert.ok([...src].every((c) => c.charCodeAt(0) < 128));
+  assert.match(src, /\(Objet : candidature au poste de charg\\351e de communication\)/);
+  assert.match(src, /\(Acme\) Tj/);
+  assert.match(src, /\(Madame, Monsieur,\) Tj/);
+  assert.ok(src.includes(`(${resume.basics.name.replace(/[^\x20-\x7e]/g, '')}`) || src.includes('/Author ('));
+  assert.deepEqual(renderLetterPdf(letter, resume.basics), renderLetterPdf(letter, resume.basics));
+  assert.equal(pdfName(resume, 'Lettre').startsWith('Lettre-'), true);
+});
+
+test('a long letter runs onto a second page rather than off the first', () => {
+  const long = {
+    paragraphs: Array.from({ length: 30 }, () =>
+      'Une phrase assez longue pour remplir une ligne entière de la lettre. '.repeat(3),
+    ),
+  };
+  const src = text(renderLetterPdf(long, {}));
+  assert.match(src, /\/Count 2/);
 });

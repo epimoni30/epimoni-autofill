@@ -589,6 +589,8 @@ async function letter(state, msg) {
   const answer = {
     ok: true,
     text: body,
+    paragraphs,
+    subject: String(res.data?.ml?.content?.objet || '').trim(),
     chars: body.length,
     limit: max,
     within: max ? body.length <= max : true,

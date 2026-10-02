@@ -402,8 +402,13 @@ it off leaves the markup exactly as it was, which `e2e.mjs` checks by comparing 
 
 ## The cover letter: the AI tier's first answer
 
-A letter box (`cover_letter`, a textarea) is left empty by the fill. When the page also has an
-advert, the panel offers to write the letter. That is the add-on: `letter` in
+A letter box (`cover_letter`, a textarea) is left empty by the fill. Wherever the page has an
+advert, the panel offers to write the letter: into the box when the form has one, and
+otherwise to copy it or save it as a PDF, for a form that wants the letter as a file or none at
+all. The PDF (`letter:pdf`, `renderLetterPdf` in `shared/pdf.js`) is made by the core worker
+from the text on screen, the subject line the backend returned, the company read from the
+advert and the CV's name and contact; it is the same dependency-free writer as the CV's, and
+nothing about it reaches a network. That is the add-on: `letter` in
 `epimoni/worker.js` sends the CV document and the advert's text to
 `/ml/analyse/motivation/generate-doc` with the form's limit, from the box's `maxlength` or from
 what its label says ("1500 caractères maximum"). The backend holds the letter to that limit with
