@@ -805,6 +805,14 @@ check(
   !pillBefore && pillShown.pill.includes(offerLabel) && pillShown.prenom === '',
   JSON.stringify({ pillBefore, ...pillShown }),
 );
+// A framework that re-renders the whole document drops nodes it did not make (seen on a real
+// Greenhouse board after a failed React hydration): the button must come back.
+await offerPage.evaluate(() => document.getElementById('epimoni-offer').remove());
+await offerPage.waitForSelector('#epimoni-offer', { timeout: 4000 }).catch(() => {});
+check(
+  'a button the page removed is put back',
+  await offerPage.evaluate(() => Boolean(document.getElementById('epimoni-offer'))),
+);
 await offerPage.locator('#epimoni-offer').getByRole('button', { name: offerLabel }).click();
 await offerPage
   .waitForFunction(() => document.getElementById('epimoni-panel'), null, { timeout: 5000 })

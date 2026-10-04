@@ -1409,10 +1409,10 @@
     "message": "CV créé. Vérifiez chaque rubrique ci-dessous, puis enregistrez."
   },
   "offer_fill": {
-    "message": "Remplir avec Epimoni"
+    "message": "Remplir le formulaire"
   },
   "offer_add_cv": {
-    "message": "Ajouter mon CV pour remplir"
+    "message": "Ajouter mon CV"
   },
   "offer_close": {
     "message": "Ne pas proposer sur ce site pour l'instant"
@@ -1455,5 +1455,11 @@
   },
   "sites_offer_is_off": {
     "message": "Actif sur les sites d'emploi pris en charge uniquement."
+  },
+  "offer_hint": {
+    "message": "Formulaire de candidature détecté."
+  },
+  "offer_hint_no_cv": {
+    "message": "Formulaire de candidature détecté. Ajoutez votre CV pour le remplir en un clic."
   }
 }

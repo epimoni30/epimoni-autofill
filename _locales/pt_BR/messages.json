@@ -1409,10 +1409,10 @@
     "message": "Currículo criado. Confira cada seção abaixo e depois salve."
   },
   "offer_fill": {
-    "message": "Preencher com Epimoni"
+    "message": "Preencher o formulário"
   },
   "offer_add_cv": {
-    "message": "Adicionar meu currículo para preencher"
+    "message": "Adicionar meu currículo"
   },
   "offer_close": {
     "message": "Não oferecer neste site por enquanto"
@@ -1455,5 +1455,11 @@
   },
   "sites_offer_is_off": {
     "message": "Ativo apenas nos sites de vagas compatíveis."
+  },
+  "offer_hint": {
+    "message": "Formulário de candidatura detectado."
+  },
+  "offer_hint_no_cv": {
+    "message": "Formulário de candidatura detectado. Adicione seu currículo para preenchê-lo com um clique."
   }
 }

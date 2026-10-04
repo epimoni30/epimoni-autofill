@@ -96,31 +96,51 @@
     // Closed, so the page cannot read or press it; open in a development build, for the tests.
     const dev = chrome.runtime.getManifest().name.startsWith('DEV');
     const root = host.attachShadow({ mode: dev ? 'open' : 'closed' });
+    // A tab on the right edge, halfway down, the way coupon extensions do it: out of the page's
+    // corners (where chat widgets and reCAPTCHA live), visible without covering the form.
     const style = document.createElement('style');
     style.textContent = `
-      .pill { position: fixed; z-index: 2147483646; right: 18px; bottom: 18px; display: flex; align-items: center;
-        gap: 2px; background: #7c5cff; color: #fff; border-radius: 999px; box-shadow: 0 6px 22px rgba(0,0,0,.22);
-        font: 600 13px/1 system-ui, -apple-system, sans-serif; animation: in .18s ease-out; }
-      @keyframes in { from { transform: translateY(8px); opacity: 0 } }
+      .tab { position: fixed; z-index: 2147483646; right: 0; top: 50%; transform: translateY(-50%);
+        width: 176px; background: #fff; color: #18181b; border: 1px solid #e4e4e7; border-right: 0;
+        border-radius: 14px 0 0 14px; box-shadow: -6px 8px 28px rgba(0,0,0,.16); overflow: hidden;
+        font: 13px/1.35 system-ui, -apple-system, sans-serif; animation: in .2s ease-out; }
+      @keyframes in { from { transform: translate(100%, -50%) } }
       button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
-      .go { display: flex; align-items: center; gap: 8px; padding: 10px 6px 10px 12px; }
+      .head { display: flex; align-items: center; gap: 7px; padding: 9px 8px 9px 11px; background: #7c5cff; color: #fff; }
       .mark { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; background: #fff;
-        color: #7c5cff; font-size: 10px; font-weight: 800; letter-spacing: -.02em; }
-      .x { padding: 10px 12px 10px 6px; opacity: .8; font-size: 15px; }
-      .x:hover, .go:hover { opacity: 1; text-decoration: underline; }`;
+        color: #7c5cff; font-size: 10px; font-weight: 800; letter-spacing: -.02em; flex: none; }
+      .name { font-weight: 700; flex: 1; }
+      .x { padding: 0 4px; font-size: 16px; line-height: 1; opacity: .85; }
+      .x:hover { opacity: 1; }
+      .body { padding: 10px 11px 12px; }
+      .hint { color: #71717a; font-size: 12px; margin-bottom: 8px; }
+      .go { width: 100%; padding: 8px 10px; border-radius: 9px; background: #7c5cff; color: #fff; font-weight: 600; }
+      .go:hover { background: #6a48ff; }`;
     const pill = document.createElement('div');
-    pill.className = 'pill';
-    const go = document.createElement('button');
-    go.className = 'go';
+    pill.className = 'tab';
+    const head = document.createElement('div');
+    head.className = 'head';
     const mark = document.createElement('span');
     mark.className = 'mark';
     mark.textContent = 'E30';
-    go.append(mark, t(state.has_cv ? 'offer_fill' : 'offer_add_cv'));
+    const name = document.createElement('span');
+    name.className = 'name';
+    name.textContent = 'Epimoni';
     const x = document.createElement('button');
     x.className = 'x';
     x.textContent = '×';
     x.setAttribute('aria-label', t('offer_close'));
-    pill.append(go, x);
+    head.append(mark, name, x);
+    const body = document.createElement('div');
+    body.className = 'body';
+    const hint = document.createElement('div');
+    hint.className = 'hint';
+    hint.textContent = t(state.has_cv ? 'offer_hint' : 'offer_hint_no_cv');
+    const go = document.createElement('button');
+    go.className = 'go';
+    go.textContent = t(state.has_cv ? 'offer_fill' : 'offer_add_cv');
+    body.append(hint, go);
+    pill.append(head, body);
     root.append(style, pill);
     go.addEventListener('click', (e) => {
       if (!e.isTrusted) return; // the page's own script cannot press it
@@ -162,6 +182,9 @@
         stop();
         return;
       }
+      // Taken out by the page: a framework that re-renders the whole document (a failed React
+      // hydration does, measured on a Greenhouse job board) drops every node it did not make.
+      if (host && !host.isConnected) host = null;
       if (!host && looksLikeApplication()) show(state);
     };
     check();

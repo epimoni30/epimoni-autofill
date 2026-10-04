@@ -1409,10 +1409,10 @@
     "message": "CV created. Check each section below, then save."
   },
   "offer_fill": {
-    "message": "Fill with Epimoni"
+    "message": "Fill the form"
   },
   "offer_add_cv": {
-    "message": "Add my CV to fill this"
+    "message": "Add my CV"
   },
   "offer_close": {
     "message": "Not on this site for now"
@@ -1455,5 +1455,11 @@
   },
   "sites_offer_is_off": {
     "message": "On for the supported job boards only."
+  },
+  "offer_hint": {
+    "message": "Application form detected."
+  },
+  "offer_hint_no_cv": {
+    "message": "Application form detected. Add your CV to fill it in one click."
   }
 }

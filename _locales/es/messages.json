@@ -1409,10 +1409,10 @@
     "message": "CV creado. Revise cada sección de abajo y luego guarde."
   },
   "offer_fill": {
-    "message": "Rellenar con Epimoni"
+    "message": "Rellenar el formulario"
   },
   "offer_add_cv": {
-    "message": "Añadir mi CV para rellenar"
+    "message": "Añadir mi CV"
   },
   "offer_close": {
     "message": "No proponer en este sitio por ahora"
@@ -1455,5 +1455,11 @@
   },
   "sites_offer_is_off": {
     "message": "Activo solo en los portales de empleo compatibles."
+  },
+  "offer_hint": {
+    "message": "Formulario de candidatura detectado."
+  },
+  "offer_hint_no_cv": {
+    "message": "Formulario de candidatura detectado. Añada su CV para rellenarlo con un clic."
   }
 }
