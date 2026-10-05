@@ -38,7 +38,7 @@
     "node": ">=20"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.14",
+    "@biomejs/biome": "2.5.15",
     "playwright": "^1.44.0"
   }
 }
