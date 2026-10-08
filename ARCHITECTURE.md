@@ -52,6 +52,8 @@ src/shared/cvdoc.js     the CV document: read it, write it, flatten it, translat
 src/shared/store.js     the CV library and everything else remembered; one writer, one copy
 src/shared/files.js     the PDF a user attached to a CV, in the extension's own IndexedDB
 src/shared/pdf.js       a CV as a PDF, written by hand: the file sent when the user attached none
+src/shared/pdftext.js   the text of a PDF, read locally (pdfcrypt.js opens empty-password ones)
+src/shared/sites.js     the sites where the user turned automatic filling on
 src/shared/applications.js  the application tracker: one entry per job page filled, local only
 src/background/index.js the core worker: the library, the fill profile, the toolbar click
 src/dashboard/          the extension's one page, behind a menu: the CV (cv.js, the only surface
@@ -73,6 +75,8 @@ src/epimoni/worker.js   pairing with the site, the offer analysis, the allowance
 src/epimoni/identity.js which token a metered call goes out with, and what it may do
 src/epimoni/api.js      the backend, named statuses, and the anonymous session
 src/epimoni/telemetry.js  counts-only usage events, riding on a token already held
+src/epimoni/tailor.js   the CV writer's proposals → a list to review → a tailored copy
+src/epimoni/import.js   the backend parser's fields → a CvDoc
 src/epimoni/bridge.js   the site's door on every browser: postMessage ↔ worker, forwards ping/pair/pair-status only
 ```
 
@@ -99,7 +103,7 @@ The folder *is* the decision, and three rules keep it one:
 
 - Only the core worker imports the add-on, and only `epimoni/worker.js`, through four exports:
   `installEpimoni` (the site's listener), `handleEpimoni` (the messages it owns: `analyse`,
-  `letter`, `tier`, `unpair`, `report`), `epimoniState` (what a surface may say about the account) and
+  `letter`, `tailor`, `tailor:save`, `cv:import-text`, `tier`, `unpair`, `report`), `epimoniState` (what a surface may say about the account) and
   `forgetEpimoni`. A message the core does not know is offered to the add-on, and one neither
   knows is answered `unknown`.
 - The add-on depends on the core, never the reverse. It reads `shared/store.js` and
@@ -340,12 +344,63 @@ screen survives a re-fill.
 Only additions wake it. A control revealed by toggling `display` is not an added node, and a
 toolbar click still covers that case.
 
+## Automatic filling, one site at a time
+
+By default the extension offers rather than acts: a page is filled when the user clicks, and a
+declared job board only gets a content script that waits for that click. The popup's "Remplir
+automatiquement sur <site>" changes that for one site (`shared/sites.js`, key `epimoni_sites`):
+an application form there is filled as it appears, on load or when a single-page site renders
+it after "Postuler", once per address, with the panel saying why and offering "Désactiver".
+Same resolver, same refusals, same undo, and still no submit. An automatic fill that finds
+nothing says nothing, and one that fills a single field (a newsletter box, a search bar) is not
+recorded as an application.
+
+A declared board needs nothing more than the entry. Any other site needs the browser's
+permission for its origin, from `optional_host_permissions`, so nothing is asked at install;
+the popup asks inside the click, and tells the worker first (`site:pending`), because the
+browser's prompt can close the popup before the answer arrives and `permissions.onAdded`
+finishes the job. One dynamic content script (`epimoni-sites`) covers every granted site;
+`syncSiteScripts` keeps it equal to the list and to what the browser holds, after every change,
+when a permission is granted or withdrawn (chrome://extensions can do that too), and on startup
+and update. Turning a site off hands its permission back.
+
+A content script can ask whether its own site is on and turn its own site off (`site:auto`,
+`site:auto:off`, both computed from the sender's tab), and nothing else: turning a site on is
+an extension page's message only.
+
+## The "Remplir avec Epimoni" button
+
+Setting up shouldn't mean finding a checkbox in a menu. When a page holds an application form,
+a small button appears in the bottom corner (`src/offer/offer.js`), and one click fills the
+page, the same request as a click on the toolbar icon. It never fills on its own, it hides
+for the site in that tab when closed, it gives way to the panel, and it is not shown where
+automatic filling is on. Without a CV it says so and opens the import.
+
+`offer.js` is separate from `content.js` on purpose: it may run on every page the user
+visits, so it carries no lexicon, decides from cheap evidence (three visible fields, one about
+identity, and a CV upload or the page talking about applying; never a page with a password
+field), and stops once it has decided. The filler is injected by the worker on the click.
+
+It ships on the declared job boards. On every other site it needs the browser's access to all
+sites, which is never asked at install: the user turns it on from the popup or the Sites page
+(`chrome.permissions.request` inside the click), the worker registers `epimoni-offer` for
+`https://*/*` minus the declared boards and epimoni30.com, and withdraws it when the grant
+goes. With that grant every site is also allowed for automatic filling, so the panel's
+« Toujours remplir ici », offered after any fill, takes one click there too.
+
 ## The application tracker
 
 Every page the extension fills is an application the user may want to follow, so the fill
 records it (`shared/applications.js`), and the dashboard's applications view
-(`dashboard.html#candidatures`) shows the list with a status, a note
-and a CSV export. It is core: local storage, no account, no network, like the fill that feeds it.
+(`dashboard.html#candidatures`) shows them as a board, one column per status, with a note on
+each card and a CSV export. A card moves by drag and drop, and also by the status menu it
+carries: dragging needs a mouse, and the menu is what a keyboard, a screen reader or a touch
+screen uses.
+
+An application the extension did not fill (sent by e-mail, or from a page it never saw) is
+added by hand (`app:add`, from the dashboard only). With an address it takes that page's key,
+so a later fill of the page updates it rather than adding a twin; without one it gets a key of
+its own and no link. It is core: local storage, no account, no network, like the fill that feeds it.
 
 An entry is one job page, keyed on its address with tracking parameters and the fragment
 removed (`applicationKey`), so a second fill or a wizard's second step updates it rather than
@@ -371,8 +426,13 @@ it off leaves the markup exactly as it was, which `e2e.mjs` checks by comparing 
 
 ## The cover letter: the AI tier's first answer
 
-A letter box (`cover_letter`, a textarea) is left empty by the fill. When the page also has an
-advert, the panel offers to write the letter. That is the add-on: `letter` in
+A letter box (`cover_letter`, a textarea) is left empty by the fill. Wherever the page has an
+advert, the panel offers to write the letter: into the box when the form has one, and
+otherwise to copy it or save it as a PDF, for a form that wants the letter as a file or none at
+all. The PDF (`letter:pdf`, `renderLetterPdf` in `shared/pdf.js`) is made by the core worker
+from the text on screen, the subject line the backend returned, the company read from the
+advert and the CV's name and contact; it is the same dependency-free writer as the CV's, and
+nothing about it reaches a network. That is the add-on: `letter` in
 `epimoni/worker.js` sends the CV document and the advert's text to
 `/ml/analyse/motivation/generate-doc` with the form's limit, from the box's `maxlength` or from
 what its label says ("1500 caractères maximum"). The backend holds the letter to that limit with
@@ -386,6 +446,28 @@ accepts is never cut to fit: the insert button is disabled and the user can copy
 open a session), retry once on a 401, and on a 429 forget the cached allowance. The backend
 memoises the same CV, advert, template and limit without charging, and the worker caches the
 answer for the session, so reopening the panel costs nothing.
+
+## The tailored CV: proposals first, the user's choice second
+
+"Adapter mon CV à cette offre" (panel and popup) asks the backend's CV writer
+(`/ml/analyse/write-cv-doc`, the same one the site's editor uses) for rewrites of the CV
+against the advert on the page. It answers with change proposals keyed by field (`title`,
+`summary`, `skills`, `experience.N.bullets`…). `epimoni/tailor.js` turns them into a list to
+review: a change that only rewords what the CV says is ticked; one that adds material (a field
+that was empty, a list that grew, a bullet the role never had) is unticked and says so. A writer
+asked to fit an advert will, sometimes, give a role a task lifted from the advert, and a CV
+claiming experience its owner does not have is worse than no tailoring at all; only the owner
+can tell the two apart, so the default leaves them out.
+
+Two messages, so the money and the decision are separate. `tailor` makes the one metered call
+and caches the proposals for the session with the document they were made against. `tailor:save`
+spends nothing: it applies the ticked changes from that cache (by index, never from text a page
+sends) and saves the result as a new library entry (`source: 'tailored'`, `tailored_for` the
+advert) without making it the active CV. Saving again with other ticks updates the same entry.
+From there it is an ordinary CV: "Remplir avec ce CV" fills the page from it, which also puts
+its PDF in a CV upload, and the panel offers its PDF and the dashboard to read it over. A page
+already filled from a tailored CV is not offered to tailor it again: that would pay to rewrite
+a rewrite.
 
 ## Reading the advert: the heuristic is primary, JSON-LD only enriches
 
@@ -410,6 +492,26 @@ France Travail states the job title on the heading, the apply button, the print 
 locate link, so identical short lines are deduplicated. Short ones only: two identical
 *paragraphs* belong to whoever wrote the advert. Note what this deliberately is not: a list of
 per-board button labels, which would be an adapter wearing a different hat.
+
+## Importing the CV someone already has
+
+The dashboard's "Importer mon CV existant" turns a PDF, or pasted text, into a CV without
+retyping it. Reading the PDF is core and local (`shared/pdftext.js`): objects and object
+streams, FlateDecode through the browser's `DecompressionStream`, each font's ToUnicode map and
+glyph widths, and the graphics and text matrices, so that a writer that draws every glyph on
+its own (`q … cm BT … Tm <00xx> Tj ET Q`, common in CV builders) still comes out as words
+with spaces, line by line. Files "protected" with an empty user password, which CV builders
+produce and every viewer opens without asking, are decrypted (`shared/pdfcrypt.js`: RC4 and
+AES-128 through MD5, AES-256 through WebCrypto's SHA-2); one that needs a real password, a scan
+with no text layer, and a file that is not a PDF are each refused with their own message, and
+the text can still be pasted. The fixtures in `test/fixtures/pdf/` are one synthetic CV printed
+by Chrome and rewritten by qpdf in each of those shapes.
+
+The text is shown, editable, before anything leaves the machine. Sorting it into fields is the
+add-on (`cv:import-text`, extension pages only, a paired account): the backend's verbatim
+parser (`/ml/cv-extract-text`), which copies and never rewrites, mapped by `epimoni/import.js`.
+The result is a new active CV, opened in the editor to check, and the PDF it came from is kept
+as its file, so forms receive the document the person made.
 
 ## The CV document, and the library that holds several
 

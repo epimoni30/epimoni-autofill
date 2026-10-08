@@ -7,6 +7,7 @@
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { normalize } from '../src/content/dom.js';
 import { createResolver } from '../src/content/resolve.js';
 import { AUTOCOMPLETE, PACKS } from '../src/lexicon/index.js';
 
@@ -345,4 +346,62 @@ test('Portuguese blocks: admission dates, and "curso" is the field of study', ()
   assert.equal(blockKey('data de conclusao', edu), 'education.end@0');
   assert.equal(resolver.sectionOf('experiencias profissionais'), 'work');
   assert.equal(resolver.sectionOf('formacao academica'), 'education');
+});
+
+// ── Polish ───────────────────────────────────────────────────────────────────────────────
+//
+// Labels go through `normalize` here, not typed unaccented, because Polish is the language
+// where it can fail: `ł` has no Unicode decomposition, and "Wykształcenie" used to split
+// into two words that matched nothing.
+
+const pl = (label, opts) => key(normalize(label), opts);
+const plBlock = (label, at, opts) => blockKey(normalize(label), at, opts);
+
+test('ł is a plain l once normalised', () => {
+  assert.equal(normalize('Wykształcenie'), 'wyksztalcenie');
+  assert.equal(normalize('ŁÓDŹ'), 'lodz');
+});
+
+test('Polish identity fields', () => {
+  assert.equal(pl('Imię i nazwisko'), 'full_name');
+  assert.equal(pl('Imię'), 'given_name');
+  assert.equal(pl('Nazwisko'), 'family_name');
+  assert.equal(pl('Adres e-mail'), 'email');
+  assert.equal(pl('Powtórz adres e-mail'), 'email_confirm');
+  assert.equal(pl('Numer telefonu'), 'phone');
+  assert.equal(pl('Kod pocztowy'), 'postal_code');
+  assert.equal(pl('Miejscowość'), 'city');
+  assert.equal(pl('Oczekiwania finansowe'), 'salary_expectation');
+  assert.equal(pl('Okres wypowiedzenia'), 'notice_period');
+  assert.equal(pl('List motywacyjny', { tag: 'textarea' }), 'cover_letter');
+  assert.equal(pl('Załącz CV', { type: 'file' }), 'cv_file');
+});
+
+test('a Polish form asks for names that are not the candidate', () => {
+  assert.equal(pl('Imię ojca'), 'skip:no-match');
+  assert.equal(pl('Imię matki'), 'skip:no-match');
+  assert.equal(pl('Drugie imię'), 'skip:no-match');
+  assert.equal(pl('Nazwisko rodowe'), 'skip:no-match');
+  assert.equal(pl('Miejsce urodzenia'), 'skip:no-match');
+  assert.equal(pl('Telefon do osoby kontaktowej w nagłych wypadkach'), 'skip:no-match');
+  assert.notEqual(pl('List motywacyjny', { type: 'file' }), 'cv_file');
+});
+
+test('Polish blocks: start and end dates, and "kierunek" is the field of study', () => {
+  assert.equal(plBlock('Nazwa firmy', work0), 'work.company@0');
+  assert.equal(plBlock('Stanowisko', work0), 'work.position@0');
+  assert.equal(plBlock('Data rozpoczęcia', work0), 'work.start@0');
+  assert.equal(plBlock('Data zakończenia', work0), 'work.end@0');
+  assert.equal(plBlock('Zakres obowiązków', work0, { tag: 'textarea' }), 'work.description@0');
+  const edu = { section: 'education', index: 0, weak: false };
+  assert.equal(plBlock('Kierunek', edu), 'education.field@0');
+  assert.equal(plBlock('Nazwa uczelni', edu), 'education.institution@0');
+  assert.equal(plBlock('Data ukończenia', edu), 'education.end@0');
+  assert.equal(resolver.sectionOf(normalize('Doświadczenie zawodowe')), 'work');
+  assert.equal(resolver.sectionOf(normalize('Wykształcenie')), 'education');
+  assert.equal(resolver.sectionOf(normalize('Języki obce')), 'languages');
+});
+
+test('the Polish pack leaves the Portuguese "do" alone', () => {
+  assert.equal(blockKey('nome do cargo', work0), 'work.position@0');
 });

@@ -440,10 +440,10 @@
     "message": "Análisis ilimitados con su plan."
   },
   "panel_tier_free": {
-    "message": "1 análisis por hora con la cuenta gratuita."
+    "message": "2 análisis por hora con la cuenta gratuita."
   },
   "panel_tier_anon": {
-    "message": "1 análisis por hora, sin cuenta. No guardamos ningún CV en nuestros servidores."
+    "message": "2 análisis por hora, sin cuenta. No guardamos ningún CV en nuestros servidores."
   },
   "panel_tier_spent": {
     "message": "Análisis ya utilizado. El próximo en $MINUTES$ min.",
@@ -484,10 +484,10 @@
     "message": "Análisis ilimitados"
   },
   "popup_tier_free": {
-    "message": "1 análisis por hora (cuenta gratuita)"
+    "message": "2 análisis por hora (cuenta gratuita)"
   },
   "popup_tier_anon": {
-    "message": "1 análisis por hora, sin cuenta"
+    "message": "2 análisis por hora, sin cuenta"
   },
   "popup_tier_spent": {
     "message": "Análisis utilizado. El próximo en $MINUTES$ min.",
@@ -682,10 +682,10 @@
     "message": "Análisis de ofertas ilimitados con su plan."
   },
   "opt_tier_free": {
-    "message": "1 análisis de oferta por hora con la cuenta gratuita."
+    "message": "2 análisis de oferta por hora con la cuenta gratuita."
   },
   "opt_tier_anon": {
-    "message": "1 análisis de oferta por hora, sin cuenta."
+    "message": "2 análisis de oferta por hora, sin cuenta."
   },
   "opt_tier_spent": {
     "message": "Análisis utilizado. El próximo en $MINUTES$ min.",
@@ -946,10 +946,10 @@
     "message": "Mis candidaturas"
   },
   "trk_intro": {
-    "message": "Cada formulario que rellena la extensión se añade aquí. Esta lista se queda en este ordenador."
+    "message": "Cada formulario que rellena la extensión llega aquí. Arrastre una tarjeta a otra columna cuando su candidatura avance. Esta lista se queda en este ordenador."
   },
   "trk_empty": {
-    "message": "Aún no hay candidaturas. Rellene un formulario con la extensión y aparecerá aquí."
+    "message": "Aún no hay candidaturas. Rellene un formulario con la extensión o añada una a mano."
   },
   "trk_export": {
     "message": "Exportar (CSV)"
@@ -1156,7 +1156,7 @@
     "message": "No se ha encontrado ninguna oferta en esta página."
   },
   "panel_no_letter_box": {
-    "message": "Este formulario no pide carta de presentación."
+    "message": "No se ha encontrado ninguna oferta en esta página para redactar una carta."
   },
   "consent_title": {
     "message": "Permitir el envío para el análisis y la carta"
@@ -1184,5 +1184,282 @@
   },
   "ai_consent_cta": {
     "message": "Permitir el envío"
+  },
+  "trk_add": {
+    "message": "Añadir una candidatura"
+  },
+  "trk_add_url": {
+    "message": "Enlace de la oferta (opcional)"
+  },
+  "trk_add_save": {
+    "message": "Añadir"
+  },
+  "trk_add_cancel": {
+    "message": "Cancelar"
+  },
+  "trk_add_need_title": {
+    "message": "Indique al menos el nombre del puesto."
+  },
+  "trk_add_bad_url": {
+    "message": "Ese enlace no es una dirección web válida."
+  },
+  "trk_added_on": {
+    "message": "Añadida el $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_site_auto": {
+    "message": "Rellenar automáticamente en"
+  },
+  "popup_site_off": {
+    "message": "Relleno automático desactivado en este sitio."
+  },
+  "popup_site_refused": {
+    "message": "El navegador no ha dado acceso a este sitio. Puede seguir rellenando la página con un clic."
+  },
+  "panel_auto_filled": {
+    "message": "Rellenado automáticamente: lo activó para este sitio."
+  },
+  "panel_auto_off": {
+    "message": "Desactivar"
+  },
+  "panel_auto_is_off": {
+    "message": "Relleno automático desactivado en este sitio."
+  },
+  "dash_menu_sites": {
+    "message": "Sitios"
+  },
+  "sites_title": {
+    "message": "Sitios"
+  },
+  "sites_intro": {
+    "message": "En estos sitios la extensión rellena los formularios de candidatura en cuanto aparecen, sin esperar a su clic. Nunca envía nada por usted. Para añadir un sitio, abra la extensión en ese sitio y marque «Rellenar automáticamente»."
+  },
+  "sites_empty": {
+    "message": "Aún no hay sitios. En todos los demás, la extensión rellena una página cuando hace clic en «Rellenar esta página»."
+  },
+  "sites_since": {
+    "message": "Activado el $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "sites_declared": {
+    "message": "portal de empleo compatible"
+  },
+  "sites_off": {
+    "message": "Desactivar"
+  },
+  "panel_letter_offer": {
+    "message": "¿Necesita una carta de presentación para esta oferta?"
+  },
+  "panel_letter_pdf": {
+    "message": "Descargar en PDF"
+  },
+  "pdf_letter_place_date": {
+    "message": "$CITY$, $DATE$",
+    "placeholders": {
+      "city": {
+        "content": "$1"
+      },
+      "date": {
+        "content": "$2"
+      }
+    }
+  },
+  "pdf_letter_file": {
+    "message": "Carta"
+  },
+  "popup_tailor": {
+    "message": "Adaptar mi CV a esta oferta"
+  },
+  "panel_tailor_offer": {
+    "message": "¿Quiere una versión de su CV adaptada a esta oferta?"
+  },
+  "panel_tailor_cta": {
+    "message": "Adaptar mi CV con IA"
+  },
+  "panel_tailor_working": {
+    "message": "Adaptando su CV a la oferta…"
+  },
+  "panel_tailor_done": {
+    "message": "Nuevo CV añadido a su biblioteca: «$LABEL$». Su CV original no ha cambiado.",
+    "placeholders": {
+      "label": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_tailor_use": {
+    "message": "Rellenar con este CV"
+  },
+  "panel_tailor_pdf": {
+    "message": "Descargar el PDF"
+  },
+  "panel_tailor_review": {
+    "message": "Revisar y editar"
+  },
+  "panel_tailor_in_use": {
+    "message": "Este formulario está rellenado con «$LABEL$», su CV adaptado.",
+    "placeholders": {
+      "label": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_tailor_empty": {
+    "message": "La IA no ha propuesto cambios para esta oferta. Puede que su CV ya encaje bien."
+  },
+  "panel_tailor_full": {
+    "message": "Su biblioteca de CV está llena. Elimine un CV en el panel y vuelva a intentarlo."
+  },
+  "tailored_label": {
+    "message": "Adaptado · $FOR$",
+    "placeholders": {
+      "for": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_source_tailored_badge": {
+    "message": "Adaptado a una oferta"
+  },
+  "panel_tailor_review_intro": {
+    "message": "$N$ cambios propuestos. Conserve los que sean ciertos para usted y luego cree el CV.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_tailor_adds": {
+    "message": "Añade algo que su CV no dice. Márquelo solo si es cierto."
+  },
+  "panel_tailor_make": {
+    "message": "Crear el CV adaptado"
+  },
+  "panel_tailor_none": {
+    "message": "Marque al menos un cambio."
+  },
+  "opt_pdf_import_heading": {
+    "message": "Importar mi CV actual"
+  },
+  "opt_pdf_import_intro": {
+    "message": "Elija su CV en PDF: su texto se lee en este ordenador y usted lo revisa. Después, la IA de Epimoni lo ordena en secciones sin reescribir una palabra. Su PDF sigue siendo el que se envía a los formularios."
+  },
+  "opt_pdf_import_choose": {
+    "message": "Elegir mi CV (PDF)"
+  },
+  "opt_pdf_import_paste": {
+    "message": "o pegar el texto"
+  },
+  "opt_pdf_import_text_label": {
+    "message": "El texto de su CV (corríjalo si hace falta)"
+  },
+  "opt_pdf_import_go": {
+    "message": "Crear el CV con IA"
+  },
+  "opt_pdf_import_needs_account": {
+    "message": "Ordenar con IA requiere una cuenta de Epimoni conectada. Sin ella, puede rellenar las secciones de abajo a mano."
+  },
+  "opt_pdf_import_reading": {
+    "message": "Leyendo el PDF…"
+  },
+  "opt_pdf_import_read": {
+    "message": "$N$ palabras leídas. Revise el texto y luego cree el CV.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_pdf_import_not_pdf": {
+    "message": "Este archivo no es un PDF."
+  },
+  "opt_pdf_import_encrypted": {
+    "message": "Este PDF está protegido con contraseña. Ábralo, copie su texto y péguelo aquí."
+  },
+  "opt_pdf_import_no_text": {
+    "message": "Este PDF no contiene texto legible (seguramente es una imagen o un escaneo). Pegue mejor el texto de su CV."
+  },
+  "opt_pdf_import_unreadable": {
+    "message": "No se ha podido leer este PDF. Pegue mejor el texto de su CV."
+  },
+  "opt_pdf_import_too_short": {
+    "message": "El texto es demasiado corto para ser un CV."
+  },
+  "opt_pdf_import_too_long": {
+    "message": "El texto es demasiado largo (30 000 caracteres como máximo)."
+  },
+  "opt_pdf_import_working": {
+    "message": "La IA está ordenando su CV en secciones…"
+  },
+  "opt_pdf_import_empty": {
+    "message": "No se ha reconocido ninguna sección en este texto."
+  },
+  "opt_pdf_import_failed": {
+    "message": "La importación no ha funcionado. Vuelva a intentarlo en un momento."
+  },
+  "opt_pdf_import_done": {
+    "message": "CV creado. Revise cada sección de abajo y luego guarde."
+  },
+  "offer_fill": {
+    "message": "Rellenar el formulario"
+  },
+  "offer_add_cv": {
+    "message": "Añadir mi CV"
+  },
+  "offer_close": {
+    "message": "No proponer en este sitio por ahora"
+  },
+  "panel_always_offer": {
+    "message": "¿Rellenar este sitio solo la próxima vez?"
+  },
+  "panel_always_on": {
+    "message": "Rellenar siempre aquí"
+  },
+  "panel_always_done": {
+    "message": "Hecho: este sitio se rellenará automáticamente."
+  },
+  "panel_always_needs_menu": {
+    "message": "Para este sitio, Chrome debe dar su permiso primero: abra el menú de la extensión y marque «Rellenar automáticamente»."
+  },
+  "popup_site_needs_cv": {
+    "message": "Disponible en cuanto haya añadido un CV."
+  },
+  "popup_everywhere_on": {
+    "message": "Mostrar el botón «Rellenar con Epimoni» en todos los sitios de candidatura"
+  },
+  "popup_everywhere_done": {
+    "message": "Hecho: el botón aparecerá en los formularios de candidatura."
+  },
+  "sites_offer_heading": {
+    "message": "El botón «Rellenar con Epimoni»"
+  },
+  "sites_offer_intro": {
+    "message": "Cuando una página contiene un formulario de candidatura, aparece un botón abajo a la derecha: un clic y el formulario se rellena. Ya está activo en los portales de empleo compatibles. Para tenerlo también en los sitios de empleo de las empresas, Chrome le pedirá acceso a todos los sitios: allí la extensión solo comprueba si hay un formulario y no rellena nada sin su clic."
+  },
+  "sites_offer_on": {
+    "message": "Activarlo en todos los sitios"
+  },
+  "sites_offer_off": {
+    "message": "Quitarlo de los demás sitios"
+  },
+  "sites_offer_is_on": {
+    "message": "Activo en todos los sitios."
+  },
+  "sites_offer_is_off": {
+    "message": "Activo solo en los portales de empleo compatibles."
+  },
+  "offer_hint": {
+    "message": "Formulario de candidatura detectado."
+  },
+  "offer_hint_no_cv": {
+    "message": "Formulario de candidatura detectado. Añada su CV para rellenarlo con un clic."
   }
 }

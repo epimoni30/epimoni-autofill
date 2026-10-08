@@ -211,11 +211,13 @@ export async function listCvs() {
     source: c.source || 'local',
     updated_at: c.updated_at || null,
     active: c.id === activeId,
+    tailored: Boolean(c.tailored_for),
   }));
 }
 
 /**
- * Add or update a document, and make it the active one.
+ * Add or update a document, and make it the active one (unless `activate` is false: a CV made
+ * for one offer is added beside the one in use, not in its place).
  *
  * `cv` must already be normalised: the worker is the only writer and normalises on the way
  * in, so that three senders cannot disagree about shape (see shared/cvdoc.js).
@@ -235,6 +237,8 @@ export async function saveCv({
   profile = null,
   builder_id = null,
   taken_at = null,
+  tailored_for = null,
+  activate = true,
 }) {
   const bag = await rawRead();
   const list = [...arr(bag.cvs)];
@@ -257,13 +261,14 @@ export async function saveCv({
     builder_id: builder_id ?? was?.builder_id ?? null,
     taken_at: taken_at ?? was?.taken_at ?? at,
     updated_at: at,
+    ...(tailored_for || was?.tailored_for ? { tailored_for: tailored_for ?? was.tailored_for } : {}),
   };
   if (i >= 0) list[i] = next;
   else list.push(next);
 
-  const bagNext = { ...bag, cvs: list, active_cv_id: next.id };
+  const bagNext = { ...bag, cvs: list, active_cv_id: activate ? next.id : bag.active_cv_id || next.id };
   await put(bagNext);
-  return withActive(bagNext);
+  return { ...withActive(bagNext), saved_id: next.id };
 }
 
 export async function activateCv(id) {

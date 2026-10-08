@@ -21,6 +21,7 @@ import {
   normalizeCvDoc,
   toJsonResume,
 } from '../shared/cvdoc.js';
+import { initImporter } from './importer.js';
 
 const send = (msg) => new Promise((r) => chrome.runtime.sendMessage(msg, (x) => r(x || {})));
 const el = (id) => document.getElementById(id);
@@ -49,12 +50,14 @@ const SOURCE_BADGE = {
   account: 'opt_source_account_badge',
   site: 'opt_source_site_badge',
   local: 'opt_source_local_badge',
+  tailored: 'opt_source_tailored_badge',
 };
 const slug = (v) =>
   String(v || '')
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
+    .replace(/ł/g, 'l')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
     .slice(0, 40);
@@ -308,7 +311,7 @@ function collect() {
  * which allowance the AI half is on.
  *
  * The tier line is the honest half of "free fill, paid AI": a free or anonymous user is
- * metered at one analysis an hour, the website's own window, not a second allowance, and a paying customer is not metered at all. Saying so here means nobody meets
+ * metered at two analyses an hour, the website's own window, not a second allowance, and a paying customer is not metered at all. Saying so here means nobody meets
  * that limit for the first time as a refusal on an advert they were about to apply to.
  */
 /**
@@ -539,6 +542,7 @@ async function save({ quiet = false } = {}) {
 /** Called once by the dashboard, when the page opens. */
 export async function initCv() {
   await load();
+  await initImporter(load);
 
   for (const id of [
     'b_name',

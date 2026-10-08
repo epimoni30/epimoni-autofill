@@ -8,9 +8,10 @@
 
 import { initApplications, refreshApplications } from './applications.js';
 import { initCv } from './cv.js';
+import { refreshSites } from './sites.js';
 
 const t = (key, subs) => chrome.i18n.getMessage(key, subs) || key;
-const VIEWS = { cv: 'opt_title', candidatures: 'trk_title' };
+const VIEWS = { cv: 'opt_title', candidatures: 'trk_title', sites: 'sites_title' };
 
 function localise() {
   document.documentElement.lang = chrome.i18n.getUILanguage().slice(0, 2);
@@ -32,6 +33,7 @@ async function show() {
   document.title = `${t(VIEWS[view])} · Epimoni`;
   // The list can have grown in another tab since the page opened.
   if (view === 'candidatures') await refreshApplications();
+  if (view === 'sites') await refreshSites();
   await count();
 }
 

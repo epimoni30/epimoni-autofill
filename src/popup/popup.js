@@ -1,5 +1,6 @@
 // The toolbar popup is a menu, and only that: which CV fills forms, the fast action (fill this
-// page), the AI actions (analyse the advert, write the cover letter), and the dashboard.
+// page) and whether this site fills on its own, the AI actions (analyse the advert, write the
+// cover letter, adapt the CV to the advert), and the dashboard.
 // Everything else (editing, the library, the applications) lives on the dashboard.
 //
 // The AI actions are for a paired Epimoni account and are shown disabled without one, with
@@ -11,7 +12,7 @@ const t = (key, subs) => chrome.i18n.getMessage(key, subs) || key;
 const SITE = 'https://www.epimoni30.com/extension-chrome';
 // The plans on the site's home page, in the user's language: /#pricing, /en/#pricing…
 const LANG = chrome.i18n.getUILanguage().slice(0, 2);
-const PLANS = `https://www.epimoni30.com/${['en', 'es', 'pt'].includes(LANG) ? `${LANG}/` : ''}#pricing`;
+const PLANS = `https://www.epimoni30.com/${['en', 'es', 'pt', 'pl'].includes(LANG) ? `${LANG}/` : ''}#pricing`;
 
 /** Fill in everything the markup named, and set the document language for a screen reader. */
 function localise() {
@@ -59,7 +60,16 @@ async function renderCv(state) {
   const host = el('cv');
   host.textContent = '';
   if (!state.has_cv) {
+    // The one thing to do first, as a button rather than a sentence: everything else in this
+    // menu waits on it.
     host.textContent = t('popup_no_profile');
+    const add = document.createElement('button');
+    add.type = 'button';
+    add.className = 'action primary';
+    add.style.marginTop = '8px';
+    add.textContent = t('popup_add_cv');
+    add.addEventListener('click', () => openDashboard('#cv'));
+    host.appendChild(add);
     return;
   }
   const { cvs = [] } = await send({ type: 'cv:list' });
@@ -90,6 +100,7 @@ async function renderAi(state) {
   const ready = Boolean(state.ai) && state.has_cv;
   el('analyse').disabled = !ready;
   el('letter').disabled = !ready;
+  el('tailor').disabled = !ready;
   if (!state.ai && state.consent) {
     // Paired, and the browser asks before the CV leaves it (Firefox). The request has to come
     // from a click on an extension page that stays open, which the popup is not.
@@ -118,6 +129,76 @@ async function renderAi(state) {
   } else note.textContent = t('popup_tier_free');
 }
 
+/**
+ * Automatic filling on this site: off by default everywhere, and turned on here, one site at a
+ * time. Outside the job boards the manifest declares, it needs the browser's permission for
+ * this one origin, asked for inside this click; the worker is told first because the browser's
+ * prompt can close the popup before the answer comes back.
+ */
+async function renderSite(state) {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  const site = tab?.url ? await send({ type: 'site:status', url: tab.url }) : {};
+  if (!site.ok) return;
+  const row = el('site-row');
+  const box = el('site-auto');
+  const note = el('site-note');
+  const text = el('site-text');
+  text.textContent = '';
+  const host = document.createElement('b');
+  host.textContent = site.host.replace(/^www\./, '');
+  text.append(t('popup_site_auto'), ' ', host);
+  box.checked = site.auto;
+  box.disabled = !state.has_cv;
+  row.hidden = false;
+  // Greyed out with no reason reads as broken: say what it waits for.
+  if (!state.has_cv) note.textContent = t('popup_site_needs_cv');
+  box.addEventListener('change', async () => {
+    note.textContent = '';
+    if (!box.checked) {
+      await send({ type: 'site:disable', host: site.host });
+      note.textContent = t('popup_site_off');
+      return;
+    }
+    if (!site.granted) {
+      send({ type: 'site:pending', host: site.host, scheme: site.scheme });
+      let granted = false;
+      try {
+        granted = await chrome.permissions.request({ origins: [`${site.scheme}://${site.host}/*`] });
+      } catch {}
+      if (!granted) {
+        box.checked = false;
+        note.textContent = t('popup_site_refused');
+        return;
+      }
+    }
+    const res = await send({ type: 'site:enable', host: site.host, scheme: site.scheme });
+    if (!res.ok) {
+      box.checked = false;
+      note.textContent = t('popup_site_refused');
+      return;
+    }
+    // On from now on, and for this page too: fill it now, as the next visit will.
+    onPage(null);
+  });
+}
+
+/**
+ * The button on every site: offered once, here, until it is on. The browser's "all sites"
+ * prompt is asked inside this click, never at install.
+ */
+async function renderEverywhere() {
+  const { on } = await send({ type: 'offer:everywhere' });
+  if (on) return;
+  el('everywhere').hidden = false;
+  el('everywhere-on').addEventListener('click', async () => {
+    let granted = false;
+    try {
+      granted = await chrome.permissions.request({ origins: ['https://*/*'] });
+    } catch {}
+    el('everywhere').textContent = t(granted ? 'popup_everywhere_done' : 'popup_site_refused');
+  });
+}
+
 (async () => {
   localise();
   const state = await send({ type: 'state' });
@@ -126,8 +207,11 @@ async function renderAi(state) {
   el('fill').addEventListener('click', () => onPage(null));
   el('analyse').addEventListener('click', () => onPage('analyse'));
   el('letter').addEventListener('click', () => onPage('letter'));
+  el('tailor').addEventListener('click', () => onPage('tailor'));
   el('dashboard').addEventListener('click', () => openDashboard(state.has_cv ? '' : '#cv'));
 
   await renderCv(state);
+  await renderSite(state);
+  await renderEverywhere();
   await renderAi(state);
 })();

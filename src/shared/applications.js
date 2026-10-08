@@ -105,6 +105,47 @@ export async function recordApplication({ url, title, company, fromAdvert, cv_id
   return next;
 }
 
+/**
+ * An application the user adds by hand, from the dashboard: one sent by e-mail, on paper, or
+ * from a page the extension never filled.
+ *
+ * With an address, it takes that page's key, so filling the page later updates this entry
+ * rather than adding a second one, and adding a page already in the list returns the entry
+ * already there. Without one, it gets a key of its own and no link.
+ */
+export async function addApplication({ url, title, company, status, note } = {}) {
+  const name = clip(title, 200);
+  if (!name) return null;
+  const at = Date.now();
+  const id = `app-${at.toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+  const address = clip(url, 1000);
+  const pageKey = address ? applicationKey(address) : null;
+  if (address && !pageKey) return null;
+  const list = await load();
+  const was = pageKey ? list.find((a) => a.key === pageKey) : null;
+  if (was) return was;
+  const next = {
+    id,
+    key: pageKey || `manual:${id}`,
+    url: pageKey ? address : '',
+    host: pageKey ? new URL(address).host : '',
+    title: name,
+    company: clip(company, 200),
+    from_advert: false,
+    manual: true,
+    cv_id: null,
+    cv_label: null,
+    fields: 0,
+    status: STATUSES.includes(status) ? status : 'applied',
+    created_at: at,
+    updated_at: at,
+    note: clip(note, 1000),
+  };
+  list.unshift(next);
+  await save(list.slice(0, MAX_APPLICATIONS));
+  return next;
+}
+
 /** Update what the user says about an application: its status or a note. */
 export async function updateApplication(id, { status, note } = {}) {
   const list = await load();

@@ -7,7 +7,7 @@
 //
 // The rule being protected: **one metered call per advert, and never a wall for somebody
 // without an account.** Filling is free and needs no identity at all; the analysis is metered
-// by the backend at one call an hour for free and anonymous users alike, and not at all for a
+// by the backend at two calls an hour for free and anonymous users alike, and not at all for a
 // paying customer.
 
 import test from 'node:test';
@@ -37,10 +37,17 @@ function stub({ responses }) {
       onMessageExternal: { addListener: (fn) => listeners.external.push(fn) },
       onMessage: { addListener: (fn) => listeners.internal.push(fn) },
       onInstalled: { addListener: (fn) => listeners.installed.push(fn) },
+      onStartup: { addListener: () => {} },
       getManifest: () => ({ version: '0.1.0' }),
       openOptionsPage: () => {},
     },
     action: { onClicked: { addListener: (fn) => listeners.action.push(fn) } },
+    permissions: {
+      onAdded: { addListener: () => {} },
+      onRemoved: { addListener: () => {} },
+      contains: async () => false,
+      remove: async () => true,
+    },
     tabs: { create: async () => {}, query: async () => [], sendMessage: async () => {} },
     scripting: { executeScript: async () => [] },
     storage: {
@@ -81,6 +88,8 @@ const ANON = '/api/v1/users/anonymous-login';
 const ANALYSE = '/api/v1/ml/analyse/cvVSoffer-doc?lang=fr';
 const ME = '/api/v1/users/me';
 const LETTER = '/api/v1/ml/analyse/motivation/generate-doc?lang=fr';
+const TAILOR = '/api/v1/ml/analyse/write-cv-doc?lang=fr';
+const IMPORT = '/api/v1/ml/cv-extract-text?lang=fr';
 /** What a pairing from a signed-in site session leaves in storage. */
 const pairAccount = (h, extra = {}) => {
   h.local.epimoni = {
@@ -199,6 +208,100 @@ test('a letter goes out on the account, held to the limit, and is not asked twic
   const sent = h.calls.filter((c) => c.path === LETTER);
   assert.equal(sent.length, 1);
   assert.equal(sent[0].token, 'account-1');
+});
+
+test('a tailored CV is refused without an account, proposed once, and made only from what was ticked', async () => {
+  const changes = [
+    { key: 'title', improved: 'Cheffe de projet digital et SEO', reason: 'Reprend le poste visé.' },
+    { key: 'skills', improved: 'Python\nInstagram' },
+    { key: 'experience.9.title', improved: 'Inventé' },
+  ];
+  const h = await loadWorker({ responses: { [TAILOR]: { json: { ml: { content: { changes } } } } } });
+  const first = await ask(h.listeners, { type: 'cv:save', cv: CV, source: 'local' });
+  const unpaired = await ask(h.listeners, { type: 'tailor', posting: POSTING, lang: 'fr' });
+  assert.equal(unpaired.kind, 'not-paired');
+  assert.equal(h.calls.filter((c) => c.path === TAILOR).length, 0);
+
+  pairAccount(h);
+  const page = {
+    id: 'test-ext',
+    tab: { id: 3, url: 'https://jobs.example.org/offre/1' },
+    url: 'https://jobs.example.org/offre/1',
+  };
+  const posting = { ...POSTING, organisation: 'Acme' };
+  const res = await ask(h.listeners, { type: 'tailor', posting, lang: 'fr' }, page);
+  assert.deepEqual(
+    res.proposals.map((p) => [p.i, p.key, p.adds]),
+    [
+      [0, 'title', 1],
+      [1, 'skills', 1],
+    ],
+    'a role the CV does not have is not proposed; a title where there was none is an addition',
+  );
+  assert.equal(
+    (await ask(h.listeners, { type: 'cv:list' })).cvs.length,
+    1,
+    'nothing is saved before the user chooses',
+  );
+
+  // A choice naming a change that was never offered is ignored.
+  const saved = await ask(h.listeners, { type: 'tailor:save', posting, accept: [0, 2] }, page);
+  assert.equal(saved.ok, true);
+  assert.equal(saved.count, 1);
+  const { cvs } = await ask(h.listeners, { type: 'cv:list' });
+  assert.equal(cvs.length, 2);
+  assert.equal(cvs.find((c) => c.active).id, first.id, 'the CV in use stays the one in use');
+  assert.equal(cvs.find((c) => c.id === saved.cv_id).tailored, true);
+  const stored = (id) => JSON.stringify(h.local.epimoni.cvs.find((c) => c.id === id));
+  assert.match(stored(saved.cv_id), /Cheffe de projet digital et SEO/);
+  assert.doesNotMatch(stored(saved.cv_id), /Instagram/, 'an unticked addition stays out');
+  assert.doesNotMatch(stored(saved.cv_id), /Inventé/);
+  assert.match(stored(saved.cv_id), /"url":"https:\/\/jobs\.example\.org\/offre\/1"/);
+  assert.doesNotMatch(stored(first.id), /Cheffe de projet digital et SEO/);
+
+  const again = await ask(h.listeners, { type: 'tailor', posting, lang: 'fr' }, page);
+  assert.equal(again.saved.cv_id, saved.cv_id);
+  assert.equal(h.calls.filter((c) => c.path === TAILOR).length, 1, 'the same advert is not paid for twice');
+  assert.equal(h.calls.find((c) => c.path === TAILOR).token, 'account-1');
+
+  // Changing the ticks updates the same CV rather than adding another.
+  const resaved = await ask(h.listeners, { type: 'tailor:save', posting, accept: [0, 1] }, page);
+  assert.equal(resaved.cv_id, saved.cv_id);
+  assert.equal((await ask(h.listeners, { type: 'cv:list' })).cvs.length, 2);
+});
+
+test('importing CV text needs an account, is refused from a page, and makes the active CV', async () => {
+  const structured = {
+    contact: { name: 'Léa Import', email: 'lea@example.org' },
+    experiences: [
+      { title: 'Analyste', company: 'Acme', period: '2020 – 2024', bullets: ['Tableaux de bord'] },
+    ],
+    skills: ['SQL'],
+  };
+  const h = await loadWorker({ responses: { [IMPORT]: { json: { structured } } } });
+  const text = 'Léa Import analyste données '.repeat(10);
+  assert.equal((await ask(h.listeners, { type: 'cv:import-text', text, lang: 'fr' })).kind, 'not-paired');
+  pairAccount(h);
+  const page = { id: 'test-ext', tab: { id: 4 }, url: 'https://jobs.example.org/apply' };
+  assert.equal(
+    (await ask(h.listeners, { type: 'cv:import-text', text, lang: 'fr' }, page)).error,
+    'forbidden',
+  );
+  assert.equal(
+    (await ask(h.listeners, { type: 'cv:import-text', text: 'trop court', lang: 'fr' })).kind,
+    'too-short',
+  );
+  assert.equal(h.calls.filter((c) => c.path === IMPORT).length, 0, 'nothing is sent before the checks pass');
+
+  const res = await ask(h.listeners, { type: 'cv:import-text', text, label: 'CV-Lea', lang: 'fr' });
+  assert.equal(res.ok, true);
+  const { cvs } = await ask(h.listeners, { type: 'cv:list' });
+  const made = cvs.find((c) => c.id === res.id);
+  assert.equal(made.active, true);
+  assert.equal(made.label, 'CV-Lea');
+  const profile = (await ask(h.listeners, { type: 'profile' })).profile;
+  assert.equal(profile.email, 'lea@example.org');
+  assert.equal(h.calls.find((c) => c.path === IMPORT).token, 'account-1');
 });
 
 test('a paired account spends its own token, and gets the link back to the site', async () => {

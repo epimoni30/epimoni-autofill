@@ -34,6 +34,10 @@
     send({ type: 'report', name: 'ext_seen', meta: { host: location.hostname, ...extra } });
 
   let lastRun = [];
+  // The address the last fill ran at, clicked or automatic: automatic filling leaves it alone.
+  let filledFor = null;
+  // Whether this site fills on its own: the panel offers to turn it on when it does not.
+  let siteAuto = false;
   // Which CV of the library this page is filled from. Null is the active one; the panel's
   // picker sets it for this page only, and the offer analysis follows it.
   let pageCvId = null;
@@ -239,8 +243,15 @@
     });
   }
 
-  async function fill() {
+  /**
+   * One fill of this page. `auto` is a fill nobody clicked for, on a site where the user turned
+   * automatic filling on: it says nothing when it has nothing to say (no CV yet, or a form
+   * with nothing it recognises), and a page it fills only one field of, a newsletter box or a
+   * search bar, is not recorded as an application.
+   */
+  async function fill({ auto = false } = {}) {
     watcher?.stop();
+    filledFor = location.href;
     const {
       profile,
       entries = {},
@@ -257,11 +268,13 @@
     pageEntries = entries;
     // The names of the other CVs, for the picker. Only when there is more than one.
     choices = (await send({ type: 'cv:choices' })).cvs || [];
+    siteAuto = Boolean((await send({ type: 'site:auto' })).auto);
     if (DEV) console.log('[epimoni] profile fields:', profile ? Object.keys(profile).length : 0);
     // Nothing to fill from. That is one state, whatever the reason: no account, no hand-off,
     // nothing typed in. It used to say "connect your Epimoni account", which is now advice
     // about only one of the three ways out of it.
     if (!profile || !Object.keys(profile).length) {
+      if (auto) return;
       banner('no-profile');
       return;
     }
@@ -278,6 +291,7 @@
     // automatic re-fill skips everything it has seen.
     const run = await engine(ctx, attached);
     run.entries = entries;
+    if (auto && !run.filled.length && !run.suggestions.length) return;
     if (DEV && run.errors.length) console.warn('[epimoni] fillers:', run.errors);
     remember(run);
     letterTarget = findLetter(run);
@@ -286,8 +300,9 @@
     lastSuggestions = run.suggestions;
     dismissed = 0;
     reportRun(run);
-    await track(lastRun.length);
+    await track(auto && lastRun.length < 2 ? 0 : lastRun.length);
     banner('filled', lastRun, {
+      auto,
       suggested: run.suggestions.length,
       ai: run.ai,
       ongoing: run.ongoing,
@@ -474,6 +489,47 @@
   }
 
   /**
+   * Under a fill the user asked for: the one click that makes this site fill on its own next
+   * time. On a supported job board, or once the user allowed every site for the button, it is
+   * done here; on any other site the browser has to be asked first, which only the extension's
+   * menu can do, so the line says where.
+   */
+  function alwaysLine() {
+    const line = h('div', 'margin-top:8px;color:#71717a', t('panel_always_offer'), ' ');
+    const on = document.createElement('button');
+    on.textContent = t('panel_always_on');
+    on.style.cssText = 'border:0;background:none;padding:0;color:#7c5cff;font:inherit;cursor:pointer';
+    on.addEventListener(
+      'click',
+      byUser(async () => {
+        const res = await send({ type: 'site:auto:on' });
+        if (res.ok) siteAuto = true;
+        line.replaceChildren(t(res.ok ? 'panel_always_done' : 'panel_always_needs_menu'));
+      }),
+    );
+    line.appendChild(on);
+    return line;
+  }
+
+  /** Under a fill nobody clicked for: why it happened, and the way to stop it on this site. */
+  function autoLine() {
+    const line = h('div', 'margin-top:8px;color:#71717a', t('panel_auto_filled'), ' ');
+    const off = document.createElement('button');
+    off.textContent = t('panel_auto_off');
+    off.style.cssText = 'border:0;background:none;padding:0;color:#7c5cff;font:inherit;cursor:pointer';
+    off.addEventListener(
+      'click',
+      byUser(async () => {
+        await send({ type: 'site:auto:off' });
+        stopAuto();
+        line.replaceChildren(t('panel_auto_is_off'));
+      }),
+    );
+    line.appendChild(off);
+    return line;
+  }
+
+  /**
    * The review surface. A summary panel rather than a chip floating beside each field:
    * anchoring an overlay to a control inside a scrolling ATS form is a well-known way to
    * end up with labels drifting over the page, and the thing the user actually needs is one
@@ -503,6 +559,9 @@
       'border-radius:12px',
       'box-shadow:0 8px 28px rgba(0,0,0,.14)',
       'padding:12px 14px',
+      // Fill summary, letter, tailored CV and analysis can outgrow a small window.
+      'max-height:calc(100vh - 32px)',
+      'overflow:auto',
     ].join(';');
 
     if (kind === 'no-profile') {
@@ -556,6 +615,8 @@
         'margin-top:10px;border:1px solid #e4e4e7;background:#fafafa;border-radius:8px;padding:5px 10px;cursor:pointer;font:inherit;color:#18181b';
       undo.addEventListener('click', byUser(undoAll));
       panel.appendChild(undo);
+      if (counts.auto) panel.appendChild(autoLine());
+      else if (!siteAuto) panel.appendChild(alwaysLine());
       if (tracked) panel.appendChild(trackerLine());
       ui = {
         host,
@@ -578,6 +639,7 @@
         if (!ui.letterBox) ui.letterBox = letterSection(panel, ui.offer);
       };
       ui.letter();
+      if (!ui.tailorBox) ui.tailorBox = tailorSection(panel, ui.offer);
     }
 
     const close = document.createElement('button');
@@ -691,11 +753,16 @@
    * the AI tier is the same as for an ambiguous field: it proposes, the user decides. A letter
    * longer than the box accepts is not cut to fit; it is shown with the count, to shorten.
    */
+  /**
+   * The cover letter for the advert on this page. Offered wherever there is an advert: with a
+   * letter box on the form it can be put in it, and without one (a form that wants the letter
+   * as a file, or none at all yet) it can be copied or saved as a PDF.
+   */
   function letterSection(panel, before) {
-    if (!letterTarget) return null;
     if (!posting) posting = extractPosting(document, location.href);
     if (!posting.ok) return null;
-    const { el: box, max } = letterTarget;
+    const box = letterTarget?.el || null;
+    const max = letterTarget?.max || null;
 
     const wrap = document.createElement('div');
     wrap.style.cssText = 'margin-top:12px;padding-top:10px;border-top:1px solid #e4e4e7';
@@ -719,7 +786,7 @@
 
     const idle = () => {
       wrap.textContent = '';
-      line(t('panel_letter_found'));
+      line(t(box ? 'panel_letter_found' : 'panel_letter_offer'));
       if (max) line(t('panel_letter_limit', [String(max)]), '#71717a');
       const go = button(t('panel_letter_cta'), true);
       wrap.appendChild(go);
@@ -768,7 +835,7 @@
         wrap.appendChild(retry);
         return;
       }
-      const fits = !(box.maxLength > 0 && res.text.length > box.maxLength);
+      const fits = !(box && box.maxLength > 0 && res.text.length > box.maxLength);
       line(
         max
           ? t('panel_letter_count_limit', [String(res.chars), String(max)])
@@ -783,6 +850,7 @@
       if (!fits) line(t('panel_letter_too_long'), '#b45309');
       const insert = button(t('panel_letter_insert'), true);
       insert.disabled = !fits;
+      if (!box) insert.hidden = true;
       insert.addEventListener(
         'click',
         byUser(async () => {
@@ -812,12 +880,244 @@
           navigator.clipboard?.writeText(res.text).then(() => (copy.textContent = t('panel_letter_copied'))),
         ),
       );
-      wrap.append(insert, copy);
+      // A PDF made on this computer from the letter and the CV's name and contact: for a form
+      // that wants the letter as a file, or for sending it some other way.
+      const pdf = button(t('panel_letter_pdf'));
+      pdf.addEventListener(
+        'click',
+        byUser(async () => {
+          const file = await send({
+            type: 'letter:pdf',
+            paragraphs: res.paragraphs || res.text.split(/\n\n+/),
+            subject: res.subject || '',
+            company: posting.organisation || '',
+            cv_id: pageCvId,
+          });
+          if (!file.data) return;
+          const bytes = Uint8Array.from(atob(file.data), (c) => c.charCodeAt(0));
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+          a.download = file.name;
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+        }),
+      );
+      wrap.append(insert, copy, pdf);
     }
 
     idle();
     // The popup's "Rédiger ma lettre": the click there is the user's, so it runs from here.
     if (ui) ui.runLetter = () => (pageAi ? write() : null);
+    return wrap;
+  }
+
+  /** The field a rewrite changed, in the user's words: "Expérience 2", "Compétences". */
+  function changedField(key) {
+    const m = /^experience\.(\d+)\./.exec(key);
+    if (m) return `${t('cvsection_work')} ${Number(m[1]) + 1}`;
+    const names = {
+      title: 'field_current_title',
+      summary: 'field_summary',
+      skills: 'opt_skills',
+      languages: 'opt_languages',
+      certifications: 'cvsection_certificates',
+    };
+    return names[key] ? t(names[key]) : key;
+  }
+
+  /**
+   * "Adapter mon CV à cette offre": the AI rewrites the CV for the advert on this page and the
+   * result is a new CV in the library, beside the original, which stays as it was. From here
+   * the user can fill this form from it (its PDF goes into the CV upload), download that PDF,
+   * or read it over in the dashboard. Spends only on a click.
+   */
+  function tailorSection(panel, before) {
+    if (!posting) posting = extractPosting(document, location.href);
+    if (!posting.ok) return null;
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'margin-top:12px;padding-top:10px;border-top:1px solid #e4e4e7';
+    if (before?.isConnected) panel.insertBefore(wrap, before);
+    else panel.appendChild(wrap);
+    const button = (text, primary) => {
+      const b = document.createElement('button');
+      b.textContent = text;
+      b.style.cssText = primary
+        ? 'margin:8px 6px 0 0;border:1px solid #7c5cff;background:#7c5cff;color:#fff;font-weight:600;border-radius:8px;padding:6px 10px;cursor:pointer;font:inherit'
+        : 'margin:8px 6px 0 0;border:1px solid #e4e4e7;background:#fafafa;border-radius:8px;padding:5px 10px;cursor:pointer;font:inherit;color:#18181b';
+      return b;
+    };
+    const line = (text, color = '#3f3f46') => {
+      const d = document.createElement('div');
+      d.style.color = color;
+      d.textContent = text;
+      wrap.appendChild(d);
+      return d;
+    };
+
+    const download = async (id) => {
+      const file = await send({ type: 'cv-file', id });
+      if (!file.data) return;
+      const bytes = Uint8Array.from(atob(file.data), (c) => c.charCodeAt(0));
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+      a.download = file.name;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    };
+
+    const idle = () => {
+      wrap.textContent = '';
+      // Filled from a CV already adapted (to this offer or another): adapting it again would
+      // spend a call to rewrite a rewrite. Say so, and keep what is useful.
+      const inUse = choices.find((c) => c.id === pageCvId);
+      if (inUse?.tailored) {
+        line(t('panel_tailor_in_use', [inUse.label || '']), '#15803d');
+        const pdf = button(t('panel_tailor_pdf'));
+        pdf.addEventListener(
+          'click',
+          byUser(() => download(inUse.id)),
+        );
+        const review = button(t('panel_tailor_review'));
+        review.addEventListener(
+          'click',
+          byUser(() => send({ type: 'open-options' })),
+        );
+        wrap.append(pdf, review);
+        return;
+      }
+      line(t('panel_tailor_offer'));
+      const go = button(t('panel_tailor_cta'));
+      wrap.appendChild(go);
+      if (!pageAi) {
+        go.disabled = true;
+        go.style.opacity = '0.5';
+        go.style.cursor = 'not-allowed';
+        needsAccount(wrap);
+        return;
+      }
+      go.addEventListener('click', byUser(run));
+    };
+
+    const failed = (res, again) => {
+      const WHY = {
+        quota: () => t('panel_quota', [String(Math.ceil((res.seconds || 0) / 60))]),
+        expired: () => t('panel_stale'),
+        'no-cv': () => t('panel_no_cv'),
+        'too-long': () => t('panel_too_long'),
+        network: () => t('panel_offline'),
+        empty: () => t('panel_tailor_empty'),
+        'library-full': () => t('panel_tailor_full'),
+      };
+      line((WHY[res.kind] || (() => t('panel_analyse_failed')))());
+      const retry = button(t('panel_retry'));
+      retry.addEventListener('click', byUser(again));
+      wrap.appendChild(retry);
+    };
+
+    async function run() {
+      wrap.textContent = '';
+      line(t('panel_tailor_working'), '#71717a');
+      const res = await send({
+        type: 'tailor',
+        posting,
+        cv_id: pageCvId,
+        host: location.hostname,
+        lang: chrome.i18n.getUILanguage().slice(0, 2),
+      });
+      wrap.textContent = '';
+      if (!res.ok) return failed(res, run);
+      if (res.saved) return done(res.saved);
+      review(res.proposals);
+    }
+
+    /**
+     * Every proposal with a box to tick. A rewrite of what the CV says is ticked; one that
+     * adds something the CV did not say (a bullet, a skill, a summary where there was none) is
+     * not, and says why: only the user knows whether they did it.
+     */
+    function review(proposals) {
+      wrap.textContent = '';
+      line(t('panel_tailor_review_intro', [String(proposals.length)]));
+      const boxes = [];
+      for (const p of proposals) {
+        const row = document.createElement('label');
+        row.style.cssText = 'display:flex;gap:7px;align-items:flex-start;margin-top:8px;cursor:pointer';
+        const box = document.createElement('input');
+        box.type = 'checkbox';
+        box.checked = !p.adds;
+        box.style.cssText = 'margin:3px 0 0;accent-color:#7c5cff';
+        boxes.push([box, p.i]);
+        const body = h(
+          'div',
+          'min-width:0;font-size:12px;color:#3f3f46',
+          h('b', null, changedField(p.key)),
+          p.adds ? h('div', 'color:#b45309', t('panel_tailor_adds')) : null,
+          h(
+            'div',
+            'white-space:pre-wrap;max-height:84px;overflow:auto;margin-top:2px;padding:4px 6px;background:#fafafa;border:1px solid #e4e4e7;border-radius:6px;color:#18181b',
+            p.improved,
+          ),
+          p.reason ? h('div', 'color:#71717a;margin-top:2px', p.reason) : null,
+        );
+        row.append(box, body);
+        wrap.appendChild(row);
+      }
+      const make = button(t('panel_tailor_make'), true);
+      const note = line('', '#b45309');
+      make.addEventListener(
+        'click',
+        byUser(async () => {
+          const accept = boxes.filter(([b]) => b.checked).map(([, i]) => i);
+          if (!accept.length) {
+            note.textContent = t('panel_tailor_none');
+            return;
+          }
+          make.disabled = true;
+          const saved = await send({ type: 'tailor:save', posting, cv_id: pageCvId, accept });
+          if (!saved.ok) {
+            make.disabled = false;
+            note.textContent = t(
+              saved.kind === 'library-full' ? 'panel_tailor_full' : 'panel_analyse_failed',
+            );
+            return;
+          }
+          done(saved);
+        }),
+      );
+      wrap.insertBefore(make, note);
+      // The panel can be long by now (fill, tracker, skills, letter): bring the list up.
+      wrap.scrollIntoView({ block: 'nearest' });
+    }
+
+    function done(saved) {
+      wrap.textContent = '';
+      line(t('panel_tailor_done', [saved.label]), '#15803d');
+      const use = button(t('panel_tailor_use'), true);
+      use.addEventListener(
+        'click',
+        byUser(async () => {
+          pageCvId = saved.cv_id;
+          await undoAll({ quiet: true });
+          await fill();
+        }),
+      );
+      const pdf = button(t('panel_tailor_pdf'));
+      pdf.addEventListener(
+        'click',
+        byUser(() => download(saved.cv_id)),
+      );
+      const reviewBtn = button(t('panel_tailor_review'));
+      reviewBtn.addEventListener(
+        'click',
+        byUser(() => send({ type: 'open-options' })),
+      );
+      wrap.append(use, pdf, reviewBtn);
+      wrap.scrollIntoView({ block: 'nearest' });
+    }
+
+    idle();
+    // The popup's "Adapter mon CV": the click there is the user's, so it runs from here.
+    if (ui) ui.runTailor = () => (pageAi ? run() : null);
     return wrap;
   }
 
@@ -875,7 +1175,7 @@
    * LLM call, and spending somebody's hourly quota because they opened a page is both a cost
    * and a consent problem. One click, and only after they ask.
    *
-   * It no longer requires an account. A free or anonymous caller gets one analysis an hour,
+   * It no longer requires an account. A free or anonymous caller gets two analyses an hour,
    * the website's own window, and a paying customer is not metered at all. The cost is named *before* the button, not discovered as a refusal afterwards.
    */
   function offerSection(panel) {
@@ -891,7 +1191,7 @@
     const say = (...nodes) => box.replaceChildren(...nodes.filter(Boolean));
     // The plans on the site's home page, in the user's language: /#pricing, /en/#pricing…
     const lang = chrome.i18n.getUILanguage().slice(0, 2);
-    const plans = `https://www.epimoni30.com/${['en', 'es', 'pt'].includes(lang) ? `${lang}/` : ''}#pricing`;
+    const plans = `https://www.epimoni30.com/${['en', 'es', 'pt', 'pl'].includes(lang) ? `${lang}/` : ''}#pricing`;
     const cta = (parent, href, text) => {
       const a = document.createElement('a');
       a.href = href;
@@ -1045,6 +1345,7 @@
       fill().then(() => {
         if (msg.after === 'analyse') (ui?.runAnalyse || (() => panelNote('panel_no_advert')))();
         else if (msg.after === 'letter') (ui?.runLetter || (() => panelNote('panel_no_letter_box')))();
+        else if (msg.after === 'tailor') (ui?.runTailor || (() => panelNote('panel_no_advert')))();
       });
       respond({ ok: true });
     }
@@ -1103,4 +1404,39 @@
     const els = fillableElements(document);
     if (els.length >= 3) seen({ controls: els.length });
   }
+
+  /**
+   * Unless the user turned automatic filling on for this site, from the popup. Then an
+   * application form is filled as it appears: on load, or when a single-page site renders it
+   * after "Postuler", or at a new address. Once per address, so "tout annuler" is final for
+   * that page, and never over a fill the user already clicked for. The form growing after
+   * that is the re-fill's business (`watch`), as after a click.
+   */
+  let autoObserver = null;
+  let autoTimer = null;
+  let autoDoneFor = null;
+  const AUTO_MS = 30 * 60 * 1000;
+  function stopAuto() {
+    autoObserver?.disconnect();
+    autoObserver = null;
+    clearTimeout(autoTimer);
+  }
+  function autoCheck() {
+    if (autoDoneFor === location.href) return;
+    if (fillableElements(document).length < 3) return;
+    autoDoneFor = location.href;
+    if (filledFor === location.href) return;
+    fill({ auto: true });
+  }
+  send({ type: 'site:auto' }).then(({ auto }) => {
+    if (!auto) return;
+    autoCheck();
+    let pending = null;
+    autoObserver = new MutationObserver(() => {
+      clearTimeout(pending);
+      pending = setTimeout(autoCheck, 500);
+    });
+    autoObserver.observe(document.documentElement, { childList: true, subtree: true });
+    autoTimer = setTimeout(stopAuto, AUTO_MS);
+  });
 })();

@@ -696,6 +696,62 @@ check(
   trackerView.cards >= 1 && trackerView.steps === 'applied' && trackerView.raw.length === 0,
   JSON.stringify(trackerView),
 );
+// The board: a column per status, a card moved by dragging it, and one added by hand.
+const board = await tracker.evaluate(() => ({
+  cols: [...document.querySelectorAll('.col')].map((c) => c.dataset.status),
+  inApplied: [...document.querySelectorAll('.col[data-status="applied"] .app a')].some((a) =>
+    a.href.includes('steps.html'),
+  ),
+}));
+check(
+  'the applications are a board, one column per status, the sent one under "Envoyée"',
+  board.cols.join() === 'filled,applied,interview,offer,rejected' && board.inApplied,
+  JSON.stringify(board),
+);
+await tracker
+  .locator('.col[data-status="applied"] .app', { has: tracker.locator('a[href*="steps.html"]') })
+  .dragTo(tracker.locator('.col[data-status="interview"]'));
+await tracker.waitForTimeout(300);
+const dragged = ((await askWorker({ type: 'app:list' })).apps || []).find((a) =>
+  a.url.includes('steps.html'),
+);
+const draggedShown = await tracker.evaluate(() =>
+  [...document.querySelectorAll('.col[data-status="interview"] .app a')].some((a) =>
+    a.href.includes('steps.html'),
+  ),
+);
+check(
+  'dragging a card to another column moves the application, saved',
+  dragged?.status === 'interview' && draggedShown,
+  JSON.stringify([dragged?.status, draggedShown]),
+);
+await tracker.click('#trk-add');
+await tracker.click('#trk-add-form button[type="submit"]');
+const needTitle = await tracker.textContent('#trk-add-msg');
+await tracker.fill('#trk-add-title', 'Analyste données');
+await tracker.fill('#trk-add-company', 'Acme');
+await tracker.fill('#trk-add-url', 'jobs.example.org/offre/12');
+await tracker.click('#trk-add-form button[type="submit"]');
+await tracker.waitForTimeout(300);
+const added = ((await askWorker({ type: 'app:list' })).apps || []).find(
+  (a) => a.title === 'Analyste données',
+);
+const addedView = await tracker.evaluate(() => ({
+  formHidden: document.getElementById('trk-add-form').hidden,
+  inApplied: [...document.querySelectorAll('.col[data-status="applied"] .app-title')].some(
+    (a) => a.textContent === 'Analyste données',
+  ),
+}));
+check(
+  'an application added by hand needs a title, then lands under "Envoyée" with its link',
+  Boolean(needTitle) &&
+    added?.manual === true &&
+    added.url === 'https://jobs.example.org/offre/12' &&
+    added.status === 'applied' &&
+    addedView.formHidden &&
+    addedView.inApplied,
+  JSON.stringify({ needTitle, added, addedView }),
+);
 // One page, two views: the menu switches between them, and the CV's save bar belongs to the
 // CV view only.
 const views = async () =>
@@ -727,11 +783,123 @@ await steps.waitForTimeout(800);
 const afterStop = await steps.evaluate(() => document.getElementById('li')?.value ?? null);
 check('after undo, a new question is left alone', afterStop === '', String(afterStop));
 await steps.close();
+
+// ── The "Remplir avec Epimoni" button ────────────────────────────────────────────────────
+//
+// Offered on a page once it holds an application form, here only after "Postuler" renders it;
+// the page is filled on the button's click and not before. After that fill, the panel offers to
+// make the site fill on its own, which on a declared site takes one click.
+const offerPage = await ctx.newPage();
+await offerPage.goto(`${base}/late.html`, { waitUntil: 'load' });
+await offerPage.waitForTimeout(1200);
+const pillBefore = await offerPage.evaluate(() => Boolean(document.getElementById('epimoni-offer')));
+await offerPage.click('#apply');
+await offerPage.waitForSelector('#epimoni-offer', { timeout: 4000 }).catch(() => {});
+const pillShown = await offerPage.evaluate(() => ({
+  pill: document.getElementById('epimoni-offer')?.shadowRoot?.textContent || '',
+  prenom: document.querySelector('[name="prenom"]')?.value,
+}));
+const offerLabel = await sw.evaluate(() => chrome.i18n.getMessage('offer_fill'));
+check(
+  'the button appears once an application form does, and fills nothing on its own',
+  !pillBefore && pillShown.pill.includes(offerLabel) && pillShown.prenom === '',
+  JSON.stringify({ pillBefore, ...pillShown }),
+);
+// A framework that re-renders the whole document drops nodes it did not make (seen on a real
+// Greenhouse board after a failed React hydration): the button must come back.
+await offerPage.evaluate(() => document.getElementById('epimoni-offer').remove());
+await offerPage.waitForSelector('#epimoni-offer', { timeout: 4000 }).catch(() => {});
+check(
+  'a button the page removed is put back',
+  await offerPage.evaluate(() => Boolean(document.getElementById('epimoni-offer'))),
+);
+await offerPage.locator('#epimoni-offer').getByRole('button', { name: offerLabel }).click();
+await offerPage
+  .waitForFunction(() => document.getElementById('epimoni-panel'), null, { timeout: 5000 })
+  .catch(() => {});
+const afterPill = await offerPage.evaluate(() => ({
+  values: ['prenom', 'nom', 'email', 'tel'].map((n) => document.querySelector(`[name="${n}"]`).value),
+  pill: Boolean(document.getElementById('epimoni-offer')),
+  submitted: Boolean(window.__submitted),
+}));
+check(
+  'one click on the button fills the form, the button gives way to the panel, nothing is sent',
+  afterPill.values.every(Boolean) && !afterPill.pill && !afterPill.submitted,
+  JSON.stringify(afterPill),
+);
+const alwaysLabel = await sw.evaluate(() => chrome.i18n.getMessage('panel_always_on'));
+await offerPage.locator('#epimoni-panel').getByRole('button', { name: alwaysLabel }).click();
+await offerPage.waitForTimeout(300);
+const alwaysOn = await askWorker({ type: 'site:status', url: `${base}/late.html` });
+check(
+  '"Toujours remplir ici" turns automatic filling on for the site in one click',
+  alwaysOn.auto === true,
+  JSON.stringify(alwaysOn),
+);
+await askWorker({ type: 'site:disable', host: '127.0.0.1' });
+await offerPage.close();
+
+// ── Automatic filling, on a site the user turned it on for ──────────────────────────────
+//
+// Off everywhere by default: the page is filled when the user clicks. Turned on for a site, an
+// application form is filled as it appears, here only after "Postuler" renders it at a new
+// address, and the panel says why and how to stop. 127.0.0.1 is declared by the dev build, so
+// this needs no permission; the registration path for other sites is test/sites.test.mjs.
+const autoOn = await askWorker({ type: 'site:enable', host: '127.0.0.1', scheme: 'http' });
+const autoStatus = await askWorker({ type: 'site:status', url: `${base}/late.html` });
+check(
+  'automatic filling turns on for a declared site without asking the browser',
+  autoOn.ok && autoOn.declared && autoStatus.auto && autoStatus.granted,
+  JSON.stringify({ autoOn, autoStatus }),
+);
+const late = await ctx.newPage();
+await late.goto(`${base}/late.html`, { waitUntil: 'load' });
+await late.waitForTimeout(1200);
+const beforeApply = await late.evaluate(() => document.getElementById('epimoni-panel') !== null);
+await late.click('#apply');
+await late
+  .waitForFunction(() => document.getElementById('epimoni-panel') !== null, { timeout: 5000 })
+  .catch(() => {});
+await late.waitForTimeout(300);
+const autoFilled = await late.evaluate(() => ({
+  values: ['prenom', 'nom', 'email', 'tel'].map((n) => document.querySelector(`[name="${n}"]`).value),
+  panel: document.getElementById('epimoni-panel')?.shadowRoot?.textContent || '',
+  submitted: Boolean(window.__submitted),
+}));
+const autoLine = await sw.evaluate(() => chrome.i18n.getMessage('panel_auto_filled'));
+check(
+  'nothing happens before the form exists, then the form is filled as it appears, unclicked',
+  !beforeApply &&
+    autoFilled.values.every(Boolean) &&
+    autoFilled.panel.includes(autoLine) &&
+    !autoFilled.submitted,
+  JSON.stringify({ beforeApply, ...autoFilled, panel: autoFilled.panel.slice(0, 120) }),
+);
+const offLabel = await sw.evaluate(() => chrome.i18n.getMessage('panel_auto_off'));
+await late.locator('#epimoni-panel').getByRole('button', { name: offLabel }).click();
+await late.waitForTimeout(300);
+const afterOff = await askWorker({ type: 'sites:list' });
+const late2 = await ctx.newPage();
+await late2.goto(`${base}/late.html`, { waitUntil: 'load' });
+await late2.waitForTimeout(600);
+await late2.click('#apply');
+await late2.waitForTimeout(1500);
+const offFilled = await late2.evaluate(() => ({
+  panel: document.getElementById('epimoni-panel') !== null,
+  prenom: document.querySelector('[name="prenom"]')?.value,
+}));
+check(
+  '"Désactiver" in the panel turns it off for the site, and the next visit waits for a click',
+  (afterOff.sites || []).length === 0 && !offFilled.panel && offFilled.prenom === '',
+  JSON.stringify({ afterOff, offFilled }),
+);
+await late.close();
+await late2.close();
 await opener.close();
 
 // ── The offer analysis, and the rule the whole design exists to keep ──────────────────────
 //
-// `/ml/analyse/cvVSoffer-doc` is metered: one free call an hour, then the paid passes. The
+// `/ml/analyse/cvVSoffer-doc` is metered: two free calls an hour, then the paid passes. The
 // teaser and the "voir l'analyse complète" link must therefore cost **one** call between
 // them, not two: the trap recorded in project_quota_follow_ups, where a memo hit is still
 // charged. `fetch` is stubbed inside the service worker rather than intercepted at the
@@ -950,7 +1118,15 @@ check(
 //
 // One metered call, held to the form's limit, never written into the form on its own.
 const LETTER = ['Madame, Monsieur,', 'Votre annonce a retenu toute mon attention.', 'Cordialement.'];
-await stubWorker({ status: 200, body: { ml: { ml_id: 'ml-letter', content: { paragraphs: LETTER } } } });
+await stubWorker({
+  status: 200,
+  body: {
+    ml: {
+      ml_id: 'ml-letter',
+      content: { paragraphs: LETTER, objet: 'Candidature au poste de data analyst' },
+    },
+  },
+});
 const letterCalls = () =>
   sw.evaluate(() => (globalThis.__calls || []).filter((u) => u.includes('motivation/generate-doc')).length);
 const askLetter = () =>
@@ -1031,6 +1207,23 @@ check(
   '"Insérer" puts the letter in the box, and nothing is sent',
   inserted.box === LETTER.join('\n\n') && !inserted.submitted,
 );
+// The same letter as a file, made here from the text and the CV's name and contact.
+const pdfLabel = await sw.evaluate(() => chrome.i18n.getMessage('panel_letter_pdf'));
+// The file is named in the browser's language: "Lettre-…" in French, "Cover-letter-…" in English.
+const letterFile = await sw.evaluate(() => chrome.i18n.getMessage('pdf_letter_file'));
+const [letterDl] = await Promise.all([
+  letterPage.waitForEvent('download', { timeout: 5000 }),
+  letterPage.locator('#epimoni-panel').getByRole('button', { name: pdfLabel }).click(),
+]);
+const letterPdf = readFileSync(await letterDl.path()).toString('latin1');
+check(
+  '"Télécharger en PDF" saves the letter as a PDF, with its subject line and every paragraph',
+  letterDl.suggestedFilename().startsWith(`${letterFile}-`) &&
+    letterPdf.startsWith('%PDF-1.4') &&
+    letterPdf.includes('(Candidature au poste de data analyst)') &&
+    letterPdf.includes('(Votre annonce a retenu toute mon attention.)'),
+  letterDl.suggestedFilename(),
+);
 await letterPage.getByRole('button', { name: undoLabel }).click();
 const letterUndone = await letterPage.evaluate(() => document.getElementById('lm').value);
 check('"Tout annuler" takes the letter back out', letterUndone === '', letterUndone.slice(0, 40));
@@ -1065,10 +1258,181 @@ check(
 );
 await viaPopup.close();
 
+// ── A CV tailored to the advert ─────────────────────────────────────────────────────────
+//
+// One paid call for proposals, which the user reviews: a rewrite is ticked, an addition (a
+// bullet the CV never had) is not. The CV is made from the ticked ones only, as a new CV beside
+// the original, which stays the active one. The page can then be filled from it (its PDF is
+// what a CV upload gets) and the PDF downloaded.
+await stubWorker({
+  status: 200,
+  body: {
+    ml: {
+      content: {
+        changes: [
+          {
+            key: 'title',
+            improved: 'Chargée de communication digitale',
+            reason: 'Le titre reprend le poste visé.',
+          },
+          { key: 'experience.0.bullets', improved: 'Animé les réseaux sociaux Instagram' },
+          { key: 'experience.4.title', improved: 'Inventé' },
+        ],
+      },
+    },
+  },
+});
+// A headline to rewrite: the stub CV has none, and a title where there was none is an addition.
+await sw.evaluate(async () => {
+  const { epimoni } = await chrome.storage.local.get('epimoni');
+  epimoni.cvs[0].cv.basics.label = 'Chargée de communication';
+  await chrome.storage.local.set({ epimoni });
+});
+const tailorPage = await fillPage('letter.html');
+const tailorCta = await sw.evaluate(() => chrome.i18n.getMessage('panel_tailor_cta'));
+const makeLabel = await sw.evaluate(() => chrome.i18n.getMessage('panel_tailor_make'));
+const useLabel = await sw.evaluate(() => chrome.i18n.getMessage('panel_tailor_use'));
+const listCvs = async () =>
+  (await extPage.evaluate(() => new Promise((r) => chrome.runtime.sendMessage({ type: 'cv:list' }, r))))
+    .cvs || [];
+await tailorPage.locator('#epimoni-panel').getByRole('button', { name: tailorCta }).click();
+await tailorPage
+  .locator('#epimoni-panel')
+  .getByRole('button', { name: makeLabel })
+  .waitFor({ timeout: 4000 })
+  .catch(() => {});
+const reviewView = await tailorPage.evaluate(() => {
+  const root = document.getElementById('epimoni-panel')?.shadowRoot;
+  return {
+    boxes: [...(root?.querySelectorAll('input[type="checkbox"]') || [])].map((b) => b.checked),
+    text: root?.textContent || '',
+  };
+});
+const addsLine = await sw.evaluate(() => chrome.i18n.getMessage('panel_tailor_adds'));
+check(
+  'tailoring shows the proposals first: the rewrite ticked, the addition unticked and flagged, nothing saved',
+  JSON.stringify(reviewView.boxes) === '[true,false]' &&
+    reviewView.text.includes(addsLine) &&
+    reviewView.text.includes('Le titre reprend le poste visé.') &&
+    !reviewView.text.includes('Inventé') &&
+    (await listCvs()).length === 1,
+  JSON.stringify(reviewView.boxes),
+);
+await tailorPage.locator('#epimoni-panel').getByRole('button', { name: makeLabel }).click();
+await tailorPage
+  .locator('#epimoni-panel')
+  .getByRole('button', { name: useLabel })
+  .waitFor({ timeout: 4000 })
+  .catch(() => {});
+const library = await listCvs();
+const madeCv = library.find((c) => c.tailored);
+check(
+  'the ticked changes make a new CV beside the original, which stays in use, for one paid call',
+  Boolean(madeCv) &&
+    library.find((c) => c.active)?.id === 'cv-test' &&
+    (await sw.evaluate(() => globalThis.__calls.filter((u) => u.includes('write-cv-doc')).length)) === 1,
+  JSON.stringify(library.map((c) => [c.label, c.active, c.tailored])),
+);
+await tailorPage.locator('#epimoni-panel').getByRole('button', { name: useLabel }).click();
+const inUseLine = await sw.evaluate(
+  (l) => chrome.i18n.getMessage('panel_tailor_in_use', [l]),
+  madeCv?.label || '',
+);
+await tailorPage.waitForTimeout(500);
+const afterUse = await tailorPage.evaluate(
+  () => document.getElementById('epimoni-panel')?.shadowRoot?.textContent || '',
+);
+check(
+  '"Remplir avec ce CV" refills the page from it, and the panel does not offer to tailor it again',
+  afterUse.includes(inUseLine) && !afterUse.includes(tailorCta),
+  afterUse.slice(0, 200),
+);
+const tailorPdfLabel = await sw.evaluate(() => chrome.i18n.getMessage('panel_tailor_pdf'));
+const [tailorDl] = await Promise.all([
+  tailorPage.waitForEvent('download', { timeout: 5000 }),
+  tailorPage.locator('#epimoni-panel').getByRole('button', { name: tailorPdfLabel }).click(),
+]);
+const tailorPdf = readFileSync(await tailorDl.path()).toString('latin1');
+check(
+  'the tailored CV downloads as a PDF with the ticked rewrite and without the unticked addition',
+  tailorPdf.startsWith('%PDF-1.4') &&
+    tailorPdf.includes('communication digitale') &&
+    !tailorPdf.includes('Instagram'),
+  tailorDl.suggestedFilename(),
+);
+await tailorPage.close();
+
+// ── Importing the CV the person already has ─────────────────────────────────────────────
+//
+// The PDF is read in the dashboard, here an AES-256 "protected" one with an empty password, as
+// CV builders make them; its text is shown to edit; the AI sorts it (stubbed); the new CV is
+// the active one and carries the original PDF as its file.
+await stubWorker({
+  status: 200,
+  body: {
+    structured: {
+      contact: { name: 'Camille Dupont-Mercier', email: 'camille.dupont@example.org' },
+      title: 'Cheffe de projet digital',
+      experiences: [
+        {
+          title: 'Cheffe de projet digital',
+          company: 'Maison Lemoine',
+          period: "2019 – aujourd'hui",
+          bullets: ["Refonte du tunnel d'achat, +18 % de conversion."],
+        },
+      ],
+      skills: ['Gestion de projet', 'SEO', 'Figma'],
+    },
+  },
+});
+const importer = await ctx.newPage();
+await importer.goto(`chrome-extension://${extId}/dashboard.html#cv`);
+await importer.waitForSelector('#pdf-import-choose');
+await importer.setInputFiles(
+  '#pdf-import-input',
+  fileURLToPath(new URL('./fixtures/pdf/aes-256.pdf', import.meta.url)),
+);
+await importer
+  .waitForFunction(() => document.getElementById('pdf-import-text').value.length > 100, null, {
+    timeout: 5000,
+  })
+  .catch(() => {});
+const readBack = await importer.evaluate(() => ({
+  text: document.getElementById('pdf-import-text').value,
+  shown: !document.getElementById('pdf-import-review').hidden,
+}));
+check(
+  'the dashboard reads an encrypted CV PDF locally and shows its text to check first',
+  readBack.shown &&
+    readBack.text.includes("Refonte du tunnel d'achat, +18 % de conversion.") &&
+    (await sw.evaluate(() => globalThis.__calls.filter((u) => u.includes('cv-extract-text')).length)) === 0,
+  readBack.text.slice(0, 80),
+);
+await importer.click('#pdf-import-go');
+const doneMsg = await sw.evaluate(() => chrome.i18n.getMessage('opt_pdf_import_done'));
+await importer
+  .waitForFunction((m) => document.getElementById('pdf-import-msg').textContent === m, doneMsg, {
+    timeout: 5000,
+  })
+  .catch(() => {});
+const imported = await importer.evaluate(
+  () => new Promise((r) => chrome.runtime.sendMessage({ type: 'cv:list' }, r)),
+);
+const newCv = (imported.cvs || []).find((c) => c.label === 'aes-256');
+check(
+  'the sorted CV is created, made active, opened in the editor, and keeps the PDF as its file',
+  Boolean(newCv?.active) &&
+    newCv.file?.origin === 'upload' &&
+    (await importer.inputValue('#b_name')) === 'Camille Dupont-Mercier' &&
+    (await sw.evaluate(() => globalThis.__calls.filter((u) => u.includes('cv-extract-text')).length)) === 1,
+  JSON.stringify(newCv),
+);
+await importer.close();
+
 // ── No account at all ────────────────────────────────────────────────────────────────────
 //
 // The extension has to work for somebody who has never signed in: the CV lives here, the
-// worker opens its own anonymous session, and the backend meters it at one call an hour on
+// worker opens its own anonymous session, and the backend meters it at two calls an hour on
 // the same window as the website. This is that path end to end, in a real browser, with the
 // pairing removed rather than simulated.
 await sw.evaluate(async () => {
@@ -1159,6 +1523,7 @@ const anonPopup = await extPage.evaluate(() => ({
   fill: document.getElementById('fill').disabled,
   analyse: document.getElementById('analyse').disabled,
   letter: document.getElementById('letter').disabled,
+  tailor: document.getElementById('tailor').disabled,
   connect: document.querySelector('#ai-note a')?.href || null,
 }));
 check(
@@ -1166,6 +1531,7 @@ check(
   !anonPopup.fill &&
     anonPopup.analyse &&
     anonPopup.letter &&
+    anonPopup.tailor &&
     (() => {
       if (!anonPopup.connect) return false;
       try {
@@ -1189,8 +1555,8 @@ const anonPanel = await anonPage.evaluate(() => {
   };
 });
 check(
-  'the panel shows the analysis and the letter disabled, each with the way to connect',
-  anonPanel.disabled === 2 && anonPanel.links >= 2,
+  'the panel shows the analysis, the letter and the tailored CV disabled, each with the way to connect',
+  anonPanel.disabled === 3 && anonPanel.links >= 3,
   JSON.stringify(anonPanel),
 );
 await anonPage.close();

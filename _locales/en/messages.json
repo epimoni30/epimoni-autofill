@@ -440,10 +440,10 @@
     "message": "Unlimited analyses on your plan."
   },
   "panel_tier_free": {
-    "message": "1 analysis per hour on the free account."
+    "message": "2 analyses per hour on the free account."
   },
   "panel_tier_anon": {
-    "message": "1 analysis per hour, no account needed. No CV is kept on our servers."
+    "message": "2 analyses per hour, no account needed. No CV is kept on our servers."
   },
   "panel_tier_spent": {
     "message": "Analysis already used. Next one in $MINUTES$ min.",
@@ -484,10 +484,10 @@
     "message": "Unlimited analyses"
   },
   "popup_tier_free": {
-    "message": "1 analysis per hour (free account)"
+    "message": "2 analyses per hour (free account)"
   },
   "popup_tier_anon": {
-    "message": "1 analysis per hour, no account"
+    "message": "2 analyses per hour, no account"
   },
   "popup_tier_spent": {
     "message": "Analysis used. Next one in $MINUTES$ min.",
@@ -682,10 +682,10 @@
     "message": "Unlimited job-ad analyses on your plan."
   },
   "opt_tier_free": {
-    "message": "1 job-ad analysis per hour on the free account."
+    "message": "2 job-ad analyses per hour on the free account."
   },
   "opt_tier_anon": {
-    "message": "1 job-ad analysis per hour, no account."
+    "message": "2 job-ad analyses per hour, no account."
   },
   "opt_tier_spent": {
     "message": "Analysis used. Next one in $MINUTES$ min.",
@@ -946,10 +946,10 @@
     "message": "My applications"
   },
   "trk_intro": {
-    "message": "Every form the extension fills is added here. This list stays on this computer."
+    "message": "Every form the extension fills lands here. Drag a card to the next column as your application moves on. This list stays on this computer."
   },
   "trk_empty": {
-    "message": "No applications yet. Fill a form with the extension and it will show up here."
+    "message": "No applications yet. Fill a form with the extension, or add one by hand."
   },
   "trk_export": {
     "message": "Export (CSV)"
@@ -1156,7 +1156,7 @@
     "message": "No job advert was found on this page."
   },
   "panel_no_letter_box": {
-    "message": "This form does not ask for a cover letter."
+    "message": "No job ad found on this page to write a letter for."
   },
   "consent_title": {
     "message": "Allow sending for the analysis and the letter"
@@ -1184,5 +1184,282 @@
   },
   "ai_consent_cta": {
     "message": "Allow sending"
+  },
+  "trk_add": {
+    "message": "Add an application"
+  },
+  "trk_add_url": {
+    "message": "Job ad link (optional)"
+  },
+  "trk_add_save": {
+    "message": "Add"
+  },
+  "trk_add_cancel": {
+    "message": "Cancel"
+  },
+  "trk_add_need_title": {
+    "message": "Enter at least the job title."
+  },
+  "trk_add_bad_url": {
+    "message": "That link is not a valid web address."
+  },
+  "trk_added_on": {
+    "message": "Added on $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_site_auto": {
+    "message": "Fill automatically on"
+  },
+  "popup_site_off": {
+    "message": "Automatic filling is off on this site."
+  },
+  "popup_site_refused": {
+    "message": "The browser did not grant access to this site. You can still fill the page with one click."
+  },
+  "panel_auto_filled": {
+    "message": "Filled automatically: you turned this on for this site."
+  },
+  "panel_auto_off": {
+    "message": "Turn off"
+  },
+  "panel_auto_is_off": {
+    "message": "Automatic filling is off on this site."
+  },
+  "dash_menu_sites": {
+    "message": "Sites"
+  },
+  "sites_title": {
+    "message": "Sites"
+  },
+  "sites_intro": {
+    "message": "On these sites the extension fills application forms as soon as they appear, without waiting for your click. It never sends anything for you. To add a site, open the extension on that site and tick \"Fill automatically\"."
+  },
+  "sites_empty": {
+    "message": "No sites yet. Everywhere else, the extension fills a page when you click \"Fill this page\"."
+  },
+  "sites_since": {
+    "message": "On since $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "sites_declared": {
+    "message": "supported job board"
+  },
+  "sites_off": {
+    "message": "Turn off"
+  },
+  "panel_letter_offer": {
+    "message": "Need a cover letter for this job?"
+  },
+  "panel_letter_pdf": {
+    "message": "Download as PDF"
+  },
+  "pdf_letter_place_date": {
+    "message": "$CITY$, $DATE$",
+    "placeholders": {
+      "city": {
+        "content": "$1"
+      },
+      "date": {
+        "content": "$2"
+      }
+    }
+  },
+  "pdf_letter_file": {
+    "message": "Cover-letter"
+  },
+  "popup_tailor": {
+    "message": "Tailor my CV to this job"
+  },
+  "panel_tailor_offer": {
+    "message": "Want a version of your CV tailored to this job?"
+  },
+  "panel_tailor_cta": {
+    "message": "Tailor my CV with AI"
+  },
+  "panel_tailor_working": {
+    "message": "Tailoring your CV to the job…"
+  },
+  "panel_tailor_done": {
+    "message": "New CV added to your library: \"$LABEL$\". Your original CV is unchanged.",
+    "placeholders": {
+      "label": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_tailor_use": {
+    "message": "Fill with this CV"
+  },
+  "panel_tailor_pdf": {
+    "message": "Download the PDF"
+  },
+  "panel_tailor_review": {
+    "message": "Review and edit"
+  },
+  "panel_tailor_in_use": {
+    "message": "This form is filled from \"$LABEL$\", your tailored CV.",
+    "placeholders": {
+      "label": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_tailor_empty": {
+    "message": "The AI proposed no changes for this job. Your CV may already fit it well."
+  },
+  "panel_tailor_full": {
+    "message": "Your CV library is full. Delete a CV in the dashboard, then try again."
+  },
+  "tailored_label": {
+    "message": "Tailored · $FOR$",
+    "placeholders": {
+      "for": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_source_tailored_badge": {
+    "message": "Tailored to a job"
+  },
+  "panel_tailor_review_intro": {
+    "message": "$N$ suggested changes. Keep the ones that are true for you, then create the CV.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_tailor_adds": {
+    "message": "Adds something your CV does not say. Only tick it if it is true."
+  },
+  "panel_tailor_make": {
+    "message": "Create the tailored CV"
+  },
+  "panel_tailor_none": {
+    "message": "Tick at least one change."
+  },
+  "opt_pdf_import_heading": {
+    "message": "Import my existing CV"
+  },
+  "opt_pdf_import_intro": {
+    "message": "Choose your CV as a PDF: its text is read on this computer and you check it. Epimoni's AI then sorts it into sections without rewriting a word. Your PDF stays the file sent to forms."
+  },
+  "opt_pdf_import_choose": {
+    "message": "Choose my CV (PDF)"
+  },
+  "opt_pdf_import_paste": {
+    "message": "or paste the text"
+  },
+  "opt_pdf_import_text_label": {
+    "message": "Your CV's text (fix it if needed)"
+  },
+  "opt_pdf_import_go": {
+    "message": "Create the CV with AI"
+  },
+  "opt_pdf_import_needs_account": {
+    "message": "Sorting with AI needs a connected Epimoni account. Without one, you can fill in the sections below by hand."
+  },
+  "opt_pdf_import_reading": {
+    "message": "Reading the PDF…"
+  },
+  "opt_pdf_import_read": {
+    "message": "$N$ words read. Check the text, then create the CV.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_pdf_import_not_pdf": {
+    "message": "This file is not a PDF."
+  },
+  "opt_pdf_import_encrypted": {
+    "message": "This PDF is password protected. Open it, copy its text and paste it here."
+  },
+  "opt_pdf_import_no_text": {
+    "message": "This PDF has no readable text (it is probably an image or a scan). Paste your CV's text instead."
+  },
+  "opt_pdf_import_unreadable": {
+    "message": "This PDF could not be read. Paste your CV's text instead."
+  },
+  "opt_pdf_import_too_short": {
+    "message": "The text is too short to be a CV."
+  },
+  "opt_pdf_import_too_long": {
+    "message": "The text is too long (30,000 characters at most)."
+  },
+  "opt_pdf_import_working": {
+    "message": "The AI is sorting your CV into sections…"
+  },
+  "opt_pdf_import_empty": {
+    "message": "No section was recognised in this text."
+  },
+  "opt_pdf_import_failed": {
+    "message": "The import did not go through. Try again in a moment."
+  },
+  "opt_pdf_import_done": {
+    "message": "CV created. Check each section below, then save."
+  },
+  "offer_fill": {
+    "message": "Fill the form"
+  },
+  "offer_add_cv": {
+    "message": "Add my CV"
+  },
+  "offer_close": {
+    "message": "Not on this site for now"
+  },
+  "panel_always_offer": {
+    "message": "Fill this site on its own next time?"
+  },
+  "panel_always_on": {
+    "message": "Always fill here"
+  },
+  "panel_always_done": {
+    "message": "Done: this site will be filled automatically."
+  },
+  "panel_always_needs_menu": {
+    "message": "For this site, Chrome has to agree first: open the extension's menu and tick \"Fill automatically\"."
+  },
+  "popup_site_needs_cv": {
+    "message": "Available once you have added a CV."
+  },
+  "popup_everywhere_on": {
+    "message": "Show the \"Fill with Epimoni\" button on every application site"
+  },
+  "popup_everywhere_done": {
+    "message": "Done: the button will show on application forms."
+  },
+  "sites_offer_heading": {
+    "message": "The \"Fill with Epimoni\" button"
+  },
+  "sites_offer_intro": {
+    "message": "When a page holds an application form, a button shows in the bottom corner: one click and the form is filled. It is already on for the supported job boards. To have it on company careers sites too, Chrome will ask for access to all sites: there the extension only checks whether a form is present, and fills nothing without your click."
+  },
+  "sites_offer_on": {
+    "message": "Turn it on for every site"
+  },
+  "sites_offer_off": {
+    "message": "Remove it from other sites"
+  },
+  "sites_offer_is_on": {
+    "message": "On for every site."
+  },
+  "sites_offer_is_off": {
+    "message": "On for the supported job boards only."
+  },
+  "offer_hint": {
+    "message": "Application form detected."
+  },
+  "offer_hint_no_cv": {
+    "message": "Application form detected. Add your CV to fill it in one click."
   }
 }

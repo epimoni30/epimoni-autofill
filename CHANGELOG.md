@@ -9,6 +9,35 @@ carries the same number, and the release workflow refuses a tag that does not ma
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-02
+
+### Added
+
+- The applications are a board, one column per status. Drag a card to move it (the status menu
+  on each card does the same from a keyboard or a touch screen), and add an application the
+  extension did not fill, with or without a link.
+- Automatic filling, one site at a time. Ticked in the menu on a site, an application form
+  there is filled as it appears, including one a site shows only after "Apply". Off by default;
+  outside the supported job boards your browser asks for that one site, and turning it off gives
+  the access back. The sites are listed on the dashboard.
+- The cover letter is offered on any page with a job ad, not only on forms with a letter box,
+  and saves as a PDF laid out as a letter.
+- "Tailor my CV to this job" (AI, connected account): the proposed changes are listed to review,
+  and a change that adds something your CV did not say is left unticked. The ones you keep make
+  a new CV beside the original, which fills the form with its own PDF.
+- "Import my existing CV": your PDF is read on your computer (including PDFs "protected" with
+  no password, as some CV builders make them), you check the text, and Epimoni's AI sorts it
+  into sections without rewriting it (connected account). The PDF stays the file sent to forms.
+
+- A "Fill with Epimoni" button on pages with an application form: one click fills. On by
+  default on the supported job boards; on every other site after you allow it once, from the
+  menu or the Sites page. After any fill, the panel offers "Always fill here" in one click.
+
+### Changed
+
+- The in-page panel scrolls when it is taller than the window.
+- With no CV yet, the menu leads with "Add my CV", and says why the per-site switch waits.
+
 ## [0.1.0] - 2026-09-28
 
 First public version.

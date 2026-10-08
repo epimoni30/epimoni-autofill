@@ -440,10 +440,10 @@
     "message": "Analyses illimitées avec votre formule."
   },
   "panel_tier_free": {
-    "message": "1 analyse par heure avec le compte gratuit."
+    "message": "2 analyses par heure avec le compte gratuit."
   },
   "panel_tier_anon": {
-    "message": "1 analyse par heure, sans compte. Aucun CV n'est conservé sur nos serveurs."
+    "message": "2 analyses par heure, sans compte. Aucun CV n'est conservé sur nos serveurs."
   },
   "panel_tier_spent": {
     "message": "Analyse déjà utilisée. Prochaine dans $MINUTES$ min.",
@@ -466,7 +466,7 @@
     "message": "Aucun CV enregistré pour l'instant."
   },
   "popup_add_cv": {
-    "message": "Renseigner mon CV"
+    "message": "Ajouter mon CV"
   },
   "popup_edit_cv": {
     "message": "Mon CV"
@@ -484,10 +484,10 @@
     "message": "Analyses illimitées"
   },
   "popup_tier_free": {
-    "message": "1 analyse par heure (compte gratuit)"
+    "message": "2 analyses par heure (compte gratuit)"
   },
   "popup_tier_anon": {
-    "message": "1 analyse par heure, sans compte"
+    "message": "2 analyses par heure, sans compte"
   },
   "popup_tier_spent": {
     "message": "Analyse utilisée. Prochaine dans $MINUTES$ min.",
@@ -682,10 +682,10 @@
     "message": "Analyses d'offres illimitées avec votre formule."
   },
   "opt_tier_free": {
-    "message": "1 analyse d'offre par heure avec le compte gratuit."
+    "message": "2 analyses d'offre par heure avec le compte gratuit."
   },
   "opt_tier_anon": {
-    "message": "1 analyse d'offre par heure, sans compte."
+    "message": "2 analyses d'offre par heure, sans compte."
   },
   "opt_tier_spent": {
     "message": "Analyse utilisée. Prochaine dans $MINUTES$ min.",
@@ -946,10 +946,10 @@
     "message": "Mes candidatures"
   },
   "trk_intro": {
-    "message": "Chaque formulaire rempli par l'extension est ajouté ici. Cette liste reste sur cet ordinateur."
+    "message": "Chaque formulaire rempli par l'extension arrive ici. Glissez une carte d'une colonne à l'autre quand votre candidature avance. Cette liste reste sur cet ordinateur."
   },
   "trk_empty": {
-    "message": "Aucune candidature pour l'instant. Remplissez un formulaire avec l'extension : il apparaîtra ici."
+    "message": "Aucune candidature pour l'instant. Remplissez un formulaire avec l'extension, ou ajoutez-en une à la main."
   },
   "trk_export": {
     "message": "Exporter (CSV)"
@@ -1156,7 +1156,7 @@
     "message": "Aucune annonce n'a été trouvée sur cette page."
   },
   "panel_no_letter_box": {
-    "message": "Ce formulaire ne demande pas de lettre de motivation."
+    "message": "Aucune offre d'emploi trouvée sur cette page pour rédiger une lettre."
   },
   "consent_title": {
     "message": "Autoriser l'envoi pour l'analyse et la lettre"
@@ -1184,5 +1184,282 @@
   },
   "ai_consent_cta": {
     "message": "Autoriser l'envoi"
+  },
+  "trk_add": {
+    "message": "Ajouter une candidature"
+  },
+  "trk_add_url": {
+    "message": "Lien de l'offre (facultatif)"
+  },
+  "trk_add_save": {
+    "message": "Ajouter"
+  },
+  "trk_add_cancel": {
+    "message": "Annuler"
+  },
+  "trk_add_need_title": {
+    "message": "Indiquez au moins l'intitulé du poste."
+  },
+  "trk_add_bad_url": {
+    "message": "Ce lien n'est pas une adresse web valide."
+  },
+  "trk_added_on": {
+    "message": "Ajoutée le $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_site_auto": {
+    "message": "Remplir automatiquement sur"
+  },
+  "popup_site_off": {
+    "message": "Remplissage automatique désactivé sur ce site."
+  },
+  "popup_site_refused": {
+    "message": "Le navigateur n'a pas donné l'accès à ce site. Vous pouvez toujours remplir la page d'un clic."
+  },
+  "panel_auto_filled": {
+    "message": "Rempli automatiquement : vous l'avez activé pour ce site."
+  },
+  "panel_auto_off": {
+    "message": "Désactiver"
+  },
+  "panel_auto_is_off": {
+    "message": "Remplissage automatique désactivé sur ce site."
+  },
+  "dash_menu_sites": {
+    "message": "Sites"
+  },
+  "sites_title": {
+    "message": "Sites"
+  },
+  "sites_intro": {
+    "message": "Sur ces sites, l'extension remplit les formulaires de candidature dès qu'ils s'affichent, sans attendre votre clic. Elle n'envoie jamais rien à votre place. Pour ajouter un site, ouvrez l'extension sur ce site et cochez « Remplir automatiquement »."
+  },
+  "sites_empty": {
+    "message": "Aucun site pour l'instant. Partout ailleurs, l'extension remplit une page quand vous cliquez sur « Remplir cette page »."
+  },
+  "sites_since": {
+    "message": "Activé le $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "sites_declared": {
+    "message": "site d'emploi pris en charge"
+  },
+  "sites_off": {
+    "message": "Désactiver"
+  },
+  "panel_letter_offer": {
+    "message": "Une lettre de motivation pour cette offre ?"
+  },
+  "panel_letter_pdf": {
+    "message": "Télécharger en PDF"
+  },
+  "pdf_letter_place_date": {
+    "message": "$CITY$, le $DATE$",
+    "placeholders": {
+      "city": {
+        "content": "$1"
+      },
+      "date": {
+        "content": "$2"
+      }
+    }
+  },
+  "pdf_letter_file": {
+    "message": "Lettre"
+  },
+  "popup_tailor": {
+    "message": "Adapter mon CV à cette offre"
+  },
+  "panel_tailor_offer": {
+    "message": "Une version de votre CV adaptée à cette offre ?"
+  },
+  "panel_tailor_cta": {
+    "message": "Adapter mon CV avec l'IA"
+  },
+  "panel_tailor_working": {
+    "message": "Adaptation de votre CV à l'offre…"
+  },
+  "panel_tailor_done": {
+    "message": "Nouveau CV ajouté à votre bibliothèque : « $LABEL$ ». Votre CV d'origine n'a pas changé.",
+    "placeholders": {
+      "label": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_tailor_use": {
+    "message": "Remplir avec ce CV"
+  },
+  "panel_tailor_pdf": {
+    "message": "Télécharger le PDF"
+  },
+  "panel_tailor_review": {
+    "message": "Relire et modifier"
+  },
+  "panel_tailor_in_use": {
+    "message": "Ce formulaire est rempli avec « $LABEL$ », votre CV adapté.",
+    "placeholders": {
+      "label": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_tailor_empty": {
+    "message": "L'IA n'a proposé aucune modification pour cette offre. Votre CV y correspond peut-être déjà bien."
+  },
+  "panel_tailor_full": {
+    "message": "Votre bibliothèque de CV est pleine. Supprimez un CV dans le tableau de bord, puis réessayez."
+  },
+  "tailored_label": {
+    "message": "Adapté · $FOR$",
+    "placeholders": {
+      "for": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_source_tailored_badge": {
+    "message": "Adapté à une offre"
+  },
+  "panel_tailor_review_intro": {
+    "message": "$N$ modifications proposées. Gardez celles qui sont vraies pour vous, puis créez le CV.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_tailor_adds": {
+    "message": "Ajoute du contenu absent de votre CV. Ne cochez que si c'est vrai."
+  },
+  "panel_tailor_make": {
+    "message": "Créer le CV adapté"
+  },
+  "panel_tailor_none": {
+    "message": "Cochez au moins une modification."
+  },
+  "opt_pdf_import_heading": {
+    "message": "Importer mon CV existant"
+  },
+  "opt_pdf_import_intro": {
+    "message": "Choisissez votre CV en PDF : son texte est lu sur cet ordinateur et vous le relisez. L'IA d'Epimoni le range ensuite dans les rubriques, sans réécrire un mot. Votre PDF reste celui envoyé aux formulaires."
+  },
+  "opt_pdf_import_choose": {
+    "message": "Choisir mon CV (PDF)"
+  },
+  "opt_pdf_import_paste": {
+    "message": "ou coller le texte"
+  },
+  "opt_pdf_import_text_label": {
+    "message": "Le texte de votre CV (corrigez-le si besoin)"
+  },
+  "opt_pdf_import_go": {
+    "message": "Créer le CV avec l'IA"
+  },
+  "opt_pdf_import_needs_account": {
+    "message": "Le rangement par l'IA demande un compte Epimoni connecté. Sans compte, vous pouvez remplir les rubriques ci-dessous à la main."
+  },
+  "opt_pdf_import_reading": {
+    "message": "Lecture du PDF…"
+  },
+  "opt_pdf_import_read": {
+    "message": "$N$ mots lus. Relisez le texte, puis créez le CV.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_pdf_import_not_pdf": {
+    "message": "Ce fichier n'est pas un PDF."
+  },
+  "opt_pdf_import_encrypted": {
+    "message": "Ce PDF est protégé par un mot de passe. Ouvrez-le, copiez son texte et collez-le ici."
+  },
+  "opt_pdf_import_no_text": {
+    "message": "Ce PDF ne contient pas de texte lisible (c'est sans doute une image ou un scan). Collez plutôt le texte de votre CV."
+  },
+  "opt_pdf_import_unreadable": {
+    "message": "Ce PDF n'a pas pu être lu. Collez plutôt le texte de votre CV."
+  },
+  "opt_pdf_import_too_short": {
+    "message": "Le texte est trop court pour être un CV."
+  },
+  "opt_pdf_import_too_long": {
+    "message": "Le texte est trop long (30 000 caractères au plus)."
+  },
+  "opt_pdf_import_working": {
+    "message": "L'IA range votre CV dans les rubriques…"
+  },
+  "opt_pdf_import_empty": {
+    "message": "Aucune rubrique n'a été reconnue dans ce texte."
+  },
+  "opt_pdf_import_failed": {
+    "message": "L'import n'a pas abouti. Réessayez dans un instant."
+  },
+  "opt_pdf_import_done": {
+    "message": "CV créé. Vérifiez chaque rubrique ci-dessous, puis enregistrez."
+  },
+  "offer_fill": {
+    "message": "Remplir le formulaire"
+  },
+  "offer_add_cv": {
+    "message": "Ajouter mon CV"
+  },
+  "offer_close": {
+    "message": "Ne pas proposer sur ce site pour l'instant"
+  },
+  "panel_always_offer": {
+    "message": "Remplir ce site tout seul la prochaine fois ?"
+  },
+  "panel_always_on": {
+    "message": "Toujours remplir ici"
+  },
+  "panel_always_done": {
+    "message": "C'est noté : ce site sera rempli automatiquement."
+  },
+  "panel_always_needs_menu": {
+    "message": "Pour ce site, Chrome doit d'abord donner son accord : ouvrez le menu de l'extension et cochez « Remplir automatiquement »."
+  },
+  "popup_site_needs_cv": {
+    "message": "Disponible dès que vous avez ajouté un CV."
+  },
+  "popup_everywhere_on": {
+    "message": "Afficher le bouton « Remplir avec Epimoni » sur tous les sites de candidature"
+  },
+  "popup_everywhere_done": {
+    "message": "C'est fait : le bouton apparaîtra sur les formulaires de candidature."
+  },
+  "sites_offer_heading": {
+    "message": "Le bouton « Remplir avec Epimoni »"
+  },
+  "sites_offer_intro": {
+    "message": "Quand une page contient un formulaire de candidature, un bouton apparaît en bas à droite : un clic, et le formulaire est rempli. Il est déjà actif sur les sites d'emploi pris en charge. Pour l'avoir aussi sur les sites carrière des entreprises, Chrome vous demandera l'accès à tous les sites : l'extension n'y lit que la présence d'un formulaire et ne remplit rien sans votre clic."
+  },
+  "sites_offer_on": {
+    "message": "L'activer sur tous les sites"
+  },
+  "sites_offer_off": {
+    "message": "Le retirer des autres sites"
+  },
+  "sites_offer_is_on": {
+    "message": "Actif sur tous les sites."
+  },
+  "sites_offer_is_off": {
+    "message": "Actif sur les sites d'emploi pris en charge uniquement."
+  },
+  "offer_hint": {
+    "message": "Formulaire de candidature détecté."
+  },
+  "offer_hint_no_cv": {
+    "message": "Formulaire de candidature détecté. Ajoutez votre CV pour le remplir en un clic."
   }
 }

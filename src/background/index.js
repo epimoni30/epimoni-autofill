@@ -25,8 +25,9 @@ import {
   toJsonResume,
   toProfile,
 } from '../shared/cvdoc.js';
-import { cvIsPrintable, pdfName, renderCvPdf } from '../shared/pdf.js';
+import { cvIsPrintable, pdfName, renderCvPdf, renderLetterPdf } from '../shared/pdf.js';
 import {
+  addApplication,
   applicationFor,
   clearApplications,
   deleteApplication,
@@ -45,6 +46,19 @@ import {
   putFile,
   toBase64,
 } from '../shared/files.js';
+import {
+  addSite,
+  clearSites,
+  declaredFor,
+  listSites,
+  offerEverywhere,
+  originPattern,
+  removeSite,
+  siteIsAuto,
+  siteOf,
+  syncOfferScript,
+  syncSiteScripts,
+} from '../shared/sites.js';
 import { epimoniState, forgetEpimoni, handleEpimoni, installEpimoni } from '../epimoni/worker.js';
 
 installEpimoni();
@@ -86,7 +100,19 @@ const CONTENT_SCRIPT_TYPES = new Set([
   'tier',
   'analyse',
   'letter',
+  'tailor',
+  'tailor:save',
   'open-options',
+  // Whether this page's site fills on its own, and the panel's "stop doing that here". Both
+  // act on the sender's own tab, never on a host the message names.
+  'site:auto',
+  'site:auto:off',
+  'site:auto:on',
+  // The "Remplir avec Epimoni" button: whether to offer, and the click.
+  'offer:state',
+  'offer:fill',
+  // The letter on screen as a PDF, made here from the text the page shows and the CV's name.
+  'letter:pdf',
   // The site bridge's envelope. The add-on checks the sender is the site's top frame.
   'site',
   // The panel's "allow" link, on a browser that asks for data-collection consent.
@@ -123,6 +149,63 @@ async function cvFileOf(id, cv) {
     origin: 'generated',
   };
 }
+const PENDING_SITE = 'site_pending';
+
+/**
+ * Automatic filling on for a site. A site the manifest does not cover needs the browser's
+ * permission for its origin first, which only a click in the popup can ask for; without it
+ * this refuses rather than store a site that would never fill.
+ */
+async function turnSiteOn(site) {
+  const declared = declaredFor(site.host, chrome.runtime.getManifest());
+  if (!declared && !(await chrome.permissions.contains({ origins: [originPattern(site)] })))
+    return { ok: false, need: 'permission' };
+  await addSite(site);
+  await syncSiteScripts();
+  return { ok: true, declared };
+}
+
+/** Automatic filling off, and the site's permission handed back when we asked for it. */
+async function turnSiteOff(host) {
+  const removed = await removeSite(host);
+  const manifest = chrome.runtime.getManifest();
+  if (removed && !declaredFor(host, manifest)) {
+    const origins = ['https', 'http'].map((scheme) => originPattern({ host, scheme }));
+    await chrome.permissions.remove({ origins }).catch(() => {});
+  }
+  await syncSiteScripts();
+  return removed;
+}
+
+// The popup asked the browser for a site and may have been closed by the prompt: finish here.
+chrome.permissions.onAdded.addListener(async ({ origins = [] }) => {
+  const { [PENDING_SITE]: pending } = await chrome.storage.session.get(PENDING_SITE);
+  if (!pending || Date.now() - pending.at > 5 * 60 * 1000) return;
+  if (!origins.includes(originPattern(pending))) return;
+  await chrome.storage.session.remove(PENDING_SITE);
+  await addSite(pending);
+  await syncSiteScripts();
+});
+chrome.permissions.onAdded.addListener(() => syncOfferScript().catch(() => {}));
+// Withdrawn from chrome://extensions: the site cannot fill any more, so it leaves the list
+// rather than sit there switched on and doing nothing.
+chrome.permissions.onRemoved.addListener(async () => {
+  const manifest = chrome.runtime.getManifest();
+  for (const s of await listSites()) {
+    if (
+      !declaredFor(s.host, manifest) &&
+      !(await chrome.permissions.contains({ origins: [originPattern(s)] }))
+    )
+      await removeSite(s.host);
+  }
+  await syncSiteScripts();
+  await syncOfferScript().catch(() => {});
+});
+chrome.runtime.onStartup.addListener(() => {
+  syncSiteScripts().catch(() => {});
+  syncOfferScript().catch(() => {});
+});
+
 const EXTENSION_ORIGIN = chrome.runtime.getURL('');
 const fromExtensionPage = (sender) =>
   typeof sender?.url === 'string' && sender.url.startsWith(EXTENSION_ORIGIN);
@@ -197,7 +280,12 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
         respond({
           cvs: (await listCvs()).map((r) => {
             const doc = (state.cvs || []).find((c) => c.id === r.id)?.cv;
-            return { id: r.id, label: r.label || (doc && cvSummary(doc, {}).name) || null, active: r.active };
+            return {
+              id: r.id,
+              label: r.label || (doc && cvSummary(doc, {}).name) || null,
+              active: r.active,
+              tailored: r.tailored,
+            };
           }),
         });
         break;
@@ -347,6 +435,13 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
         respond({ ok: true, status: next.status });
         break;
       }
+      case 'app:add': {
+        // From the dashboard only (not a content-script type): an application the extension
+        // did not fill. The address, when given, is the user's own typing, not a tab's.
+        const app = await addApplication(msg);
+        respond(app ? { ok: true, app } : { ok: false });
+        break;
+      }
       case 'app:list':
         respond({ apps: await listApplications() });
         break;
@@ -369,9 +464,138 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
         chrome.runtime.openOptionsPage();
         respond({ ok: true });
         break;
+      case 'letter:pdf': {
+        const st = msg.cv_id ? await readAs(msg.cv_id) : state;
+        const basics = st.cv ? toJsonResume(st.cv).basics || {} : {};
+        const paragraphs = (Array.isArray(msg.paragraphs) ? msg.paragraphs : [])
+          .map((p) => String(p || '').slice(0, 5000))
+          .slice(0, 30);
+        if (!paragraphs.some((p) => p.trim())) {
+          respond({ ok: false });
+          break;
+        }
+        const lang = chrome.i18n.getUILanguage();
+        const when = new Date().toLocaleDateString(lang, { day: 'numeric', month: 'long', year: 'numeric' });
+        const city = basics.location?.city;
+        const bytes = renderLetterPdf(
+          {
+            paragraphs,
+            subject: String(msg.subject || '').slice(0, 300),
+            company: String(msg.company || '').slice(0, 200),
+            date: city ? chrome.i18n.getMessage('pdf_letter_place_date', [city, when]) || when : when,
+          },
+          basics,
+        );
+        respond({
+          ok: true,
+          name: pdfName({ basics }, chrome.i18n.getMessage('pdf_letter_file') || 'Lettre'),
+          data: toBase64(bytes),
+        });
+        break;
+      }
+      case 'site:auto': {
+        const site = siteOf(sender.tab?.url || sender.url);
+        respond({ auto: Boolean(site && (await siteIsAuto(site.host))) });
+        break;
+      }
+      case 'site:auto:on': {
+        // The panel's "Toujours remplir ici", for the sender's own site. Without the browser's
+        // permission for it (an undeclared site, no all-sites grant) this refuses, and the
+        // panel sends the user to the menu, where the permission can be asked.
+        const site = siteOf(sender.tab?.url || sender.url);
+        respond(site ? await turnSiteOn(site) : { ok: false });
+        break;
+      }
+      case 'offer:state': {
+        const site = siteOf(sender.tab?.url || sender.url);
+        respond({
+          ok: Boolean(site),
+          has_cv: Boolean(state.cv),
+          auto: Boolean(site && (await siteIsAuto(site.host))),
+        });
+        break;
+      }
+      case 'offer:fill': {
+        // The button's click: fill the tab it is on, as the toolbar icon would. The filler is
+        // already there on a declared board; anywhere else it is injected now, which the
+        // all-sites grant that showed the button allows.
+        const tabId = sender.tab?.id;
+        if (tabId === undefined) {
+          respond({ ok: false });
+          break;
+        }
+        try {
+          await chrome.tabs.sendMessage(tabId, { type: 'fill' });
+        } catch {
+          try {
+            await chrome.scripting.executeScript({
+              target: { tabId, allFrames: true },
+              files: ['content.js'],
+            });
+            await chrome.tabs.sendMessage(tabId, { type: 'fill' });
+          } catch {
+            respond({ ok: false });
+            break;
+          }
+        }
+        respond({ ok: true });
+        break;
+      }
+      case 'offer:everywhere':
+        respond({ on: await offerEverywhere() });
+        break;
+      case 'site:auto:off': {
+        const site = siteOf(sender.tab?.url || sender.url);
+        respond({ ok: Boolean(site && (await turnSiteOff(site.host))) });
+        break;
+      }
+      case 'site:status': {
+        // The popup, about the tab it was opened over.
+        const site = siteOf(msg.url);
+        if (!site) {
+          respond({ ok: false });
+          break;
+        }
+        const declared = declaredFor(site.host, chrome.runtime.getManifest());
+        respond({
+          ok: true,
+          ...site,
+          declared,
+          auto: await siteIsAuto(site.host),
+          granted: declared || (await chrome.permissions.contains({ origins: [originPattern(site)] })),
+        });
+        break;
+      }
+      case 'site:pending': {
+        // Said just before the popup asks the browser for this site. The popup can be closed
+        // by the browser's own prompt, so the grant is finished in `permissions.onAdded`.
+        const site = siteOf(`${msg.scheme === 'http' ? 'http' : 'https'}://${msg.host}/`);
+        if (site) await chrome.storage.session.set({ [PENDING_SITE]: { ...site, at: Date.now() } });
+        respond({ ok: Boolean(site) });
+        break;
+      }
+      case 'site:enable': {
+        const site = siteOf(`${msg.scheme === 'http' ? 'http' : 'https'}://${msg.host}/`);
+        respond(site ? await turnSiteOn(site) : { ok: false });
+        break;
+      }
+      case 'site:disable':
+        respond({ ok: await turnSiteOff(String(msg.host || '').toLowerCase()) });
+        break;
+      case 'sites:list': {
+        const manifest = chrome.runtime.getManifest();
+        respond({
+          sites: (await listSites()).map((s) => ({ ...s, declared: declaredFor(s.host, manifest) })),
+        });
+        break;
+      }
       case 'forget':
         await clear();
         await clearApplications();
+        await clearSites();
+        await syncSiteScripts().catch(() => {});
+        await chrome.permissions.remove({ origins: ['https://*/*'] }).catch(() => {});
+        await syncOfferScript().catch(() => {});
         await clearFiles().catch(() => {});
         await forgetEpimoni();
         respond({ ok: true });
@@ -380,7 +604,9 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
         // An analysis asked from a page that fills from another CV of the library compares
         // that CV, so the score is about the document the form was filled from.
         const st =
-          (msg.type === 'analyse' || msg.type === 'letter') && msg.cv_id ? await readAs(msg.cv_id) : state;
+          ['analyse', 'letter', 'tailor', 'tailor:save'].includes(msg.type) && msg.cv_id
+            ? await readAs(msg.cv_id)
+            : state;
         respond((await handleEpimoni(msg, st, sender)) ?? { ok: false, error: 'unknown' });
       }
     }
@@ -399,6 +625,9 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
  * Only on `install`, never on `update`, which would reopen a tab on every silent bump.
  */
 chrome.runtime.onInstalled.addListener(({ reason }) => {
+  // On an update too: the registered script must match the list the new version reads.
+  syncSiteScripts().catch(() => {});
+  syncOfferScript().catch(() => {});
   if (reason !== 'install') return;
   chrome.runtime.openOptionsPage();
 });

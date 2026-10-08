@@ -8,12 +8,17 @@
 
 import { MONTHS } from '../lexicon/index.js';
 
-/** Lowercase, strip diacritics, reduce to words. `Prénom` and `PRENOM_1` both become `prenom 1`. */
+/**
+ * Lowercase, strip diacritics, reduce to words. `Prénom` and `PRENOM_1` both become `prenom 1`.
+ * `ł` has no decomposition, so NFD leaves it whole: without its own rule "Wykształcenie"
+ * would split into "wykszt alcenie".
+ */
 export function normalize(text) {
   return String(text || '')
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase()
+    .replace(/ł/g, 'l')
     .replace(/[^a-z0-9]+/g, ' ')
     .trim();
 }
