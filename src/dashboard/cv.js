@@ -310,7 +310,7 @@ function collect() {
  * which allowance the AI half is on.
  *
  * The tier line is the honest half of "free fill, paid AI": a free or anonymous user is
- * metered at one analysis an hour, the website's own window, not a second allowance, and a paying customer is not metered at all. Saying so here means nobody meets
+ * metered at two analyses an hour, the website's own window, not a second allowance, and a paying customer is not metered at all. Saying so here means nobody meets
  * that limit for the first time as a refusal on an advert they were about to apply to.
  */
 /**

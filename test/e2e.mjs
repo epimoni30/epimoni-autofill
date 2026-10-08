@@ -899,7 +899,7 @@ await opener.close();
 
 // ── The offer analysis, and the rule the whole design exists to keep ──────────────────────
 //
-// `/ml/analyse/cvVSoffer-doc` is metered: one free call an hour, then the paid passes. The
+// `/ml/analyse/cvVSoffer-doc` is metered: two free calls an hour, then the paid passes. The
 // teaser and the "voir l'analyse complète" link must therefore cost **one** call between
 // them, not two: the trap recorded in project_quota_follow_ups, where a memo hit is still
 // charged. `fetch` is stubbed inside the service worker rather than intercepted at the
@@ -1432,7 +1432,7 @@ await importer.close();
 // ── No account at all ────────────────────────────────────────────────────────────────────
 //
 // The extension has to work for somebody who has never signed in: the CV lives here, the
-// worker opens its own anonymous session, and the backend meters it at one call an hour on
+// worker opens its own anonymous session, and the backend meters it at two calls an hour on
 // the same window as the website. This is that path end to end, in a real browser, with the
 // pairing removed rather than simulated.
 await sw.evaluate(async () => {

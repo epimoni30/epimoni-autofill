@@ -85,7 +85,7 @@ const TIER_TTL_MS = 5 * 60 * 1000;
 /**
  * Is this person metered, and are they out of window right now.
  *
- * Read before the analysis is offered, so the panel can say "1 analyse par heure" to a free
+ * Read before the analysis is offered, so the panel can say "2 analyses par heure" to a free
  * user and nothing at all to a paying one. `/users/me` is unmetered, it carries no
  * rate-limit dependency and only reads the window, never spends it,
  * so asking is free. Cached anyway, because it is asked once per panel and the answer does

@@ -7,7 +7,7 @@
 //
 // The rule being protected: **one metered call per advert, and never a wall for somebody
 // without an account.** Filling is free and needs no identity at all; the analysis is metered
-// by the backend at one call an hour for free and anonymous users alike, and not at all for a
+// by the backend at two calls an hour for free and anonymous users alike, and not at all for a
 // paying customer.
 
 import test from 'node:test';

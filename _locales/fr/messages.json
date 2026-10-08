@@ -440,10 +440,10 @@
     "message": "Analyses illimitées avec votre formule."
   },
   "panel_tier_free": {
-    "message": "1 analyse par heure avec le compte gratuit."
+    "message": "2 analyses par heure avec le compte gratuit."
   },
   "panel_tier_anon": {
-    "message": "1 analyse par heure, sans compte. Aucun CV n'est conservé sur nos serveurs."
+    "message": "2 analyses par heure, sans compte. Aucun CV n'est conservé sur nos serveurs."
   },
   "panel_tier_spent": {
     "message": "Analyse déjà utilisée. Prochaine dans $MINUTES$ min.",
@@ -484,10 +484,10 @@
     "message": "Analyses illimitées"
   },
   "popup_tier_free": {
-    "message": "1 analyse par heure (compte gratuit)"
+    "message": "2 analyses par heure (compte gratuit)"
   },
   "popup_tier_anon": {
-    "message": "1 analyse par heure, sans compte"
+    "message": "2 analyses par heure, sans compte"
   },
   "popup_tier_spent": {
     "message": "Analyse utilisée. Prochaine dans $MINUTES$ min.",
@@ -682,10 +682,10 @@
     "message": "Analyses d'offres illimitées avec votre formule."
   },
   "opt_tier_free": {
-    "message": "1 analyse d'offre par heure avec le compte gratuit."
+    "message": "2 analyses d'offre par heure avec le compte gratuit."
   },
   "opt_tier_anon": {
-    "message": "1 analyse d'offre par heure, sans compte."
+    "message": "2 analyses d'offre par heure, sans compte."
   },
   "opt_tier_spent": {
     "message": "Analyse utilisée. Prochaine dans $MINUTES$ min.",

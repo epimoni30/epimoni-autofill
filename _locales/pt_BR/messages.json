@@ -440,10 +440,10 @@
     "message": "Análises ilimitadas no seu plano."
   },
   "panel_tier_free": {
-    "message": "1 análise por hora na conta gratuita."
+    "message": "2 análises por hora na conta gratuita."
   },
   "panel_tier_anon": {
-    "message": "1 análise por hora, sem conta. Nenhum currículo fica guardado nos nossos servidores."
+    "message": "2 análises por hora, sem conta. Nenhum currículo fica guardado nos nossos servidores."
   },
   "panel_tier_spent": {
     "message": "Análise já usada. A próxima em $MINUTES$ min.",
@@ -484,10 +484,10 @@
     "message": "Análises ilimitadas"
   },
   "popup_tier_free": {
-    "message": "1 análise por hora (conta gratuita)"
+    "message": "2 análises por hora (conta gratuita)"
   },
   "popup_tier_anon": {
-    "message": "1 análise por hora, sem conta"
+    "message": "2 análises por hora, sem conta"
   },
   "popup_tier_spent": {
     "message": "Análise usada. A próxima em $MINUTES$ min.",
@@ -682,10 +682,10 @@
     "message": "Análises de vagas ilimitadas no seu plano."
   },
   "opt_tier_free": {
-    "message": "1 análise de vaga por hora na conta gratuita."
+    "message": "2 análises de vaga por hora na conta gratuita."
   },
   "opt_tier_anon": {
-    "message": "1 análise de vaga por hora, sem conta."
+    "message": "2 análises de vaga por hora, sem conta."
   },
   "opt_tier_spent": {
     "message": "Análise usada. A próxima em $MINUTES$ min.",

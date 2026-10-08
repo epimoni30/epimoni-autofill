@@ -440,10 +440,10 @@
     "message": "Unlimited analyses on your plan."
   },
   "panel_tier_free": {
-    "message": "1 analysis per hour on the free account."
+    "message": "2 analyses per hour on the free account."
   },
   "panel_tier_anon": {
-    "message": "1 analysis per hour, no account needed. No CV is kept on our servers."
+    "message": "2 analyses per hour, no account needed. No CV is kept on our servers."
   },
   "panel_tier_spent": {
     "message": "Analysis already used. Next one in $MINUTES$ min.",
@@ -484,10 +484,10 @@
     "message": "Unlimited analyses"
   },
   "popup_tier_free": {
-    "message": "1 analysis per hour (free account)"
+    "message": "2 analyses per hour (free account)"
   },
   "popup_tier_anon": {
-    "message": "1 analysis per hour, no account"
+    "message": "2 analyses per hour, no account"
   },
   "popup_tier_spent": {
     "message": "Analysis used. Next one in $MINUTES$ min.",
@@ -682,10 +682,10 @@
     "message": "Unlimited job-ad analyses on your plan."
   },
   "opt_tier_free": {
-    "message": "1 job-ad analysis per hour on the free account."
+    "message": "2 job-ad analyses per hour on the free account."
   },
   "opt_tier_anon": {
-    "message": "1 job-ad analysis per hour, no account."
+    "message": "2 job-ad analyses per hour, no account."
   },
   "opt_tier_spent": {
     "message": "Analysis used. Next one in $MINUTES$ min.",

@@ -63,7 +63,7 @@ Sur une annonce, « Analyser cette offre » compare votre CV aux attentes du pos
 score avec vos points faibles. La lettre de motivation est rédigée dans la limite du formulaire
 et s'enregistre en PDF. Votre CV peut être adapté à l'offre : vous gardez les modifications qui
 sont vraies pour vous, et le CV adapté remplit le formulaire avec son PDF. Ces fonctions IA
-demandent un compte Epimoni connecté à l'extension (gratuit : une par heure ; illimité avec une
+demandent un compte Epimoni connecté à l'extension (gratuit : deux par heure ; illimité avec une
 formule).
 
 VIE PRIVÉE
@@ -109,7 +109,7 @@ On a job ad, "Analyse this offer" compares your CV with what the role asks for a
 score with your weak points. The cover letter is written within the form's limit and saves as a
 PDF. Your CV can be tailored to the ad: you keep the changes that are true for you, and the
 tailored CV fills the form with its own PDF. These AI features need an Epimoni account connected
-to the extension (free: one an hour; unlimited with a plan).
+to the extension (free: two an hour; unlimited with a plan).
 
 PRIVACY
 Your CV stays in your browser. Filling sends nothing. Only the AI features, started by you,

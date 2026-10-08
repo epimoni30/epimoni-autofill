@@ -1175,7 +1175,7 @@
    * LLM call, and spending somebody's hourly quota because they opened a page is both a cost
    * and a consent problem. One click, and only after they ask.
    *
-   * It no longer requires an account. A free or anonymous caller gets one analysis an hour,
+   * It no longer requires an account. A free or anonymous caller gets two analyses an hour,
    * the website's own window, and a paying customer is not metered at all. The cost is named *before* the button, not discovered as a refusal afterwards.
    */
   function offerSection(panel) {

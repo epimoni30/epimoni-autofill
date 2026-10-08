@@ -492,7 +492,7 @@ async function meteredCall(state, msg, path, body) {
  * the network, and only then resolve an identity, because resolving one opens a session.
  *
  * It no longer requires a paired account. A free or anonymous caller is metered by the
- * backend at one model-backed call an hour, the website's own free tier, not a second
+ * backend at two model-backed calls an hour, the website's own free tier, not a second
  * allowance, and a paying customer is not metered at all. So the tiering this
  * feature needs already exists server-side; the extension's job is to pick the right token
  * and to say plainly which tier the person is on.
