@@ -63,7 +63,7 @@ export async function apiFetch(jwt, path, { method = 'GET', body = null } = {}) 
  * visitor before its first API call.
  *
  * This is what makes the extension usable by somebody who has never signed in. The session
- * is metered exactly like the site's free tier (one model-backed call an hour), so an
+ * is metered exactly like the site's free tier (two model-backed calls an hour), so an
  * anonymous user of the extension gets the same deal as an anonymous user of the site, not a
  * loophole, and not a second free allowance either, since both surfaces draw on one window.
  *
