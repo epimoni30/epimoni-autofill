@@ -164,7 +164,7 @@ function validateManifest(m, messages) {
  * `__MSG_…__` token for exactly the users who speak that language.
  */
 async function validateLocales(m) {
-  const locales = ['fr', 'en', 'es', 'pt_BR'];
+  const locales = ['fr', 'en', 'es', 'pt_BR', 'pl'];
   const loaded = {};
   for (const l of locales) loaded[l] = JSON.parse(await read(`_locales/${l}/messages.json`));
   const problems = [];

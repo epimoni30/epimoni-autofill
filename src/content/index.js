@@ -1191,7 +1191,7 @@
     const say = (...nodes) => box.replaceChildren(...nodes.filter(Boolean));
     // The plans on the site's home page, in the user's language: /#pricing, /en/#pricing…
     const lang = chrome.i18n.getUILanguage().slice(0, 2);
-    const plans = `https://www.epimoni30.com/${['en', 'es', 'pt'].includes(lang) ? `${lang}/` : ''}#pricing`;
+    const plans = `https://www.epimoni30.com/${['en', 'es', 'pt', 'pl'].includes(lang) ? `${lang}/` : ''}#pricing`;
     const cta = (parent, href, text) => {
       const a = document.createElement('a');
       a.href = href;
