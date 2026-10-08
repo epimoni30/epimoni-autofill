@@ -65,7 +65,7 @@ test('the same CV gives the same bytes', () => {
 
 test('accents are written in the encoding the fonts declare', () => {
   const src = text(renderCvPdf(resume, LABELS));
-  assert.match(src, /\/Encoding \/WinAnsiEncoding/);
+  assert.match(src, /\/BaseEncoding \/WinAnsiEncoding \/Differences \[1 \/Aogonek \/aogonek /);
   // "Formation" is plain; "Expérience" carries é as octal 351 (0xE9 in WinAnsi).
   assert.match(src, /\(EXP\\311RIENCE PROFESSIONNELLE\)/);
   assert.match(src, /\(Camille Dupont-Mercier\)/);
@@ -73,9 +73,24 @@ test('accents are written in the encoding the fonts declare', () => {
 
 test('what the fonts cannot draw loses its accent, or becomes "?"', () => {
   assert.equal(encodable('Œuvre, œil, 12 €, « oui »'), 'Œuvre, œil, 12 €, « oui »');
-  assert.equal(encodable('Łódź'), 'Lódz');
+  assert.equal(encodable('Łódź'), 'Łódź', 'Polish has codes of its own');
+  assert.equal(encodable('Dvořák'), 'Dvorák');
   assert.equal(encodable('日本 🚀'), '?? ?');
   assert.equal(encodable('a\n\tb c'), 'a b c');
+});
+
+test('a Polish CV keeps its letters, in the text, the widths, the metadata and the file name', () => {
+  const pl = { basics: { name: 'Paweł Żak' }, work: [{ name: 'Łódź Sp. z o.o.', position: 'Księgowa' }] };
+  const src = text(renderCvPdf(pl, { ...LABELS, work: 'Doświadczenie zawodowe' }));
+  // The heading is uppercased, so Ś (code 11, octal 013); ł is 8, Ż 15. Escaped, never raw bytes.
+  assert.match(src, /\(DO\\013WIADCZENIE ZAWODOWE\)/);
+  assert.match(src, /\(Pawe\\010 \\017ak\)/);
+  const raw = [...src].filter((c) => c.charCodeAt(0) < 32 && c !== '\n');
+  assert.deepEqual(raw, [], 'the file stays printable');
+  assert.match(src, /\/Author <FEFF005000610077006501420020017B0061006B>/);
+  assert.equal(textWidth('ł', 10), textWidth('l', 10));
+  assert.equal(textWidth('Ż', 10, true), textWidth('Z', 10, true));
+  assert.equal(pdfName(pl), 'CV-Pawel-Zak.pdf');
 });
 
 test('wrapping keeps every line inside the width', () => {

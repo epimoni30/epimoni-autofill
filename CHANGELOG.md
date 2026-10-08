@@ -9,6 +9,20 @@ carries the same number, and the release workflow refuses a tag that does not ma
 
 ## [Unreleased]
 
+### Added
+
+- Polish: the interface, and the form labels the extension recognises ("Imię i nazwisko",
+  "Oczekiwania finansowe", "Okres wypowiedzenia", Polish month names). It leaves the parents'
+  names, a middle name and a maiden name empty. Brazilian Portuguese came earlier and was not
+  listed here.
+
+### Changed
+
+- The CV and cover-letter PDFs keep Polish letters (ą, ć, ę, ł, ń, ś, ź, ż) instead of writing
+  them without their accent, and a text extractor reads them back as written. A name outside
+  ASCII now shows correctly in the PDF's title and author.
+- The free allowance for the AI features reads two an hour, as it has been since 1 October.
+
 ## [0.2.0] - 2026-10-02
 
 ### Added
