@@ -1184,5 +1184,282 @@
   },
   "ai_consent_cta": {
     "message": "Zezwól na wysyłanie"
+  },
+  "trk_add": {
+    "message": "Dodaj aplikację"
+  },
+  "trk_add_url": {
+    "message": "Link do oferty (opcjonalnie)"
+  },
+  "trk_add_save": {
+    "message": "Dodaj"
+  },
+  "trk_add_cancel": {
+    "message": "Anuluj"
+  },
+  "trk_add_need_title": {
+    "message": "Podaj przynajmniej nazwę stanowiska."
+  },
+  "trk_add_bad_url": {
+    "message": "Ten link nie jest prawidłowym adresem internetowym."
+  },
+  "trk_added_on": {
+    "message": "Dodana $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_site_auto": {
+    "message": "Wypełniaj automatycznie na"
+  },
+  "popup_site_off": {
+    "message": "Automatyczne wypełnianie jest wyłączone na tej stronie."
+  },
+  "popup_site_refused": {
+    "message": "Przeglądarka nie przyznała dostępu do tej strony. Nadal możesz wypełnić ją jednym kliknięciem."
+  },
+  "panel_auto_filled": {
+    "message": "Wypełniono automatycznie: włączyłeś(-aś) to dla tej strony."
+  },
+  "panel_auto_off": {
+    "message": "Wyłącz"
+  },
+  "panel_auto_is_off": {
+    "message": "Automatyczne wypełnianie jest wyłączone na tej stronie."
+  },
+  "dash_menu_sites": {
+    "message": "Strony"
+  },
+  "sites_title": {
+    "message": "Strony"
+  },
+  "sites_intro": {
+    "message": "Na tych stronach rozszerzenie wypełnia formularze aplikacyjne, gdy tylko się pojawią, bez czekania na twoje kliknięcie. Nigdy niczego nie wysyła za ciebie. Aby dodać stronę, otwórz na niej rozszerzenie i zaznacz „Wypełniaj automatycznie”."
+  },
+  "sites_empty": {
+    "message": "Brak stron. Wszędzie indziej rozszerzenie wypełnia stronę, gdy klikniesz „Wypełnij tę stronę”."
+  },
+  "sites_since": {
+    "message": "Włączone od $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "sites_declared": {
+    "message": "obsługiwany portal z ofertami"
+  },
+  "sites_off": {
+    "message": "Wyłącz"
+  },
+  "panel_letter_offer": {
+    "message": "Potrzebujesz listu motywacyjnego do tej oferty?"
+  },
+  "panel_letter_pdf": {
+    "message": "Pobierz jako PDF"
+  },
+  "pdf_letter_place_date": {
+    "message": "$CITY$, $DATE$",
+    "placeholders": {
+      "city": {
+        "content": "$1"
+      },
+      "date": {
+        "content": "$2"
+      }
+    }
+  },
+  "pdf_letter_file": {
+    "message": "List-motywacyjny"
+  },
+  "popup_tailor": {
+    "message": "Dopasuj moje CV do tej oferty"
+  },
+  "panel_tailor_offer": {
+    "message": "Chcesz wersję CV dopasowaną do tej oferty?"
+  },
+  "panel_tailor_cta": {
+    "message": "Dopasuj moje CV z AI"
+  },
+  "panel_tailor_working": {
+    "message": "Dopasowuję twoje CV do oferty…"
+  },
+  "panel_tailor_done": {
+    "message": "Nowe CV dodane do twojej biblioteki: „$LABEL$”. Twoje oryginalne CV się nie zmieniło.",
+    "placeholders": {
+      "label": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_tailor_use": {
+    "message": "Wypełnij tym CV"
+  },
+  "panel_tailor_pdf": {
+    "message": "Pobierz PDF"
+  },
+  "panel_tailor_review": {
+    "message": "Przejrzyj i edytuj"
+  },
+  "panel_tailor_in_use": {
+    "message": "Ten formularz jest wypełniony z „$LABEL$”, twojego dopasowanego CV.",
+    "placeholders": {
+      "label": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_tailor_empty": {
+    "message": "AI nie zaproponowało zmian dla tej oferty. Być może twoje CV już do niej dobrze pasuje."
+  },
+  "panel_tailor_full": {
+    "message": "Twoja biblioteka CV jest pełna. Usuń jedno CV w panelu i spróbuj ponownie."
+  },
+  "tailored_label": {
+    "message": "Dopasowane · $FOR$",
+    "placeholders": {
+      "for": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_source_tailored_badge": {
+    "message": "Dopasowane do oferty"
+  },
+  "panel_tailor_review_intro": {
+    "message": "Proponowane zmiany: $N$. Zostaw te, które są o tobie prawdziwe, a potem utwórz CV.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_tailor_adds": {
+    "message": "Dodaje coś, czego nie ma w twoim CV. Zaznacz tylko, jeśli to prawda."
+  },
+  "panel_tailor_make": {
+    "message": "Utwórz dopasowane CV"
+  },
+  "panel_tailor_none": {
+    "message": "Zaznacz przynajmniej jedną zmianę."
+  },
+  "opt_pdf_import_heading": {
+    "message": "Zaimportuj moje obecne CV"
+  },
+  "opt_pdf_import_intro": {
+    "message": "Wybierz swoje CV w PDF: jego tekst jest odczytywany na tym komputerze, a ty go sprawdzasz. Następnie AI Epimoni dzieli go na sekcje, nie zmieniając ani słowa. Do formularzy nadal trafia twój PDF."
+  },
+  "opt_pdf_import_choose": {
+    "message": "Wybierz moje CV (PDF)"
+  },
+  "opt_pdf_import_paste": {
+    "message": "albo wklej tekst"
+  },
+  "opt_pdf_import_text_label": {
+    "message": "Tekst twojego CV (popraw go w razie potrzeby)"
+  },
+  "opt_pdf_import_go": {
+    "message": "Utwórz CV z AI"
+  },
+  "opt_pdf_import_needs_account": {
+    "message": "Podział przez AI wymaga połączonego konta Epimoni. Bez niego możesz wypełnić sekcje poniżej ręcznie."
+  },
+  "opt_pdf_import_reading": {
+    "message": "Odczytuję PDF…"
+  },
+  "opt_pdf_import_read": {
+    "message": "Odczytane słowa: $N$. Sprawdź tekst, a potem utwórz CV.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_pdf_import_not_pdf": {
+    "message": "Ten plik nie jest plikiem PDF."
+  },
+  "opt_pdf_import_encrypted": {
+    "message": "Ten PDF jest chroniony hasłem. Otwórz go, skopiuj tekst i wklej go tutaj."
+  },
+  "opt_pdf_import_no_text": {
+    "message": "Ten PDF nie zawiera tekstu do odczytania (to pewnie obraz lub skan). Wklej zamiast tego tekst swojego CV."
+  },
+  "opt_pdf_import_unreadable": {
+    "message": "Nie udało się odczytać tego PDF. Wklej zamiast tego tekst swojego CV."
+  },
+  "opt_pdf_import_too_short": {
+    "message": "Ten tekst jest za krótki, by być CV."
+  },
+  "opt_pdf_import_too_long": {
+    "message": "Tekst jest za długi (maksymalnie 30 000 znaków)."
+  },
+  "opt_pdf_import_working": {
+    "message": "AI dzieli twoje CV na sekcje…"
+  },
+  "opt_pdf_import_empty": {
+    "message": "W tym tekście nie rozpoznano żadnej sekcji."
+  },
+  "opt_pdf_import_failed": {
+    "message": "Import się nie powiódł. Spróbuj ponownie za chwilę."
+  },
+  "opt_pdf_import_done": {
+    "message": "CV utworzone. Sprawdź każdą sekcję poniżej, a potem zapisz."
+  },
+  "offer_fill": {
+    "message": "Wypełnij formularz"
+  },
+  "offer_add_cv": {
+    "message": "Dodaj moje CV"
+  },
+  "offer_close": {
+    "message": "Na razie nie na tej stronie"
+  },
+  "panel_always_offer": {
+    "message": "Następnym razem wypełniać tę stronę samodzielnie?"
+  },
+  "panel_always_on": {
+    "message": "Zawsze wypełniaj tutaj"
+  },
+  "panel_always_done": {
+    "message": "Gotowe: ta strona będzie wypełniana automatycznie."
+  },
+  "panel_always_needs_menu": {
+    "message": "Dla tej strony Chrome musi najpierw wyrazić zgodę: otwórz menu rozszerzenia i zaznacz „Wypełniaj automatycznie”."
+  },
+  "popup_site_needs_cv": {
+    "message": "Dostępne po dodaniu CV."
+  },
+  "popup_everywhere_on": {
+    "message": "Pokazuj przycisk „Wypełnij z Epimoni” na każdej stronie z aplikacjami"
+  },
+  "popup_everywhere_done": {
+    "message": "Gotowe: przycisk pojawi się przy formularzach aplikacyjnych."
+  },
+  "sites_offer_heading": {
+    "message": "Przycisk „Wypełnij z Epimoni”"
+  },
+  "sites_offer_intro": {
+    "message": "Gdy strona zawiera formularz aplikacyjny, w dolnym rogu pojawia się przycisk: jedno kliknięcie i formularz jest wypełniony. Jest już włączony na obsługiwanych portalach z ofertami. Aby działał też na stronach kariery firm, Chrome poprosi o dostęp do wszystkich stron: rozszerzenie sprawdza tam tylko, czy jest formularz, i niczego nie wypełnia bez twojego kliknięcia."
+  },
+  "sites_offer_on": {
+    "message": "Włącz na wszystkich stronach"
+  },
+  "sites_offer_off": {
+    "message": "Usuń z innych stron"
+  },
+  "sites_offer_is_on": {
+    "message": "Włączony na wszystkich stronach."
+  },
+  "sites_offer_is_off": {
+    "message": "Włączony tylko na obsługiwanych portalach z ofertami."
+  },
+  "offer_hint": {
+    "message": "Wykryto formularz aplikacyjny."
+  },
+  "offer_hint_no_cv": {
+    "message": "Wykryto formularz aplikacyjny. Dodaj swoje CV, aby wypełnić go jednym kliknięciem."
   }
 }
