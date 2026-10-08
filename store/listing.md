@@ -20,7 +20,7 @@ extension, in French and English.
 ## Store listing
 
 - Category: Productivity, then Workflow & Planning
-- Language: French (default), with English and Spanish listings
+- Language: French (default), with English, Spanish and Polish listings
 - Homepage: https://www.epimoni30.com/extension-chrome
 - Support: https://github.com/epimoni30/epimoni-autofill/issues
 - Privacy policy URL: https://github.com/epimoni30/epimoni-autofill/blob/main/PRIVACY.md (the
@@ -116,6 +116,56 @@ Your CV stays in your browser. Filling sends nothing. Only the AI features, star
 send your CV and the ad to Epimoni's servers.
 
 Open source, Apache 2.0 licence.
+```
+
+### Detailed description (polski)
+
+The board names in "Gdzie to działa" are the ones the extension knows by name; a Polish
+board such as Pracuj.pl is filled from the toolbar icon like any other careers site, so it is
+not promised by name. Screenshots are the English set.
+
+```
+Wypełniaj formularze aplikacyjne jednym kliknięciem, z CV wpisanego tylko raz.
+
+Epimoni Autofill rozpoznaje pola formularza aplikacyjnego (imię, e-mail, telefon, obecne
+stanowisko, doświadczenie, wykształcenie, języki i tak dalej) i wypełnia je danymi z twojego CV.
+Ty sprawdzasz, poprawiasz i wysyłasz: rozszerzenie nigdy niczego nie wysyła za ciebie.
+
+TWOJE CV, RAZ
+• Wpisz je w rozszerzeniu, zaimportuj swoje CV w PDF (odczytywane na twoim komputerze), plik
+  JSON Resume albo pobierz to z konta Epimoni.
+• Trzymaj kilka wersji (krótkie CV, szczegółowe CV) i wybierz, która wypełnia formularze.
+• Eksportuj je w każdej chwili jako JSON Resume, czytelny dla innych narzędzi.
+
+OSTROŻNE WYPEŁNIANIE
+• Na stronie z aplikacją pojawia się przycisk „Wypełnij z Epimoni”: wystarczy jedno kliknięcie.
+• Każde wypełnione pole jest widoczne w panelu, z opcją „Cofnij wszystko”.
+• Doświadczenie i wykształcenie wypełniane blok po bloku, daty dopasowane do formularza.
+• Żadne pole wyboru nie jest zaznaczane, żaden przycisk „Dodaj” klikany, żadne pole hasła ani
+  płatności ruszane. W razie wątpliwości pole zostaje puste.
+
+GDZIE TO DZIAŁA
+France Travail, HelloWork, APEC, Welcome to the Jungle, Indeed i LinkedIn. Na każdej innej
+stronie kariery (Workday, Pracuj.pl, formularze firmowe) wystarczy kliknąć ikonę na pasku albo
+włączyć automatyczne wypełnianie dla tej strony.
+
+TWOJE APLIKACJE W JEDNYM MIEJSCU
+Każdy wypełniony formularz trafia na tablicę z kolumną dla każdego etapu (wypełniona, wysłana,
+rozmowa, oferta, odrzucona). Przeciągaj karty, gdy coś się zmienia, dodawaj aplikacje złożone
+gdzie indziej, eksportuj do CSV.
+
+AI DO KAŻDEJ OFERTY
+Na stronie z ofertą „Przeanalizuj tę ofertę” porównuje twoje CV z wymaganiami stanowiska i
+podaje wynik z twoimi słabymi punktami. List motywacyjny jest pisany w limicie formularza i
+zapisuje się jako PDF. Twoje CV można dopasować do oferty: zostawiasz zmiany, które są o tobie
+prawdziwe, a dopasowane CV wypełnia formularz własnym PDF. Te funkcje AI wymagają konta Epimoni
+połączonego z rozszerzeniem (za darmo: dwie na godzinę; bez limitu w planie).
+
+PRYWATNOŚĆ
+Twoje CV zostaje w przeglądarce. Wypełnianie niczego nie wysyła. Tylko funkcje AI, uruchamiane
+przez ciebie, przesyłają CV i ofertę na serwery Epimoni.
+
+Otwarte źródło, licencja Apache 2.0.
 ```
 
 ## Privacy practices tab
