@@ -6,8 +6,10 @@
 // PDF library with its fonts would be most of the package. What a CV needs is small: text in
 // two weights, a rule under each heading, wrapping, and pages. The PDF's standard fonts
 // (Helvetica and Helvetica-Bold) are built into every reader, so nothing is embedded, and
-// their WinAnsi encoding covers French and Spanish, "œ" and "€" included. A character it
-// cannot encode is written without its accent, or as "?", rather than breaking the file.
+// their WinAnsi encoding covers French and Spanish, "œ" and "€" included. Polish letters are
+// in those fonts but not in WinAnsi, so they are given byte codes of their own (see
+// `CENTRAL`). A character still without a code is written without its accent, or as "?",
+// rather than breaking the file.
 //
 // One column of real text, top to bottom, which is also the layout an applicant tracking
 // system reads most reliably. Deterministic: the same CV gives the same bytes, so a test can
@@ -56,6 +58,27 @@ const EXTRA = {
   œ: [0x9c, 944, 944],
   Ÿ: [0x9f, 667, 667],
 };
+
+// Polish letters WinAnsi has no byte for. The standard Helvetica fonts carry their glyphs, so
+// the fonts' encoding names them on codes 1–16, which no text uses (control characters).
+// Glyph names are the Adobe standard ones, which is also how a text extractor, and so an
+// applicant tracking system reading the PDF, maps them back to Unicode. Widths are the fonts'
+// own, from their AFM metrics: [glyph name, regular, bold].
+// biome-ignore format: a table
+const CENTRAL = [
+  ['Ą', 'Aogonek', 667, 722], ['ą', 'aogonek', 556, 556],
+  ['Ć', 'Cacute', 722, 722], ['ć', 'cacute', 500, 556],
+  ['Ę', 'Eogonek', 667, 667], ['ę', 'eogonek', 556, 556],
+  ['Ł', 'Lslash', 556, 611], ['ł', 'lslash', 222, 278],
+  ['Ń', 'Nacute', 722, 722], ['ń', 'nacute', 556, 611],
+  ['Ś', 'Sacute', 667, 667], ['ś', 'sacute', 500, 556],
+  ['Ź', 'Zacute', 611, 611], ['ź', 'zacute', 500, 500],
+  ['Ż', 'Zdotaccent', 611, 611], ['ż', 'zdotaccent', 500, 500],
+];
+CENTRAL.forEach(([ch, , regular, bold], i) => {
+  EXTRA[ch] = [i + 1, regular, bold];
+});
+const ENCODING = `<< /Type /Encoding /BaseEncoding /WinAnsiEncoding /Differences [1 ${CENTRAL.map(([, name]) => `/${name}`).join(' ')}] >>`;
 
 // Letters Unicode does not decompose into a base and an accent, so NFD cannot strip them.
 const PLAIN = { Ł: 'L', ł: 'l', Đ: 'D', đ: 'd', Ħ: 'H', ħ: 'h', ı: 'i' };
@@ -128,17 +151,33 @@ export function wrap(text, size, width, bold = false) {
   return lines;
 }
 
-/** A PDF literal string, kept 7-bit: anything above ASCII is written as an octal escape. */
+/**
+ * A PDF literal string in the fonts' encoding, kept 7-bit: anything outside printable ASCII is
+ * written as an octal escape.
+ */
 function literal(text) {
   let out = '(';
   for (const ch of text) {
     const b = byteOf(ch);
     if (b === null) continue;
     if (ch === '(' || ch === ')' || ch === '\\') out += `\\${ch}`;
-    else if (b < 128) out += ch;
+    else if (b >= 32 && b < 128) out += ch;
     else out += `\\${b.toString(8).padStart(3, '0')}`;
   }
   return `${out})`;
+}
+
+/**
+ * A document-information string (title, author). These are not drawn with the fonts, so they
+ * are not in the fonts' encoding: plain ASCII as it is, anything else as UTF-16 with its byte
+ * order mark, which every reader shows as written ("Paweł", "€").
+ */
+function infoString(text) {
+  if (/^[\x20-\x7e]*$/.test(text)) return literal(text);
+  let hex = 'FEFF';
+  for (let i = 0; i < text.length; i += 1)
+    hex += text.charCodeAt(i).toString(16).padStart(4, '0').toUpperCase();
+  return `<${hex}>`;
 }
 
 const FALLBACK_LABELS = {
@@ -327,9 +366,9 @@ function writePdf(pages, { title, author }) {
   const pageIds = pages.map((_, i) => 6 + 2 * i);
   objects[1] = '<< /Type /Catalog /Pages 2 0 R >>';
   objects[2] = `<< /Type /Pages /Kids [${pageIds.map((id) => `${id} 0 R`).join(' ')}] /Count ${pages.length} >>`;
-  objects[3] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>';
-  objects[4] = '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>';
-  objects[5] = `<< /Title ${literal(title)} /Author ${literal(author)} /Creator (Epimoni Autofill) >>`;
+  objects[3] = `<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding ${ENCODING} >>`;
+  objects[4] = `<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding ${ENCODING} >>`;
+  objects[5] = `<< /Title ${infoString(title)} /Author ${infoString(author)} /Creator (Epimoni Autofill) >>`;
   pages.forEach((ops, i) => {
     const stream = ops.join('\n');
     objects[pageIds[i]] =
@@ -436,6 +475,7 @@ export function cvIsPrintable(resume) {
 /** A file name from the person's name: "CV-Camille-Dupont.pdf", or "Lettre-…" with a prefix. */
 export function pdfName(resume, prefix = 'CV') {
   const slug = encodable(resume?.basics?.name || '')
+    .replace(/./gu, (ch) => PLAIN[ch] || ch)
     .normalize('NFD')
     .replace(/[̀-ͯ]/g, '')
     .replace(/[^A-Za-z0-9]+/g, '-')
