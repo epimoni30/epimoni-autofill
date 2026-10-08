@@ -1209,6 +1209,8 @@ check(
 );
 // The same letter as a file, made here from the text and the CV's name and contact.
 const pdfLabel = await sw.evaluate(() => chrome.i18n.getMessage('panel_letter_pdf'));
+// The file is named in the browser's language: "Lettre-…" in French, "Cover-letter-…" in English.
+const letterFile = await sw.evaluate(() => chrome.i18n.getMessage('pdf_letter_file'));
 const [letterDl] = await Promise.all([
   letterPage.waitForEvent('download', { timeout: 5000 }),
   letterPage.locator('#epimoni-panel').getByRole('button', { name: pdfLabel }).click(),
@@ -1216,7 +1218,7 @@ const [letterDl] = await Promise.all([
 const letterPdf = readFileSync(await letterDl.path()).toString('latin1');
 check(
   '"Télécharger en PDF" saves the letter as a PDF, with its subject line and every paragraph',
-  letterDl.suggestedFilename().startsWith('Lettre-') &&
+  letterDl.suggestedFilename().startsWith(`${letterFile}-`) &&
     letterPdf.startsWith('%PDF-1.4') &&
     letterPdf.includes('(Candidature au poste de data analyst)') &&
     letterPdf.includes('(Votre annonce a retenu toute mon attention.)'),
