@@ -21,7 +21,8 @@ carries the same number, and the release workflow refuses a tag that does not ma
 - The CV and cover-letter PDFs keep Polish letters (ą, ć, ę, ł, ń, ś, ź, ż) instead of writing
   them without their accent, and a text extractor reads them back as written. A name outside
   ASCII now shows correctly in the PDF's title and author.
-- The free allowance for the AI features reads two an hour, as it has been since 1 October.
+- The free allowance for the AI features reads one an hour again, matching the backend since
+  15 October (it was two from 1 October).
 
 ## [0.2.0] - 2026-10-02
 
