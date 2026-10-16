@@ -69,6 +69,8 @@ const RUN = `
       })),
     }));`;
 
+const PROBE = `window.__epimoniProbe = async (profile, entries) => { ${engine} ${RUN} };`;
+
 const chromium = await loadChromium();
 const browser = await chromium.launch();
 if (shots) await mkdir(shots, { recursive: true });
@@ -92,9 +94,10 @@ for (const url of urls) {
   for (const frame of page.frames()) {
     let got;
     try {
-      got = await frame.evaluate(
-        `(async () => { const profile = ${JSON.stringify(profile)}; const entries = ${JSON.stringify(entries)}; ${engine} ${RUN} })()`,
-      );
+      // The engine goes in as code with no data in it; the CV goes in as an argument, never
+      // spliced into source.
+      await frame.evaluate(PROBE);
+      got = await frame.evaluate((cv) => window.__epimoniProbe(cv.profile, cv.entries), { profile, entries });
     } catch (e) {
       console.log(`  frame ${frame.url().slice(0, 60)}: ${e.message.split('\n')[0]}`);
       continue;
