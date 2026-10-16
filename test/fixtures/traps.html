@@ -33,4 +33,53 @@
   <div><label for="hx3">Ville</label><input id="hx3" style="position:absolute;width:40px;height:20px;clip:rect(0,0,0,0);overflow:hidden" data-expect="none"></div>
   <div style="visibility:hidden"><label for="hx4">Nom</label><input id="hx4" data-expect="none"></div>
 </form>
+<!-- A <label> that wraps its <select>, the way Lever writes it. The options are answers, not
+     the question: read into the label, "Mexico City" made this a city field and picked the
+     person's home town as the office they'd prefer. -->
+<form id="wrapped-select">
+  <label>
+    <div>Which office would you prefer?</div>
+    <div>
+      <select name="cards[c3][field0]" data-expect="none">
+        <option value="">Select...</option>
+        <option>Paris</option>
+        <option>Nantes</option>
+        <option>Mexico City</option>
+      </select>
+    </div>
+  </label>
+</form>
+<!-- Years in one domain are not the career total. Seen on a live Teamtailor form, where the
+     total went into a question about outbound sales. -->
+<form id="domain-years">
+  <label for="dy1">How many years of outbound sales experience do you have?</label>
+  <input id="dy1" name="question_1" type="number" data-expect="none">
+  <label for="dy2">Années d'expérience en gestion de projet</label>
+  <input id="dy2" name="question_2" type="number" data-expect="none">
+</form>
+<!-- The opposite question. Seen on live Greenhouse forms: "Will you require sponsorship?" was
+     read as the work authorisation question, and the stored answer ("Oui, ressortissant UE")
+     picks "Oui" here, telling the employer the person needs a visa. -->
+<form id="sponsorship">
+  <fieldset>
+    <legend>Aurez-vous besoin d'un parrainage de visa pour travailler en France ?</legend>
+    <label><input type="radio" name="sponsor_fr" value="oui" data-expect="none"> Oui</label>
+    <label><input type="radio" name="sponsor_fr" value="non" data-expect="none"> Non</label>
+  </fieldset>
+  <label for="sp2">Will you now or in the future require sponsorship for employment visa status?</label>
+  <select id="sp2" name="question_9" data-expect="none">
+    <option value="">Select...</option>
+    <option>Oui</option>
+    <option>Non</option>
+  </select>
+</form>
+<!-- The right question about the wrong country. The stored answer is "Oui, ressortissant UE":
+     true in France, false in the United States, and "Oui" here would say otherwise. -->
+<form id="other-country">
+  <fieldset>
+    <legend>Êtes-vous autorisé(e) à travailler aux États-Unis ?</legend>
+    <label><input type="radio" name="auth_us" value="oui" data-expect="none"> Oui</label>
+    <label><input type="radio" name="auth_us" value="non" data-expect="none"> Non</label>
+  </fieldset>
+</form>
 </body></html>

@@ -16,8 +16,45 @@ carries the same number, and the release workflow refuses a tag that does not ma
   names, a middle name and a maiden name empty. Brazilian Portuguese came earlier and was not
   listed here.
 
+### Security
+
+- Clickjacking protection for the in-page button and panel. A click counts only if the person
+  could see what they clicked: the UI must have been on screen for half a second, and a page
+  that fades, filters, clips or covers it gets its click refused, with a note pointing at the
+  toolbar icon. This is the DOM-based extension clickjacking attack shown at DEF CON 33.
+- A Content Security Policy for the extension pages and the service worker: they may connect
+  to the API and nowhere else, run only their own scripts, can't be framed and can't post
+  forms.
+- Releases carry a `SHA256SUMS` file and a signed build provenance attestation, and CI checks
+  that two builds of the same source are byte-identical.
+
+### Fixed
+
+- Your work authorisation answer only goes into a question about a country it covers. "Oui,
+  ressortissant UE" answers "…in France?" or "…in Germany?", but no longer "…in the United
+  States?", nor a question about "the country listed". An answer that names no country is
+  read as being about the country you live in.
+- A question asking whether you need a visa or sponsorship is no longer read as the work
+  authorisation question. The stored answer ("Oui, ressortissant UE") picked "Oui" there,
+  which told the employer you need a visa. Found on live Greenhouse forms; fixed in all five
+  languages.
+- A question about years in one domain ("How many years of outbound sales experience?",
+  "Années d'expérience en gestion de projet") is no longer answered with your whole career's
+  total. Found on a live Teamtailor form; fixed in all five languages.
+- A dropdown wrapped in its own `<label>` (Lever does this) no longer reads its options as part
+  of the question. "Which office would you prefer?" with "Mexico City" among the answers was
+  read as a city field and got your home town.
+- Measured on live Lever, Ashby and Greenhouse application pages: "Current location" is now
+  filled with your city, a Lever question whose text sits above its answers is read (it used
+  to be seen only by its field name), and French inclusive writing such as "autorisé(e)" or
+  "candidat·e" is read as the plain word.
+- A long panel no longer starts above the top of the window with its close button out of
+  reach.
+
 ### Changed
 
+- The in-page panel is a named region for screen readers, announces what it filled, and closes
+  with Escape.
 - The CV and cover-letter PDFs keep Polish letters (ą, ć, ę, ł, ń, ś, ź, ż) instead of writing
   them without their accent, and a text extractor reads them back as written. A name outside
   ASCII now shows correctly in the PDF's title and author.

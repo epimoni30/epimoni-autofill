@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en" data-must-fill>
+<!-- Shapes measured on live Lever (and Ashby) application pages, rebuilt in our own words.
+     Both were misses before they were fixtures, so this page is marked data-must-fill: here a
+     miss fails `npm run measure`, not only a wrong fill.
+
+     1. "Current location", the label both ATS use for where you live. Lever's input carries an
+        autocomplete whose "no location found" message sits inside the same <label>.
+     2. Lever's custom questions are not <label>s. The question text is in a sibling of the
+        answers' wrapper, two levels above the list of radios:
+          li > div > [div.application-label > div.text, div.application-field > ul > li > label > input]
+        A question we have an answer for must be answered; one whose answers do not match the
+        CV must stay empty. -->
+<meta charset="utf-8"><title>Apply (Lever shape)</title>
+<body>
+<form id="lever" onsubmit="window.__submitted = true; return false">
+  <ul>
+    <li class="application-question">
+      <label>
+        <div class="application-label">Full name<span class="required">✱</span></div>
+        <div class="application-field"><input type="text" name="name" data-expect="full_name"></div>
+      </label>
+    </li>
+    <li class="application-question">
+      <label>
+        <div class="application-label">Email<span class="required">✱</span></div>
+        <div class="application-field"><input type="email" name="email" data-expect="email"></div>
+      </label>
+    </li>
+    <li class="application-question">
+      <label>
+        <div class="application-label">Current location</div>
+        <div class="application-field">
+          <input type="text" name="location" autocomplete="off" data-expect="city">
+          <div class="dropdown-results"><div class="dropdown-no-results">No location found. Try entering a different location</div></div>
+          <input type="hidden" name="selectedLocation">
+        </div>
+      </label>
+    </li>
+  </ul>
+
+  <div class="section application-form">
+    <h4>Right to work</h4>
+    <ul>
+      <li class="application-question custom-question">
+        <div>
+          <div class="application-label full-width multiple-choice"><div class="text">Êtes-vous autorisé(e) à travailler en France ?<span class="required">✱</span></div></div>
+          <div class="application-field full-width required-field">
+            <ul data-qa="multiple-choice">
+              <li><label><input type="radio" name="cards[a1][field0]" value="Oui" data-controlled data-expect="work_authorization"><span class="application-answer-alternative">Oui</span></label></li>
+              <li><label><input type="radio" name="cards[a1][field0]" value="Non" data-expect="none"><span class="application-answer-alternative">Non</span></label></li>
+            </ul>
+          </div>
+        </div>
+      </li>
+      <li class="application-question custom-question">
+        <div>
+          <div class="application-label full-width multiple-choice"><div class="text">Will you need us to sponsor a visa?<span class="required">✱</span></div></div>
+          <div class="application-field full-width required-field">
+            <ul data-qa="multiple-choice">
+              <li><label><input type="radio" name="cards[b2][field0]" value="Yes, and I would relocate" data-expect="none"><span class="application-answer-alternative">Yes, and I would relocate</span></label></li>
+              <li><label><input type="radio" name="cards[b2][field0]" value="No, I can already work there" data-expect="none"><span class="application-answer-alternative">No, I can already work there</span></label></li>
+            </ul>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+  <button type="submit">Submit application</button>
+</form>
+<script src="_react.js"></script><script>window.__controlAll()</script>
+</body></html>

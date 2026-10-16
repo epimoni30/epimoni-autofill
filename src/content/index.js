@@ -148,8 +148,15 @@
         n.append(typeof k === 'object' ? k : String(k));
     return n;
   };
+  // A trusted click is not enough: the page can hide or cover the panel and take a real click
+  // through it (clickjacking). `clickguard.js` also checks that the panel was on screen,
+  // unobstructed, long enough to be seen.
+  const guards = new WeakMap();
   const byUser = (fn) => (e) => {
-    if (e?.isTrusted) return fn(e);
+    const button = e?.currentTarget;
+    const guard = guards.get(button?.getRootNode?.()?.host);
+    if (!guard || guard.allow(e, button)) return;
+    return fn(e);
   };
   const money = (n) => `${Number(n)} %`;
 
@@ -545,7 +552,26 @@
     const host = document.createElement('div');
     host.id = 'epimoni-panel';
     const panel = document.createElement('div');
-    host.attachShadow({ mode: DEV ? 'open' : 'closed' }).appendChild(panel);
+    const root = host.attachShadow({ mode: DEV ? 'open' : 'closed' });
+    root.appendChild(panel);
+    // A named region a screen reader can jump to; what the fill did is announced from `summary`.
+    panel.setAttribute('role', 'region');
+    panel.setAttribute('aria-label', 'Epimoni');
+    panel.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') host.remove();
+    });
+    guards.set(
+      host,
+      clickGuard(host, root, panel, {
+        onRefuse: () => {
+          if (root.getElementById('epimoni-refused')) return;
+          const note = h('div', 'margin:0 22px 8px 0;color:#b91c1c', t('guard_refused'));
+          note.id = 'epimoni-refused';
+          note.setAttribute('role', 'status');
+          panel.prepend(note);
+        },
+      }),
+    );
     panel.style.cssText = [
       'position:fixed',
       'z-index:2147483647',
@@ -561,6 +587,9 @@
       'padding:12px 14px',
       // Fill summary, letter, tailored CV and analysis can outgrow a small window.
       'max-height:calc(100vh - 32px)',
+      // Padding and border inside that height, or a full panel starts above the viewport and
+      // its close button with it.
+      'box-sizing:border-box',
       'overflow:auto',
     ].join(';');
 
@@ -587,6 +616,7 @@
       // Re-rendered in place when a re-fill adds to it, so an offer analysis already on screen
       // below it is not thrown away.
       const summary = document.createElement('div');
+      summary.setAttribute('aria-live', 'polite');
       const render = (list, c) => {
         const headline =
           list.length === 1 ? t('panel_filled_one') : t('panel_filled_many', [String(list.length)]);

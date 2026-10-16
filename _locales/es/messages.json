@@ -1456,6 +1456,10 @@
   "sites_offer_is_off": {
     "message": "Activo solo en los portales de empleo compatibles."
   },
+  "guard_refused": {
+    "message": "Clic ignorado: la página ocultaba o tapaba este botón. Use mejor el icono de Epimoni en la barra de herramientas.",
+    "description": "Shown when a click on the in-page panel or button was refused because the page hid or covered it (clickjacking)."
+  },
   "offer_hint": {
     "message": "Formulario de candidatura detectado."
   },

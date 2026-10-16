@@ -7,6 +7,7 @@
 // discarded.
 
 import { MONTHS } from '../lexicon/index.js';
+import { workRightCovers } from '../schema/countries.js';
 
 /**
  * Lowercase, strip diacritics, reduce to words. `Prénom` and `PRENOM_1` both become `prenom 1`.
@@ -14,13 +15,21 @@ import { MONTHS } from '../lexicon/index.js';
  * would split into "wykszt alcenie".
  */
 export function normalize(text) {
-  return String(text || '')
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/ł/g, 'l')
-    .replace(/[^a-z0-9]+/g, ' ')
-    .trim();
+  return (
+    String(text || '')
+      // French inclusive writing: "autorisé(e)", "candidat·e", "salarié(e)s" read as the plain
+      // word. Left alone they become "autorise e", and no phrase in any pack matches that.
+      .replace(
+        /(\p{L})(?:\((?:e|es|s|ne|le|se|ve|euse|rice)\)|[·•](?:e|es|ne|le|se|euse|rice)\b)(s?)/gu,
+        '$1$2',
+      )
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .toLowerCase()
+      .replace(/ł/g, 'l')
+      .replace(/[^a-z0-9]+/g, ' ')
+      .trim()
+  );
 }
 
 /** Walk the composed tree, entering every open shadow root. */
@@ -214,6 +223,26 @@ function labelledByText(el) {
   return ids.map((id) => doc.getElementById(id)?.textContent || '').join(' ');
 }
 
+/**
+ * A label's words without the controls inside it. Lever wraps a whole `<select>` in its
+ * `<label>`, and `textContent` would read every option into the question: "What is your
+ * location? Afghanistan Albania Algeria…".
+ */
+function labelWords(label) {
+  let text = '';
+  const walk = (node) => {
+    for (const n of node.childNodes) {
+      if (n.nodeType === Node.TEXT_NODE) text += n.textContent;
+      else if (n.nodeType === Node.ELEMENT_NODE && !n.matches('select, textarea, datalist, option')) {
+        text += ' ';
+        walk(n);
+      }
+    }
+  };
+  walk(label);
+  return text;
+}
+
 function forLabelText(el) {
   const doc = el.ownerDocument;
   const root = el.getRootNode();
@@ -223,10 +252,10 @@ function forLabelText(el) {
     const byFor =
       (root.querySelector ? root.querySelector(`label[for="${CSS.escape(el.id)}"]`) : null) ||
       doc.querySelector(`label[for="${CSS.escape(el.id)}"]`);
-    if (byFor) text += ` ${byFor.textContent}`;
+    if (byFor) text += ` ${labelWords(byFor)}`;
   }
   const wrapping = el.closest('label');
-  if (wrapping) text += ` ${wrapping.textContent}`;
+  if (wrapping) text += ` ${labelWords(wrapping)}`;
   return text;
 }
 
@@ -450,9 +479,21 @@ export function formatValue(el, bundle, v) {
  * The value a decision stands for: the flat profile for an unscoped key, the right entry of
  * the right section for a scoped one. `entries` comes from `toEntries` in shared/cvdoc.js.
  */
+/**
+ * Whether the stored answer for `key` may go into this question at all. Today one key needs it:
+ * a work authorisation holds for some countries, and "Oui" in a question about another one is
+ * false (src/schema/countries.js).
+ */
+export function answerHolds(key, bundle, profile) {
+  if (key !== 'work_authorization') return true;
+  const question = bundle.sources.map((s) => s.text).join(' ');
+  return workRightCovers(question, profile?.[key], profile?.country);
+}
+
 export function valueFor(decision, el, bundle, profile, entries) {
   const { key, index } = decision;
-  if (index === undefined || index === null) return formatValue(el, bundle, profile?.[key]);
+  if (index === undefined || index === null)
+    return answerHolds(key, bundle, profile) ? formatValue(el, bundle, profile?.[key]) : null;
   const dot = key.indexOf('.');
   const row = entries?.[key.slice(0, dot)]?.[index];
   return formatValue(el, bundle, row?.[key.slice(dot + 1)]);
@@ -750,14 +791,23 @@ export function radioGroupBundle(group) {
   // question: on a form with a "recevoir des offres par e-mail" checkbox two fieldsets down,
   // that made an authorisation group look like an email field. The same lesson as `guard` in
   // resolve.js: a hint may suggest, only evidence may forbid.
-  const parent = container?.parentElement;
-  const parentIsolated = parent && parent.querySelectorAll(CONTROL).length === group.inputs.length && !own;
+  //
+  // Up to three hops, still only while each ancestor holds this group's controls and nothing
+  // else: Lever puts the question in a sibling of the answers' wrapper, two levels above the
+  // list of radios (`div > [div.application-label, div.application-field > ul]`).
+  let above = '';
+  for (let node = container?.parentElement, hops = 0; node && hops < 3 && !own; hops += 1) {
+    if (node.querySelectorAll(CONTROL).length !== group.inputs.length) break;
+    above = ownText(node);
+    if (above) break;
+    node = node.parentElement;
+  }
 
   const sources = [
     ['legend', legend, 0.95],
     ['aria-label', container?.getAttribute('aria-label'), 0.95],
     ['nearby', own, 0.9],
-    ...(parentIsolated ? [['nearby', ownText(parent), 0.85]] : []),
+    ['nearby', above, 0.85],
     ['name', group.name, 0.75],
   ];
   return {

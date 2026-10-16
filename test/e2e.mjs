@@ -112,11 +112,57 @@ if (!sw) {
 await waker.close();
 
 const fails = [];
+// The in-page panel and button take a click only once they have been visible for a moment
+// (src/content/clickguard.js), so a test waits for that, the way a person would.
+const armed = (page, host) =>
+  page
+    .waitForSelector(`${host}[data-epimoni-armed]`, { state: 'attached', timeout: 5000 })
+    .catch(async (e) => {
+      const why = await page.evaluate(
+        (sel) =>
+          new Promise((done) => {
+            const el = document.querySelector(sel)?.shadowRoot?.firstElementChild;
+            if (!el) return done('no panel');
+            const r = el.getBoundingClientRect();
+            const io = new IntersectionObserver(
+              (es) => {
+                io.disconnect();
+                const top = document
+                  .elementsFromPoint(r.left + r.width / 2, r.top + r.height / 2)
+                  .map((n) => n.id || n.tagName);
+                done(
+                  JSON.stringify({
+                    visible: es[0].isVisible,
+                    ratio: es[0].intersectionRatio,
+                    rect: [r.left, r.top, r.width, r.height],
+                    vh: innerHeight,
+                    top,
+                  }),
+                );
+              },
+              { trackVisibility: true, delay: 100, threshold: [1] },
+            );
+            io.observe(el);
+          }),
+        host,
+      );
+      throw new Error(`${host} never armed: ${why}\n${e.message}`);
+    });
 const check = (name, ok, detail = '') => {
   console.log(`${ok ? '  ok  ' : ' FAIL '} ${name}${detail ? `: ${detail}` : ''}`);
   if (!ok) fails.push(name);
 };
 console.log(`extension loaded: ${extId}\n`);
+
+// The manifest's CSP limits `connect-src` to the API, and it binds the service worker too: even
+// code that went wrong inside the extension cannot send a CV anywhere else.
+const elsewhere = await sw.evaluate(() =>
+  fetch('https://example.com/').then(
+    () => 'reached',
+    () => 'refused',
+  ),
+);
+check('the worker cannot reach an origin the CSP does not name', elsewhere === 'refused', elsewhere);
 
 // Pairing state as the service worker would have stored it after a hand-off from the site.
 await sw.evaluate(async (payload) => {
@@ -277,9 +323,12 @@ await sw.evaluate(async (id) => {
 }, trapTabId);
 await traps.waitForTimeout(600);
 const touched = await traps.evaluate(() =>
-  Array.from(document.querySelectorAll('input'))
-    .filter((i) => i.value && i.value !== 'REF-2026-118')
-    .map((i) => i.id),
+  Array.from(document.querySelectorAll('input, select'))
+    // A radio or checkbox always has a value; whether it was chosen is `checked`.
+    .filter((i) =>
+      i.type === 'radio' || i.type === 'checkbox' ? i.checked : i.value && i.value !== 'REF-2026-118',
+    )
+    .map((i) => i.id || i.name),
 );
 check('no trap field was filled', touched.length === 0, touched.join(', '));
 
@@ -422,6 +471,7 @@ check(
 check('the birth-country dropdown is left alone', !comboResult.state.birth, String(comboResult.state.birth));
 check('the submit button inside a dropdown was never pressed', comboResult.submitted === false);
 const undoLabel = await sw.evaluate(() => chrome.i18n.getMessage('panel_undo'));
+await armed(combo, '#epimoni-panel');
 await combo.getByRole('button', { name: undoLabel }).click();
 await combo.waitForFunction(() => window.__state.country === '', { timeout: 3000 }).catch(() => {});
 const afterUndo = await combo.evaluate(() => ({ ...window.__state }));
@@ -492,6 +542,7 @@ check(
   String(upResult.bytes),
 );
 check('no other upload gets a file', upResult.others.length === 0, upResult.others.join(', '));
+await armed(uploads, '#epimoni-panel');
 await uploads.getByRole('button', { name: undoLabel }).click();
 const upUndone = await uploads.evaluate(() => document.querySelector('#cv-zone input').files.length);
 check('undo empties the CV upload', upUndone === 0, String(upUndone));
@@ -590,6 +641,7 @@ await shadowSelect.selectOption('cv-thin');
 const scripted = await picked.evaluate(() => document.querySelector('#cv-zone input').files.length);
 check('a scripted change of CV does nothing', scripted === 1, String(scripted));
 await shadowSelect.selectOption('cv-parcours');
+await armed(picked, '#epimoni-panel');
 await shadowSelect.focus();
 // Type-ahead: on a closed select, typing an option's first letters selects it on every
 // platform, where the arrow keys open a native menu on macOS.
@@ -675,6 +727,7 @@ check(
   JSON.stringify(stepApps.map((a) => [a.fields, a.status, a.title])),
 );
 const sentLabel = await sw.evaluate(() => chrome.i18n.getMessage('panel_mark_applied'));
+await armed(steps, '#epimoni-panel');
 await steps.locator('#epimoni-panel').getByRole('button', { name: sentLabel }).click();
 await steps.waitForTimeout(300);
 const afterSent = ((await askWorker({ type: 'app:list' })).apps || []).find((a) =>
@@ -777,6 +830,7 @@ check(
   JSON.stringify(onCv),
 );
 await tracker.close();
+await armed(steps, '#epimoni-panel');
 await steps.getByRole('button', { name: undoLabel }).click();
 await steps.click('#more');
 await steps.waitForTimeout(800);
@@ -813,6 +867,7 @@ check(
   'a button the page removed is put back',
   await offerPage.evaluate(() => Boolean(document.getElementById('epimoni-offer'))),
 );
+await armed(offerPage, '#epimoni-offer');
 await offerPage.locator('#epimoni-offer').getByRole('button', { name: offerLabel }).click();
 await offerPage
   .waitForFunction(() => document.getElementById('epimoni-panel'), null, { timeout: 5000 })
@@ -827,7 +882,21 @@ check(
   afterPill.values.every(Boolean) && !afterPill.pill && !afterPill.submitted,
   JSON.stringify(afterPill),
 );
+const a11y = await offerPage.evaluate(() => {
+  const panel = document.getElementById('epimoni-panel')?.shadowRoot?.firstElementChild;
+  return {
+    role: panel?.getAttribute('role'),
+    name: panel?.getAttribute('aria-label'),
+    live: Boolean(panel?.querySelector('[aria-live="polite"]')),
+  };
+});
+check(
+  'the panel is a named region and announces what it filled',
+  a11y.role === 'region' && a11y.name === 'Epimoni' && a11y.live,
+  JSON.stringify(a11y),
+);
 const alwaysLabel = await sw.evaluate(() => chrome.i18n.getMessage('panel_always_on'));
+await armed(offerPage, '#epimoni-panel');
 await offerPage.locator('#epimoni-panel').getByRole('button', { name: alwaysLabel }).click();
 await offerPage.waitForTimeout(300);
 const alwaysOn = await askWorker({ type: 'site:status', url: `${base}/late.html` });
@@ -838,6 +907,87 @@ check(
 );
 await askWorker({ type: 'site:disable', host: '127.0.0.1' });
 await offerPage.close();
+
+// ── Clickjacking: a page that hides or covers our button cannot borrow a click ────────
+//
+// The DOM-based extension clickjacking attack (DEF CON 33): the page fades our injected button
+// to nothing, or lays a click-through layer over it, and a real click on what looks like its
+// own content presses our button. Each case below is a trusted click straight onto the button;
+// each must leave the form empty. The positive control is the test just above.
+const refusedLabel = await sw.evaluate(() => chrome.i18n.getMessage('guard_refused'));
+const jackedPage = async () => {
+  const page = await ctx.newPage();
+  await page.goto(`${base}/late.html`, { waitUntil: 'load' });
+  await page.click('#apply');
+  await page.waitForSelector('#epimoni-offer', { state: 'attached', timeout: 4000 });
+  return page;
+};
+const pressGo = async (page) => {
+  const box = await page.locator('#epimoni-offer').getByRole('button', { name: offerLabel }).boundingBox();
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  await page.waitForTimeout(700);
+  return page.evaluate(() => ({
+    prenom: document.querySelector('[name="prenom"]').value,
+    panel: Boolean(document.getElementById('epimoni-panel')),
+    tab: document.getElementById('epimoni-offer')?.shadowRoot?.querySelector('.hint')?.textContent || '',
+  }));
+};
+for (const [name, attack] of [
+  ['faded to opacity 0 by the page', 'css'],
+  ['under a click-through layer the page put on top', 'overlay'],
+]) {
+  const page = await jackedPage();
+  await armed(page, '#epimoni-offer');
+  if (attack === 'css') await page.addStyleTag({ content: '#epimoni-offer { opacity: 0 !important; }' });
+  if (attack === 'overlay')
+    await page.evaluate(() => {
+      const veil = document.createElement('div');
+      veil.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#fff;pointer-events:none';
+      document.documentElement.appendChild(veil);
+    });
+  await page.waitForTimeout(300);
+  const got = await pressGo(page);
+  check(
+    `clickjacking: a button ${name} fills nothing`,
+    got.prenom === '' && !got.panel && got.tab.includes(refusedLabel),
+    JSON.stringify(got),
+  );
+  await page.close();
+}
+// Pressed the moment it appears, inside the dwell. A slow machine can take longer than the
+// dwell to get from "the button is there" to the click, and a click after arming is a real
+// click that should fill. So the page records when the button armed and when the click
+// arrived: only a click clearly before arming is conclusive, and a late one is retried on a
+// fresh page rather than read as a pass or a failure.
+{
+  let early = null;
+  let tries = 0;
+  for (; tries < 5 && !early; tries += 1) {
+    const page = await jackedPage();
+    await page.evaluate(() => {
+      const host = document.getElementById('epimoni-offer');
+      window.__armedAt = host.hasAttribute('data-epimoni-armed') ? 0 : null;
+      new MutationObserver(() => {
+        if (window.__armedAt === null && host.hasAttribute('data-epimoni-armed'))
+          window.__armedAt = performance.now();
+      }).observe(host, { attributes: true });
+      window.__clickAt = null;
+      document.addEventListener('click', (e) => (window.__clickAt ??= e.timeStamp), true);
+    });
+    // Past the tab's 200 ms slide-in, inside the dwell.
+    await page.waitForTimeout(220);
+    const got = await pressGo(page);
+    const at = await page.evaluate(() => ({ armed: window.__armedAt, click: window.__clickAt }));
+    if (at.click !== null && (at.armed === null || at.click < at.armed - 50))
+      early = { ...got, tries: tries + 1 };
+    await page.close();
+  }
+  check(
+    'clickjacking: a button pressed the moment it appears fills nothing',
+    Boolean(early) && early.prenom === '' && !early.panel,
+    early ? JSON.stringify(early) : `no click landed before arming in ${tries} tries`,
+  );
+}
 
 // ── Automatic filling, on a site the user turned it on for ──────────────────────────────
 //
@@ -876,6 +1026,7 @@ check(
   JSON.stringify({ beforeApply, ...autoFilled, panel: autoFilled.panel.slice(0, 120) }),
 );
 const offLabel = await sw.evaluate(() => chrome.i18n.getMessage('panel_auto_off'));
+await armed(late, '#epimoni-panel');
 await late.locator('#epimoni-panel').getByRole('button', { name: offLabel }).click();
 await late.waitForTimeout(300);
 const afterOff = await askWorker({ type: 'sites:list' });
@@ -1170,6 +1321,7 @@ check(
   panelSkills.includes(skillsFound),
   skillsFound,
 );
+await armed(letterPage, '#epimoni-panel');
 await letterPage.locator('#epimoni-panel').getByRole('button', { name: markLabel }).click();
 const marked = await letterPage.evaluate(() => ({
   ranges: CSS.highlights.get('epimoni-skill')?.size || 0,
@@ -1183,6 +1335,7 @@ check(
 );
 const beforeInsert = await letterPage.evaluate(() => document.getElementById('lm').value);
 check('the fill leaves the letter box empty', beforeInsert === '', beforeInsert);
+await armed(letterPage, '#epimoni-panel');
 await letterPage.locator('#epimoni-panel').getByRole('button', { name: letterCta }).click();
 await letterPage
   .locator('#epimoni-panel')
@@ -1198,6 +1351,7 @@ check(
   shown.box === '' && shown.panel.includes('Votre annonce a retenu') && shown.panel.includes('/ 1500'),
   shown.panel.slice(0, 160),
 );
+await armed(letterPage, '#epimoni-panel');
 await letterPage.locator('#epimoni-panel').getByRole('button', { name: insertLabel }).click();
 const inserted = await letterPage.evaluate(() => ({
   box: document.getElementById('lm').value,
@@ -1211,6 +1365,7 @@ check(
 const pdfLabel = await sw.evaluate(() => chrome.i18n.getMessage('panel_letter_pdf'));
 // The file is named in the browser's language: "Lettre-…" in French, "Cover-letter-…" in English.
 const letterFile = await sw.evaluate(() => chrome.i18n.getMessage('pdf_letter_file'));
+await armed(letterPage, '#epimoni-panel');
 const [letterDl] = await Promise.all([
   letterPage.waitForEvent('download', { timeout: 5000 }),
   letterPage.locator('#epimoni-panel').getByRole('button', { name: pdfLabel }).click(),
@@ -1224,6 +1379,7 @@ check(
     letterPdf.includes('(Votre annonce a retenu toute mon attention.)'),
   letterDl.suggestedFilename(),
 );
+await armed(letterPage, '#epimoni-panel');
 await letterPage.getByRole('button', { name: undoLabel }).click();
 const letterUndone = await letterPage.evaluate(() => document.getElementById('lm').value);
 check('"Tout annuler" takes the letter back out', letterUndone === '', letterUndone.slice(0, 40));
@@ -1295,6 +1451,7 @@ const useLabel = await sw.evaluate(() => chrome.i18n.getMessage('panel_tailor_us
 const listCvs = async () =>
   (await extPage.evaluate(() => new Promise((r) => chrome.runtime.sendMessage({ type: 'cv:list' }, r))))
     .cvs || [];
+await armed(tailorPage, '#epimoni-panel');
 await tailorPage.locator('#epimoni-panel').getByRole('button', { name: tailorCta }).click();
 await tailorPage
   .locator('#epimoni-panel')
@@ -1318,6 +1475,7 @@ check(
     (await listCvs()).length === 1,
   JSON.stringify(reviewView.boxes),
 );
+await armed(tailorPage, '#epimoni-panel');
 await tailorPage.locator('#epimoni-panel').getByRole('button', { name: makeLabel }).click();
 await tailorPage
   .locator('#epimoni-panel')
@@ -1333,6 +1491,7 @@ check(
     (await sw.evaluate(() => globalThis.__calls.filter((u) => u.includes('write-cv-doc')).length)) === 1,
   JSON.stringify(library.map((c) => [c.label, c.active, c.tailored])),
 );
+await armed(tailorPage, '#epimoni-panel');
 await tailorPage.locator('#epimoni-panel').getByRole('button', { name: useLabel }).click();
 const inUseLine = await sw.evaluate(
   (l) => chrome.i18n.getMessage('panel_tailor_in_use', [l]),
@@ -1348,6 +1507,7 @@ check(
   afterUse.slice(0, 200),
 );
 const tailorPdfLabel = await sw.evaluate(() => chrome.i18n.getMessage('panel_tailor_pdf'));
+await armed(tailorPage, '#epimoni-panel');
 const [tailorDl] = await Promise.all([
   tailorPage.waitForEvent('download', { timeout: 5000 }),
   tailorPage.locator('#epimoni-panel').getByRole('button', { name: tailorPdfLabel }).click(),

@@ -194,7 +194,7 @@ export default {
       not: [],
     },
     city: {
-      any: ['ville', 'commune', 'localite', 'ville de residence', 'votre ville'],
+      any: ['ville', 'commune', 'localite', 'ville de residence', 'votre ville', 'localisation actuelle'],
       not: ['naissance', 'entreprise', 'societe', 'poste', 'ecole', 'universite', 'etablissement'],
     },
     country: {
@@ -283,7 +283,9 @@ export default {
         'anciennete',
         'annees de pratique',
       ],
-      not: [],
+      // "Années d'expérience en gestion de projet" asks about one domain, not the career total.
+      // Not a bare "en": "expérience en années" is the total.
+      not: ['d experience en', 'dans', 'avec', 'sur', 'chez', 'comme', 'en tant que'],
     },
     salary_expectation: {
       any: [
@@ -312,20 +314,30 @@ export default {
       not: [],
     },
     work_authorization: {
+      // Positive questions only. "Avez-vous besoin d'un visa ?" asks the opposite, and the
+      // stored answer ("Oui, ressortissant UE") would pick its "Oui".
       any: [
         'autorisation de travail',
         'permis de travail',
-        'titre de sejour',
         'droit de travailler',
         'autorise a travailler',
-        'visa',
         'autorisation de travailler',
         'autorise a travailler en france',
         'droit de travail',
         'permis de travailler',
         'autorisation de travail en france',
       ],
-      not: [],
+      not: [
+        'parrainage',
+        'sponsor',
+        'sponsoring',
+        'sponsorisation',
+        'visa',
+        'besoin',
+        'necessite',
+        'necessiter',
+        'titre de sejour',
+      ],
     },
     education_degree: {
       any: [

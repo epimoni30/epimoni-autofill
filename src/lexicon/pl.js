@@ -178,7 +178,8 @@ export default {
     },
     years_experience: {
       any: ['lata doswiadczenia', 'liczba lat doswiadczenia', 'ile lat doswiadczenia', 'staz pracy'],
-      not: [],
+      // "Lata doświadczenia w sprzedaży" asks about one domain, not the career total.
+      not: ['w', 'z', 'jako', 'na stanowisku'],
     },
     salary_expectation: {
       any: [
@@ -205,8 +206,20 @@ export default {
       not: ['podrozy', 'delegacji', 'przeprowadzki', 'godziny'],
     },
     work_authorization: {
+      // Positive questions only. One asking whether the person needs a visa or sponsorship is
+      // the opposite question, and the stored answer would pick its "yes".
       any: ['pozwolenie na prace', 'zezwolenie na prace', 'prawo do pracy'],
-      not: [],
+      not: [
+        'sponsor',
+        'sponsorowania',
+        'sponsoring',
+        'wiza',
+        'wizy',
+        'wize',
+        'potrzebuje',
+        'potrzebujesz',
+        'wymaga',
+      ],
     },
     education_degree: {
       any: ['wyksztalcenie', 'poziom wyksztalcenia', 'tytul zawodowy', 'stopien naukowy'],

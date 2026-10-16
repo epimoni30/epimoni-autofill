@@ -82,8 +82,10 @@ jobs:
           ' CHANGELOG.md > "$out/notes.md"
           [ -s "$out/notes.md" ] || echo "See CHANGELOG.md." > "$out/notes.md"
 
+          (cd "$out" && sha256sum "$name.zip" "$name-firefox.zip" > SHA256SUMS)
+
           ls -la "$out"
-          for f in "$name.zip" "$name-firefox.zip" notes.md; do
+          for f in "$name.zip" "$name-firefox.zip" SHA256SUMS notes.md; do
             if [ ! -s "$out/$f" ]; then
               echo "::error::release/$f is missing or empty"
               exit 1
@@ -101,11 +103,19 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      # Signed build provenance: anyone can check that a zip came from this workflow, at this
+      # tag, with `gh attestation verify <zip> --repo epimoni30/epimoni-autofill`.
+      id-token: write
+      attestations: write
     steps:
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: release
           path: release
+
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: release/*.zip
 
       - name: GitHub release
         env:
@@ -113,4 +123,4 @@ jobs:
         run: |
           ls -la release
           name="epimoni-autofill-${GITHUB_REF_NAME}"
-          gh release create "$GITHUB_REF_NAME" "release/$name.zip" "release/$name-firefox.zip" --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --notes-file release/notes.md --verify-tag
+          gh release create "$GITHUB_REF_NAME" "release/$name.zip" "release/$name-firefox.zip" release/SHA256SUMS --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --notes-file release/notes.md --verify-tag

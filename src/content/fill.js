@@ -19,6 +19,7 @@
 // engine answer a question the evidence does not support.
 
 import {
+  answerHolds,
   assignBlocks,
   clearValue,
   fileInputs,
@@ -229,13 +230,14 @@ export async function runFill({
   let radios = 0;
   const radioRows = [];
   for (const group of radioGroups(root)) {
-    const d = resolver.resolve(radioGroupBundle(group));
+    const gb = radioGroupBundle(group);
+    const d = resolver.resolve(gb);
     const rrow = { group, decision: d, chosen: null };
     radioRows.push(rrow);
     if (group.inputs.some((r) => skip?.has(r))) continue;
     if (radioAnswered(group) || d.action !== 'fill') continue;
     const value = profile[d.key];
-    if (value === undefined) continue;
+    if (value === undefined || !answerHolds(d.key, gb, profile)) continue;
     const chosen = setRadio(group, value);
     if (!chosen) continue;
     rrow.chosen = chosen;

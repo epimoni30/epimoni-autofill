@@ -17,6 +17,7 @@ npm run build   # dist/, with manifest + locale + pack + filler + module-import 
 npm run icons   # re-render icons/*.png from the brand mark
 npm run store   # store screenshots + promo tile, rendered from the real extension (fr, en)
 npm run probe   # visit a real posting on each supported board, report what extraction gets
+npm run probe:ats -- <url>   # run the engine on a live apply page; nothing is sent
 npm run lint    # Biome format + lint check (CI runs `biome ci`)
 npm run format  # apply Biome formatting and safe fixes
 npm run check   # lint + test + measure + guard + build + e2e
@@ -167,6 +168,21 @@ form scanned
 The deterministic half keeps what justifies it: no network call, instant, uncapped, and a
 wrong-fill floor `traps.html` can enforce in CI. The scout takes what it cannot name: unnamed
 prose, open questions, the cover letter, and any page where deterministic coverage is poor.
+
+## An answer that only holds somewhere
+
+Most stored values are true wherever they are asked: a name, an email. A work authorisation
+isn't. "Oui, ressortissant UE" is true for France and false for the United States, and a form
+asks about one country at a time. So `answerHolds` in `dom.js` gates that key on both write
+paths (fields and radio groups): when the question names a country, the answer must cover it
+(`src/schema/countries.js`), by naming it, by an EU/EEA word for an EU/EEA country, or, when it
+names no place at all, through the country the person lives in. A question about a place it
+doesn't name ("the country listed") gets nothing.
+
+The polarity half of the same lesson lives in the packs: "Will you require sponsorship?" asks
+the opposite of "Are you authorised to work?", and the same stored "Oui" would answer both.
+`work_authorization` lists only questions asked the positive way, and visa, sponsorship and
+need/require disqualify it in every language.
 
 ## Fillers: evidence and guarded writers, never decisions
 
@@ -387,6 +403,30 @@ sites, which is never asked at install: the user turns it on from the popup or t
 `https://*/*` minus the declared boards and epimoni30.com, and withdraws it when the grant
 goes. With that grant every site is also allowed for automatic filling, so the panel's
 « Toujours remplir ici », offered after any fill, takes one click there too.
+
+## A click the person saw: the clickjacking guard
+
+The button and the panel are drawn inside the page, so the page can do anything to them except
+read or press them (closed shadow roots, `isTrusted`). That still leaves the attack shown
+against password managers at DEF CON 33: fade our host to `opacity: 0`, or lay a
+`pointer-events: none` layer over it, and let a real click on what looks like the page's own
+"Accept" land on our button. With the button allowed on every site, any page could try it.
+
+`src/content/clickguard.js` decides whether a click counts. It needs a trusted event, half a
+second of the UI being visible before the click (so a button cannot be popped up under a
+cursor that is about to click), Chromium's IntersectionObserver v2 reporting the UI unoccluded
+and free of opacity, filters and transforms, and then our own checks, which are all Firefox
+has: computed styles on the host and `<html>`, a hit test at the click point inside and
+outside our shadow root, and nothing in the top layer or after our host overlapping the
+button. A refused click does nothing; when the cause is tampering the UI says so and points at
+the toolbar icon, which no page can cover.
+
+The panel is `box-sizing: border-box` for the same reason as for looks: with `content-box`
+its padding pushed a full panel above the viewport, and a UI that is never wholly on screen
+can never be armed. `offer.js` is a plain script, so `build.mjs` inlines the guard into it;
+the guard must not import anything. `test/e2e.mjs` replays the three attacks (faded, covered,
+pressed on arrival) and each was checked to fail with its defence removed. Tests wait for
+`data-epimoni-armed` on the host before clicking, exactly as a person would wait to see it.
 
 ## The application tracker
 
@@ -732,6 +772,14 @@ every control in it must stay untouched. A field of a repeated section is annota
 entry, `data-expect="work[1].company"`; `parcours.html` (French, labelled by position) and
 `indexed.html` (Workday-style ids) carry the block traps: a job's "Ville", a references
 block, a field outside every block.
+
+`ats-lever.html` and `ats-ashby.html` come from `npm run probe:ats` on live, public Lever and
+Ashby application pages (no login, every non-GET request aborted so nothing could be sent).
+Each rebuilds, in our own words, a shape that was a miss there: "Current location", a radio
+question whose text sits two levels above its answers, and French inclusive writing
+("autorisé(e)"). They carry `data-must-fill` on `<html>`, which makes a miss on that page fail
+`npm run measure` the way a wrong fill does everywhere. A miss elsewhere is only reported,
+because most fixtures also hold fields the CV has no answer for.
 
 `test/fixtures/postings/` holds reduced advert pages for the extraction tests. `npm run probe`
 fetches live postings into an ignored directory for local work; those captures are third-party

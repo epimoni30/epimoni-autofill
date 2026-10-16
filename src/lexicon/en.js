@@ -208,7 +208,7 @@ export default {
       not: [],
     },
     city: {
-      any: ['city', 'town', 'locality', 'city of residence'],
+      any: ['city', 'town', 'locality', 'city of residence', 'current location'],
       not: ['birth', 'company', 'school', 'university'],
     },
     country: {
@@ -273,8 +273,10 @@ export default {
       not: ['file', 'attach', 'upload', 'resume', 'cv'],
     },
     years_experience: {
-      any: ['years of experience', 'years experience', 'how many years', 'total experience'],
-      not: [],
+      // Total years only. "How many years of sales experience" or "years of experience with
+      // React" ask about one domain, and the career total would be a wrong answer there.
+      any: ['years of experience', 'years experience', 'total experience'],
+      not: ['in', 'with', 'using', 'as a', 'as an', 'managing', 'leading'],
     },
     salary_expectation: {
       any: [
@@ -295,20 +297,22 @@ export default {
       not: [],
     },
     work_authorization: {
+      // Positive questions only: "are you authorized to work…". "Will you require sponsorship?"
+      // and "Do you need a visa?" ask the opposite, and the stored answer ("Yes, EU citizen")
+      // would pick their "Yes", saying the person needs a visa.
       any: [
         'work authorization',
         'work authorisation',
         'right to work',
         'work permit',
-        'visa',
         'legally authorized',
-        'sponsorship',
+        'legally authorised',
         'authorized to work',
         'authorised to work',
         'eligible to work',
         'right to work in',
       ],
-      not: [],
+      not: ['sponsor', 'sponsorship', 'visa', 'require', 'required to obtain', 'need', 'needs'],
     },
     education_degree: {
       any: ['degree', 'highest degree', 'education level', 'qualification', 'field of study'],

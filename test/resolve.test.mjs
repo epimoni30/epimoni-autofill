@@ -405,3 +405,68 @@ test('Polish blocks: start and end dates, and "kierunek" is the field of study',
 test('the Polish pack leaves the Portuguese "do" alone', () => {
   assert.equal(blockKey('nome do cargo', work0), 'work.position@0');
 });
+
+// French inclusive writing, seen on live forms ("Êtes-vous autorisé(e) à travailler ?"). Read
+// as the plain word, or "autorise e" matches no phrase in any pack.
+test('inclusive writing reads as the plain word', () => {
+  assert.equal(
+    normalize('Êtes-vous autorisé(e) à travailler en France ?'),
+    'etes vous autorise a travailler en france',
+  );
+  assert.equal(normalize('candidat·e'), 'candidat');
+  assert.equal(normalize('Salarié(e)s'), 'salaries');
+  assert.equal(normalize('directeur·rice'), 'directeur');
+  assert.equal(key(normalize('Êtes-vous autorisé(e) à travailler en France ?')), 'work_authorization');
+  // Not an inclusive suffix: left as it was.
+  assert.equal(normalize('e-mail'), 'e mail');
+  assert.equal(normalize('Prénom (obligatoire)'), 'prenom obligatoire');
+});
+
+test('"Current location" is where the person lives', () => {
+  assert.equal(key('current location'), 'city');
+  assert.equal(key(normalize('Localisation actuelle')), 'city');
+});
+
+// Measured on a live Teamtailor form: "How many years of outbound sales experience do you
+// have?" was answered with the career total. A question about one domain is not the total.
+test('years of experience means the total, never one domain', () => {
+  assert.equal(key(normalize("Nombre d'années d'expérience")), 'years_experience');
+  assert.equal(key(normalize('Expérience en années')), 'years_experience');
+  assert.equal(key(normalize('Years of experience')), 'years_experience');
+  assert.equal(key(normalize('Total experience')), 'years_experience');
+  assert.equal(key(normalize('Años de experiencia')), 'years_experience');
+  assert.equal(key(normalize('Experiencia en años')), 'years_experience');
+  for (const label of [
+    'How many years of outbound sales experience do you have?',
+    'Years of experience with React',
+    'Years of experience in B2B sales',
+    "Années d'expérience en gestion de projet",
+    'Ancienneté dans le poste actuel',
+    'Años de experiencia en ventas',
+    'Anos de experiência com React',
+    'Lata doświadczenia w sprzedaży',
+  ])
+    assert.notEqual(key(normalize(label)), 'years_experience', label);
+});
+
+// Measured on live Greenhouse forms: a sponsorship question was read as the authorisation
+// question, whose stored answer then says "yes" to needing a visa.
+test('a question about needing a visa is never the work authorisation question', () => {
+  for (const label of [
+    'Are you legally authorised to work in France?',
+    'Êtes-vous autorisé(e) à travailler en France ?',
+    'Do you have the right to work in the UK?',
+    '¿Tiene permiso de trabajo en España?',
+  ])
+    assert.equal(key(normalize(label)), 'work_authorization', label);
+  for (const label of [
+    'Will you now or in the future require sponsorship for employment visa status?',
+    'Would you require a visa sponsorship or visa transfer?',
+    "Aurez-vous besoin d'un parrainage de visa ?",
+    'Avez-vous besoin d’un titre de séjour pour travailler en France ?',
+    '¿Necesitará patrocinio de visado?',
+    'Você precisará de visto de trabalho?',
+    'Czy potrzebujesz wizy do pracy w Polsce?',
+  ])
+    assert.notEqual(key(normalize(label)), 'work_authorization', label);
+});

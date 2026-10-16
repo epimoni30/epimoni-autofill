@@ -28,8 +28,9 @@
       "trailingCommas": "all",
       "arrowParentheses": "always"
     },
-    // `build.mjs` injects the three EPIMONI_* constants into the scripts it assembles.
-    "globals": ["chrome", "EPIMONI_DEV", "EPIMONI_LEXICONS", "EPIMONI_AUTOCOMPLETE"]
+    // `build.mjs` injects the three EPIMONI_* constants into the scripts it assembles, and
+    // inlines `clickGuard` (src/content/clickguard.js) into offer.js.
+    "globals": ["chrome", "EPIMONI_DEV", "EPIMONI_LEXICONS", "EPIMONI_AUTOCOMPLETE", "clickGuard"]
   },
   // Linted, not formatted: the pages are short and hand-laid-out, and Biome's HTML
   // formatter is younger than its JS one.

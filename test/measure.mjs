@@ -64,6 +64,7 @@ const page = await browser.newPage();
 const engine = bundle();
 const totals = { hit: 0, wrong: 0, miss: 0, soft: 0, ok: 0, ai: 0, aiMiss: 0, nodata: 0, stateFail: 0 };
 const failures = [];
+const mustFillFailures = [];
 
 for (const fixture of FIXTURES) {
   await page.goto(`${base}/${fixture}`, { waitUntil: 'load' });
@@ -75,6 +76,9 @@ for (const fixture of FIXTURES) {
       )),
     );
   }
+  // A fixture rebuilt from a miss on a live page says so with `data-must-fill`: there, a miss
+  // is a regression and fails the run, like a wrong fill does everywhere.
+  const mustFill = await page.evaluate(() => document.documentElement.hasAttribute('data-must-fill'));
   const tally = { hit: 0, wrong: 0, miss: 0, soft: 0, ok: 0, ai: 0, aiMiss: 0, nodata: 0 };
   for (const r of rows) {
     const verdict = verdictOf(r);
@@ -98,6 +102,7 @@ for (const fixture of FIXTURES) {
       });
     }
   }
+  if (mustFill && tally.miss + tally.soft + tally.aiMiss) mustFillFailures.push(fixture);
   const fillable = tally.hit + tally.wrong + tally.miss + tally.soft;
   const pct = fillable ? Math.round((tally.hit / fillable) * 100) : 100;
   console.log(
@@ -128,4 +133,6 @@ if (failures.length) {
 }
 await browser.close();
 server.close();
-process.exit(totals.wrong === 0 ? 0 : 1);
+if (mustFillFailures.length)
+  console.log(`\nmissed on a data-must-fill fixture (a regression): ${mustFillFailures.join(', ')}`);
+process.exit(totals.wrong === 0 && !mustFillFailures.length ? 0 : 1);

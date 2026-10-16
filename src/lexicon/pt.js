@@ -198,7 +198,8 @@ export default {
     },
     years_experience: {
       any: ['anos de experiencia', 'quantos anos de experiencia', 'tempo de experiencia'],
-      not: [],
+      // "Anos de experiência com React" asks about one domain, not the career total.
+      not: ['em', 'com', 'como', 'usando', 'na', 'no'],
     },
     salary_expectation: {
       any: ['pretensao salarial', 'expectativa salarial', 'salario pretendido', 'remuneracao pretendida'],
@@ -218,8 +219,16 @@ export default {
       not: ['viagem', 'viagens', 'mudanca', 'horario'],
     },
     work_authorization: {
-      any: ['autorizacao de trabalho', 'permissao de trabalho', 'visto de trabalho', 'visto'],
-      not: [],
+      // Positive questions only. One asking whether the person needs a visa or sponsorship is
+      // the opposite question, and the stored answer would pick its "yes".
+      any: [
+        'autorizacao de trabalho',
+        'permissao de trabalho',
+        'autorizado a trabalhar',
+        'autorizada a trabalhar',
+        'direito de trabalhar',
+      ],
+      not: ['patrocinio', 'visto', 'precisa', 'precisara', 'precisaria', 'necessita'],
     },
     education_degree: {
       any: ['escolaridade', 'grau de escolaridade', 'nivel de escolaridade', 'formacao'],

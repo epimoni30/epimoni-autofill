@@ -1,6 +1,7 @@
 # Epimoni Autofill
 
 [![check](https://github.com/epimoni30/epimoni-autofill/actions/workflows/check.yml/badge.svg)](https://github.com/epimoni30/epimoni-autofill/actions/workflows/check.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/epimoni30/epimoni-autofill/badge)](https://scorecard.dev/viewer/?uri=github.com/epimoni30/epimoni-autofill)
 [![Licence: Apache-2.0](https://img.shields.io/badge/licence-Apache--2.0-blue)](LICENSE)
 [![Manifest V3](https://img.shields.io/badge/Chrome-Manifest%20V3-4285F4?logo=googlechrome&logoColor=white)](https://developer.chrome.com/docs/extensions/develop/migrate/what-is-mv3)
 [![Runtime dependencies: 0](https://img.shields.io/badge/runtime%20dependencies-0-brightgreen)](package.json)
