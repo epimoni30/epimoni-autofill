@@ -78,7 +78,7 @@ valid report.
   refuses a policy that doesn't allow the API the code actually calls, or that loosens
   `script-src` or `object-src`.
 - Untrusted files. The PDF reader and the JSON Résumé import are fuzzed on every pull request
-  and more deeply every week (`test/fuzz.test.mjs`): mutated real PDFs, arbitrary bytes and
+  and more deeply every week (`test/fuzz.test.js`): mutated real PDFs, arbitrary bytes and
   arbitrary JSON must never throw, hang or return the wrong shape. A crashing input is a
   valid report.
 - Messages. The worker answers a content script only for a short list of message types, and the

@@ -8,6 +8,9 @@
 // the parser than random bytes do. A failure prints the smallest input that reproduces it.
 //
 // FUZZ_RUNS raises the number of cases for a long local run; CI uses the default.
+//
+// `.js`, not `.mjs` like the other tests: OpenSSF Scorecard looks for fast-check only in `.js`
+// files, and this file is what earns the repository its Fuzzing check.
 
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
