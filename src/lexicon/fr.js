@@ -194,7 +194,7 @@ export default {
       not: [],
     },
     city: {
-      any: ['ville', 'commune', 'localite', 'ville de residence', 'votre ville'],
+      any: ['ville', 'commune', 'localite', 'ville de residence', 'votre ville', 'localisation actuelle'],
       not: ['naissance', 'entreprise', 'societe', 'poste', 'ecole', 'universite', 'etablissement'],
     },
     country: {

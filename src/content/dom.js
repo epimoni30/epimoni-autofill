@@ -14,13 +14,21 @@ import { MONTHS } from '../lexicon/index.js';
  * would split into "wykszt alcenie".
  */
 export function normalize(text) {
-  return String(text || '')
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/ł/g, 'l')
-    .replace(/[^a-z0-9]+/g, ' ')
-    .trim();
+  return (
+    String(text || '')
+      // French inclusive writing: "autorisé(e)", "candidat·e", "salarié(e)s" read as the plain
+      // word. Left alone they become "autorise e", and no phrase in any pack matches that.
+      .replace(
+        /(\p{L})(?:\((?:e|es|s|ne|le|se|ve|euse|rice)\)|[·•](?:e|es|ne|le|se|euse|rice)\b)(s?)/gu,
+        '$1$2',
+      )
+      .normalize('NFD')
+      .replace(/[̀-ͯ]/g, '')
+      .toLowerCase()
+      .replace(/ł/g, 'l')
+      .replace(/[^a-z0-9]+/g, ' ')
+      .trim()
+  );
 }
 
 /** Walk the composed tree, entering every open shadow root. */
@@ -750,14 +758,23 @@ export function radioGroupBundle(group) {
   // question: on a form with a "recevoir des offres par e-mail" checkbox two fieldsets down,
   // that made an authorisation group look like an email field. The same lesson as `guard` in
   // resolve.js: a hint may suggest, only evidence may forbid.
-  const parent = container?.parentElement;
-  const parentIsolated = parent && parent.querySelectorAll(CONTROL).length === group.inputs.length && !own;
+  //
+  // Up to three hops, still only while each ancestor holds this group's controls and nothing
+  // else: Lever puts the question in a sibling of the answers' wrapper, two levels above the
+  // list of radios (`div > [div.application-label, div.application-field > ul]`).
+  let above = '';
+  for (let node = container?.parentElement, hops = 0; node && hops < 3 && !own; hops += 1) {
+    if (node.querySelectorAll(CONTROL).length !== group.inputs.length) break;
+    above = ownText(node);
+    if (above) break;
+    node = node.parentElement;
+  }
 
   const sources = [
     ['legend', legend, 0.95],
     ['aria-label', container?.getAttribute('aria-label'), 0.95],
     ['nearby', own, 0.9],
-    ...(parentIsolated ? [['nearby', ownText(parent), 0.85]] : []),
+    ['nearby', above, 0.85],
     ['name', group.name, 0.75],
   ];
   return {

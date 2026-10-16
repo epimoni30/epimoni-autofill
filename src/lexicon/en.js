@@ -208,7 +208,7 @@ export default {
       not: [],
     },
     city: {
-      any: ['city', 'town', 'locality', 'city of residence'],
+      any: ['city', 'town', 'locality', 'city of residence', 'current location'],
       not: ['birth', 'company', 'school', 'university'],
     },
     country: {

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en" data-must-fill>
+<!-- Ashby's "Current location", measured on live Ashby application pages and rebuilt in our own
+     words. A miss before it was a fixture, so data-must-fill: a miss here fails `npm run
+     measure`. The office question beside it is about the job, not the person, and stays empty.
+     See ats-lever.html for the Lever half. -->
+<meta charset="utf-8"><title>Apply (Ashby shape)</title>
+<body>
+<form id="ashby" onsubmit="window.__submitted = true; return false">
+  <div class="field-entry">
+    <label for="_systemfield_location" class="field-label">Current location</label>
+    <input id="_systemfield_location" name="currentLocation" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" data-expect="city">
+  </div>
+  <div class="field-entry">
+    <label for="_pref_location" class="field-label">Which office are you applying for?</label>
+    <input id="_pref_location" name="preferredPostingLocation" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" data-expect="none">
+  </div>
+  <button type="submit">Submit application</button>
+</form>
+<script src="_react.js"></script><script>window.__controlAll()</script>
+</body></html>

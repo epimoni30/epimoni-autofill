@@ -757,6 +757,14 @@ entry, `data-expect="work[1].company"`; `parcours.html` (French, labelled by pos
 `indexed.html` (Workday-style ids) carry the block traps: a job's "Ville", a references
 block, a field outside every block.
 
+`ats-lever.html` and `ats-ashby.html` come from running the engine on live, public Lever and
+Ashby application pages (no login, every non-GET request aborted so nothing could be sent).
+Each rebuilds, in our own words, a shape that was a miss there: "Current location", a radio
+question whose text sits two levels above its answers, and French inclusive writing
+("autorisé(e)"). They carry `data-must-fill` on `<html>`, which makes a miss on that page fail
+`npm run measure` the way a wrong fill does everywhere. A miss elsewhere is only reported,
+because most fixtures also hold fields the CV has no answer for.
+
 `test/fixtures/postings/` holds reduced advert pages for the extraction tests. `npm run probe`
 fetches live postings into an ignored directory for local work; those captures are third-party
 page markup and are not redistributed.

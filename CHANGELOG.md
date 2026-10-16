@@ -30,6 +30,10 @@ carries the same number, and the release workflow refuses a tag that does not ma
 
 ### Fixed
 
+- Measured on live Lever, Ashby and Greenhouse application pages: "Current location" is now
+  filled with your city, a Lever question whose text sits above its answers is read (it used
+  to be seen only by its field name), and French inclusive writing such as "autorisé(e)" or
+  "candidat·e" is read as the plain word.
 - A long panel no longer starts above the top of the window with its close button out of
   reach.
 

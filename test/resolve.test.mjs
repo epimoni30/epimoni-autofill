@@ -405,3 +405,24 @@ test('Polish blocks: start and end dates, and "kierunek" is the field of study',
 test('the Polish pack leaves the Portuguese "do" alone', () => {
   assert.equal(blockKey('nome do cargo', work0), 'work.position@0');
 });
+
+// French inclusive writing, seen on live forms ("Êtes-vous autorisé(e) à travailler ?"). Read
+// as the plain word, or "autorise e" matches no phrase in any pack.
+test('inclusive writing reads as the plain word', () => {
+  assert.equal(
+    normalize('Êtes-vous autorisé(e) à travailler en France ?'),
+    'etes vous autorise a travailler en france',
+  );
+  assert.equal(normalize('candidat·e'), 'candidat');
+  assert.equal(normalize('Salarié(e)s'), 'salaries');
+  assert.equal(normalize('directeur·rice'), 'directeur');
+  assert.equal(key(normalize('Êtes-vous autorisé(e) à travailler en France ?')), 'work_authorization');
+  // Not an inclusive suffix: left as it was.
+  assert.equal(normalize('e-mail'), 'e mail');
+  assert.equal(normalize('Prénom (obligatoire)'), 'prenom obligatoire');
+});
+
+test('"Current location" is where the person lives', () => {
+  assert.equal(key('current location'), 'city');
+  assert.equal(key(normalize('Localisation actuelle')), 'city');
+});
