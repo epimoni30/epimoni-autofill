@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="fr">
+<!-- An ordinary page that embeds the same application form four times, from another origin.
+     One frame is shown the way an ATS embed is. The other three are shown to nobody: faded
+     out, shrunk to a pixel, or laid under the page's own content. From inside the frame all
+     four look identical, which is the point: the page around a frame decides whether anyone
+     can see it, and a fill that only looks at its own document fills all four. -->
+<meta charset="utf-8"><title>Frames</title>
+<style>
+  body { margin: 0; font: 14px sans-serif; }
+  iframe { border: 1px solid #ccc; display: block; }
+  .stack { position: relative; width: 600px; height: 320px; }
+  .stack .cover { position: absolute; inset: 0; background: #fff; padding: 20px; }
+</style>
+<body>
+<h1>Nous rejoindre</h1>
+<iframe id="shown" width="600" height="320" title="Candidature"></iframe>
+<iframe id="faded" width="600" height="320" style="opacity:0"></iframe>
+<iframe id="tiny" width="1" height="1" style="border:0"></iframe>
+<div class="stack">
+  <iframe id="covered" width="600" height="320"></iframe>
+  <div class="cover">Inscrivez-vous à notre lettre d'information.</div>
+</div>
+<!-- Shown, but below the fold: filled when the user scrolls to it, not refused. -->
+<div style="height:1600px"></div>
+<iframe id="below" width="600" height="320"></iframe>
+<script>
+  // Same files, another origin: 127.0.0.1 and localhost are two origins to the browser.
+  const other = location.origin.replace('127.0.0.1', 'localhost');
+  for (const f of document.querySelectorAll('iframe')) f.src = other + '/frames-inner.html#' + f.id;
+</script>
+</body></html>

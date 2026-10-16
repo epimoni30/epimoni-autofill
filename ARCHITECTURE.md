@@ -65,6 +65,7 @@ src/content/resolve.js  described control → canonical profile key (pure)
 src/content/guard.js    the only API a filler acts through
 src/content/posting.js  the job advert on the page → text worth analysing
 src/content/keywords.js which of the CV's skills the advert names, and marking them in the page
+src/content/framegate.js whether a form in a frame is on screen, before anything is written into it
 src/schema/fields.js    every canonical field: its shape, and where it lives in JSON Résumé
 src/lexicon/<lang>.js   one language pack each: phrases, section headings, dates; index.js lists them
 src/fillers/            site and widget fillers: evidence and guarded writers, never decisions
@@ -427,6 +428,25 @@ can never be armed. `offer.js` is a plain script, so `build.mjs` inlines the gua
 the guard must not import anything. `test/e2e.mjs` replays the three attacks (faded, covered,
 pressed on arrival) and each was checked to fail with its defence removed. Tests wait for
 `data-epimoni-armed` on the host before clicking, exactly as a person would wait to see it.
+
+## A form in a frame: filled only once it is seen
+
+The filler runs in every frame of the tab, because application forms are often embedded from
+the ATS's own origin. Inside a frame, though, every check we make looks at the frame's own
+document only. The page around it can fade the frame out, shrink it to a pixel or lay its own
+content over it, and from inside, the form still looks ordinary. Before this gate, a fill
+clicked on a page wrote the CV into such a frame, where the frame's script (an ad, a widget)
+could read it.
+
+`src/content/framegate.js` holds a frame back until a person can see the form. In Chromium,
+IntersectionObserver v2 has to report one of the frame's controls visible and at least half on
+screen, which is the browser's own occlusion check and sees across frames. A frame below the
+fold is not refused: it waits, and fills when the user scrolls to it (for the length of the
+re-fill window). Without v2 (Firefox) a frame fills only when every frame above it is the same
+origin, so each frame element can be checked as a control is; a frame inside a page of another
+origin is left alone there. The top-level document is never held back. `test/fixtures/frames.html`
+embeds one form five ways (shown, faded, one pixel, covered, below the fold) from another origin,
+and `e2e.mjs` checks each; the three hidden ones were filled before the gate.
 
 ## The application tracker
 

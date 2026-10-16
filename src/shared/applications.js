@@ -179,9 +179,19 @@ export async function clearApplications() {
   await chrome.storage.local.remove(KEY);
 }
 
-/** The list as CSV, for a spreadsheet: comma-separated, quoted, UTF-8 with a BOM for Excel. */
+/**
+ * The list as CSV, for a spreadsheet: comma-separated, quoted, UTF-8 with a BOM for Excel.
+ *
+ * Titles come from whatever page was filled, and a spreadsheet runs a cell that starts with
+ * `=`, `+`, `-` or `@` as a formula, quotes or not: a page titled `=HYPERLINK(...)` would
+ * become a link in the user's own file. Such a cell gets a leading apostrophe, which keeps it
+ * text (OWASP's advice for CSV injection).
+ */
 export function applicationsCsv(list, headers) {
-  const q = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const q = (v) => {
+    const s = String(v ?? '');
+    return `"${(/^[=+\-@\t\r]/.test(s) ? `'${s}` : s).replace(/"/g, '""')}"`;
+  };
   const day = (ts) => (ts ? new Date(ts).toISOString().slice(0, 10) : '');
   const rows = list.map((a) =>
     [

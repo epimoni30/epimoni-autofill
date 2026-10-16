@@ -597,6 +597,39 @@ check(
   JSON.stringify(madeResult),
 );
 
+// ── Frames from another origin: filled only where somebody can see them ─────────────────
+// A frame cannot see the page around it, so every check inside it passes on a frame the page
+// faded out or shrank to a pixel. The browser's own visibility check can see it, and decides.
+{
+  const fp = await fillPage('frames.html');
+  const frameOf = (id) => fp.frames().find((f) => f.url().endsWith(`frames-inner.html#${id}`));
+  await frameOf('shown')
+    .waitForFunction(() => document.getElementById('p').value !== '', { timeout: 5000 })
+    .catch(() => {});
+  // The hidden frames get the same time to (wrongly) fill.
+  await fp.waitForTimeout(1500);
+  const got = {};
+  for (const id of ['shown', 'faded', 'tiny', 'covered'])
+    got[id] = await frameOf(id).evaluate(() =>
+      [...document.querySelectorAll('input')].map((i) => i.value).join('|'),
+    );
+  check('a frame shown on the page is filled', got.shown.startsWith('Camille|'), got.shown);
+  for (const id of ['faded', 'tiny', 'covered'])
+    check(`a ${id} frame from another origin is left empty`, got[id] === '|||', got[id]);
+  const before = await frameOf('below').evaluate(() => document.getElementById('p').value);
+  await fp.evaluate(() => document.getElementById('below').scrollIntoView());
+  await frameOf('below')
+    .waitForFunction(() => document.getElementById('p').value !== '', { timeout: 5000 })
+    .catch(() => {});
+  const after = await frameOf('below').evaluate(() => document.getElementById('p').value);
+  check(
+    'a frame below the fold waits, and fills once scrolled to',
+    before === '' && after === 'Camille',
+    `${before} → ${after}`,
+  );
+  await fp.close();
+}
+
 // ── Several CVs: the panel's picker ─────────────────────────────────────────────────────
 //
 // A second, thin CV: a name and nothing else, so nothing is made from it. Choosing it in the

