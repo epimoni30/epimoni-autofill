@@ -8,6 +8,8 @@
 //                                          is shared by every sub-project rather than each
 //                                          installing its own stack
 //
+// and of those, the first whose browser is downloaded.
+//
 // Both package names export the same `chromium`; `@playwright/test` is tried first only
 // because that is the one the sibling project installs.
 //
@@ -37,17 +39,30 @@ async function chromiumFrom(specifier) {
  * @returns {Promise<import('playwright').BrowserType>}
  */
 export async function loadChromium() {
+  const found = [];
   for (const pkg of PACKAGES) {
     const chromium = await chromiumFrom(pkg);
-    if (chromium) return chromium;
+    if (chromium) found.push(chromium);
   }
-
   for (const pkg of PACKAGES) {
     const entry = join(REPO, 'playwright', 'node_modules', pkg, 'index.mjs');
     if (!existsSync(entry)) continue;
     const chromium = await chromiumFrom(pathToFileURL(entry).href);
-    if (chromium) return chromium;
+    if (chromium) found.push(chromium);
   }
+
+  // The first one whose browser is actually downloaded. A Playwright release can drop an OS
+  // (1.64 refuses macOS 12), and then this project's own copy has no browser on that machine
+  // while the shared sibling still does. With none downloaded, the first one found throws its
+  // own "run npx playwright install" message, which is the right advice.
+  const ready = found.find((chromium) => {
+    try {
+      return existsSync(chromium.executablePath());
+    } catch {
+      return false;
+    }
+  });
+  if (ready || found.length) return ready || found[0];
 
   throw new Error(
     'Playwright not found. Either `npm install` in extension/, or check out the monorepo ' +
