@@ -222,6 +222,26 @@ function labelledByText(el) {
   return ids.map((id) => doc.getElementById(id)?.textContent || '').join(' ');
 }
 
+/**
+ * A label's words without the controls inside it. Lever wraps a whole `<select>` in its
+ * `<label>`, and `textContent` would read every option into the question: "What is your
+ * location? Afghanistan Albania Algeria…".
+ */
+function labelWords(label) {
+  let text = '';
+  const walk = (node) => {
+    for (const n of node.childNodes) {
+      if (n.nodeType === Node.TEXT_NODE) text += n.textContent;
+      else if (n.nodeType === Node.ELEMENT_NODE && !n.matches('select, textarea, datalist, option')) {
+        text += ' ';
+        walk(n);
+      }
+    }
+  };
+  walk(label);
+  return text;
+}
+
 function forLabelText(el) {
   const doc = el.ownerDocument;
   const root = el.getRootNode();
@@ -231,10 +251,10 @@ function forLabelText(el) {
     const byFor =
       (root.querySelector ? root.querySelector(`label[for="${CSS.escape(el.id)}"]`) : null) ||
       doc.querySelector(`label[for="${CSS.escape(el.id)}"]`);
-    if (byFor) text += ` ${byFor.textContent}`;
+    if (byFor) text += ` ${labelWords(byFor)}`;
   }
   const wrapping = el.closest('label');
-  if (wrapping) text += ` ${wrapping.textContent}`;
+  if (wrapping) text += ` ${labelWords(wrapping)}`;
   return text;
 }
 

@@ -17,6 +17,7 @@ npm run build   # dist/, with manifest + locale + pack + filler + module-import 
 npm run icons   # re-render icons/*.png from the brand mark
 npm run store   # store screenshots + promo tile, rendered from the real extension (fr, en)
 npm run probe   # visit a real posting on each supported board, report what extraction gets
+npm run probe:ats -- <url>   # run the engine on a live apply page; nothing is sent
 npm run lint    # Biome format + lint check (CI runs `biome ci`)
 npm run format  # apply Biome formatting and safe fixes
 npm run check   # lint + test + measure + guard + build + e2e
@@ -757,7 +758,7 @@ entry, `data-expect="work[1].company"`; `parcours.html` (French, labelled by pos
 `indexed.html` (Workday-style ids) carry the block traps: a job's "Ville", a references
 block, a field outside every block.
 
-`ats-lever.html` and `ats-ashby.html` come from running the engine on live, public Lever and
+`ats-lever.html` and `ats-ashby.html` come from `npm run probe:ats` on live, public Lever and
 Ashby application pages (no login, every non-GET request aborted so nothing could be sent).
 Each rebuilds, in our own words, a shape that was a miss there: "Current location", a radio
 question whose text sits two levels above its answers, and French inclusive writing

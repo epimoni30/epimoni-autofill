@@ -33,4 +33,20 @@
   <div><label for="hx3">Ville</label><input id="hx3" style="position:absolute;width:40px;height:20px;clip:rect(0,0,0,0);overflow:hidden" data-expect="none"></div>
   <div style="visibility:hidden"><label for="hx4">Nom</label><input id="hx4" data-expect="none"></div>
 </form>
+<!-- A <label> that wraps its <select>, the way Lever writes it. The options are answers, not
+     the question: read into the label, "Mexico City" made this a city field and picked the
+     person's home town as the office they'd prefer. -->
+<form id="wrapped-select">
+  <label>
+    <div>Which office would you prefer?</div>
+    <div>
+      <select name="cards[c3][field0]" data-expect="none">
+        <option value="">Select...</option>
+        <option>Paris</option>
+        <option>Nantes</option>
+        <option>Mexico City</option>
+      </select>
+    </div>
+  </label>
+</form>
 </body></html>

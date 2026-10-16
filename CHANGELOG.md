@@ -30,6 +30,9 @@ carries the same number, and the release workflow refuses a tag that does not ma
 
 ### Fixed
 
+- A dropdown wrapped in its own `<label>` (Lever does this) no longer reads its options as part
+  of the question. "Which office would you prefer?" with "Mexico City" among the answers was
+  read as a city field and got your home town.
 - Measured on live Lever, Ashby and Greenhouse application pages: "Current location" is now
   filled with your city, a Lever question whose text sits above its answers is read (it used
   to be seen only by its field name), and French inclusive writing such as "autorisé(e)" or

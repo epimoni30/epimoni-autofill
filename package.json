@@ -30,6 +30,7 @@
     "playground:test": "node test/playground.mjs",
     "icons": "node tools/icons.mjs",
     "probe": "node tools/probe-postings.mjs",
+    "probe:ats": "node tools/probe-ats.mjs",
     "e2e": "node build.mjs --dev && node test/e2e.mjs",
     "live": "node test/live.mjs",
     "store": "node build.mjs --dev && node tools/screenshots.mjs --lang=fr && node tools/screenshots.mjs --lang=en && node build.mjs"
