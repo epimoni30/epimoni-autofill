@@ -92,7 +92,7 @@ workflow from the tagged source:
 
 ```bash
 sha256sum -c SHA256SUMS
-gh attestation verify epimoni-autofill-v0.2.0.zip --repo epimoni30/epimoni-autofill
+gh attestation verify epimoni-autofill-v0.3.0.zip --repo epimoni30/epimoni-autofill
 ```
 
 The code isn't minified, so you can also unzip the store package and diff it against
