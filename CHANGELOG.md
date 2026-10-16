@@ -9,6 +9,20 @@ carries the same number, and the release workflow refuses a tag that does not ma
 
 ## [Unreleased]
 
+### Security
+
+- A form inside a frame is filled only once the browser says a person can see it. A page could
+  embed a form from another origin and fade it out, shrink it to a pixel or cover it, and a fill
+  clicked on that page wrote the CV into it, where the frame's own script could read it. A frame
+  below the fold is not refused: it fills when you scroll to it. In Firefox, which cannot tell,
+  a frame inside a page of another origin is left alone.
+- The tracker's CSV export keeps a page title that starts with `=`, `+`, `-` or `@` as text.
+  A job page titled like a formula would otherwise run as one when the file is opened in a
+  spreadsheet.
+- Usage reports from a page are cut down by the extension itself to counts and field names,
+  with the site taken from the browser rather than from the page. The page side never sent a
+  value, but nothing checked that it didn't.
+
 ## [0.3.0] - 2026-10-16
 
 ### Added

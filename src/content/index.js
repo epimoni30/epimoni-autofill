@@ -257,6 +257,8 @@
    * search bar, is not recorded as an application.
    */
   async function fill({ auto = false } = {}) {
+    // In a frame, nothing until the browser says the form is on screen (framegate.js).
+    if (!(await frameShown(fillableElements(document), WATCH_MS))) return;
     watcher?.stop();
     filledFor = location.href;
     const {
@@ -361,6 +363,8 @@
       if (running || watcher !== self) return;
       running = true;
       try {
+        // The frame may have been hidden since the first fill.
+        if (!(await frameShown(fillableElements(document), 1000))) return;
         const run = await engine(ctx, handled);
         run.entries = ctx.entries;
         remember(run);

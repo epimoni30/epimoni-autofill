@@ -57,6 +57,53 @@ async function claimBudget(what) {
   }
 }
 
+// What a page's report may carry, and in what shape. The content script runs inside the page,
+// so the worker does not take its word that a report holds no value: anything not named here,
+// a number that is not a count, a string that is not an identifier, is dropped. A CV value
+// cannot pass as a key name ("camille.dupont@example.org" fails on `@`, a sentence on its
+// spaces).
+const COUNTS = [
+  'controls',
+  'filled',
+  'suggested',
+  'ai_candidates',
+  'unknown',
+  'radios',
+  'files',
+  'by_label',
+  'blocks',
+  'leftover',
+  'refill',
+  'accepted',
+  'rejected',
+  'unanswered',
+];
+const NAMES = ['key', 'keys', 'fillers'];
+const NAME_LIST = /^[a-z][a-z0-9_.-]*(,[a-z][a-z0-9_.-]*)*$/;
+
+/**
+ * A report from a content script, reduced to counts and field names, with `host` taken from
+ * the address the browser says the sender is on rather than from the report.
+ */
+export function pageMeta(meta, senderUrl) {
+  const out = {};
+  if (!meta || typeof meta !== 'object') return out;
+  if (WHAT.includes(meta.what)) out.what = meta.what;
+  for (const k of COUNTS) {
+    const v = meta[k];
+    if (Number.isInteger(v) && v >= 0 && v < 100000) out[k] = v;
+  }
+  for (const k of NAMES) {
+    const v = meta[k];
+    if (typeof v === 'string' && v.length <= 600 && (v === '' || NAME_LIST.test(v))) out[k] = v;
+  }
+  try {
+    const host = new URL(senderUrl).hostname;
+    if (host) out.host = host;
+  } catch {}
+  return out;
+}
+
 /**
  * `host` is the dimension worth having: it tells us which sites we fail on. The posting
  * text, the labels and the values are not, and must never be attached.

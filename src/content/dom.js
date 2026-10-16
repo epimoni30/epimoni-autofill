@@ -79,7 +79,7 @@ function visible(el) {
  * be clipped away. Radios are not held to this: custom radio groups routinely hide the native
  * input behind a styled label, and they carry an option, not a CV value.
  */
-function concealed(el) {
+export function concealed(el) {
   if (
     typeof el.checkVisibility === 'function' &&
     !el.checkVisibility({ opacityProperty: true, visibilityProperty: true, contentVisibilityAuto: true })

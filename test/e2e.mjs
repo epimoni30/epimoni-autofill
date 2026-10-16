@@ -597,6 +597,76 @@ check(
   JSON.stringify(madeResult),
 );
 
+// ── What the user typed stays typed ─────────────────────────────────────────────────────
+// The complaint most often made of autofill tools: a custom answer wiped by a fill. A field
+// with anything in it is the user's, whatever the CV says, and a fill run twice changes
+// nothing the first one left.
+{
+  const typed = await ctx.newPage();
+  await typed.goto(`${base}/hellowork.html`, { waitUntil: 'load' });
+  await typed.fill('[name="job"]', 'Responsable marketing (intitulé exact)');
+  await typed.fill('[name="about"]', 'Ma propre présentation, écrite pour cette offre.');
+  const id = await sw.evaluate(
+    async () => (await chrome.tabs.query({})).find((t) => t.url?.includes('hellowork.html'))?.id,
+  );
+  for (let i = 0; i < 2; i += 1) {
+    await sw.evaluate(async (tab) => {
+      await chrome.scripting.executeScript({
+        target: { tabId: tab, allFrames: true },
+        files: ['content.js'],
+      });
+      await chrome.tabs.sendMessage(tab, { type: 'fill' });
+    }, id);
+    await typed.waitForTimeout(600);
+  }
+  const kept = await typed.evaluate(() => ({
+    job: document.querySelector('[name="job"]').value,
+    about: document.querySelector('[name="about"]').value,
+    mail: document.querySelector('[name="mail"]').value,
+  }));
+  check(
+    'a field the user typed in is never overwritten, even by a second fill',
+    kept.job === 'Responsable marketing (intitulé exact)' &&
+      kept.about === 'Ma propre présentation, écrite pour cette offre.',
+    JSON.stringify(kept),
+  );
+  check('the empty fields around them are still filled', kept.mail === profile.email, kept.mail);
+  await typed.close();
+}
+
+// ── Frames from another origin: filled only where somebody can see them ─────────────────
+// A frame cannot see the page around it, so every check inside it passes on a frame the page
+// faded out or shrank to a pixel. The browser's own visibility check can see it, and decides.
+{
+  const fp = await fillPage('frames.html');
+  const frameOf = (id) => fp.frames().find((f) => f.url().endsWith(`frames-inner.html#${id}`));
+  await frameOf('shown')
+    .waitForFunction(() => document.getElementById('p').value !== '', { timeout: 5000 })
+    .catch(() => {});
+  // The hidden frames get the same time to (wrongly) fill.
+  await fp.waitForTimeout(1500);
+  const got = {};
+  for (const id of ['shown', 'faded', 'tiny', 'covered'])
+    got[id] = await frameOf(id).evaluate(() =>
+      [...document.querySelectorAll('input')].map((i) => i.value).join('|'),
+    );
+  check('a frame shown on the page is filled', got.shown.startsWith('Camille|'), got.shown);
+  for (const id of ['faded', 'tiny', 'covered'])
+    check(`a ${id} frame from another origin is left empty`, got[id] === '|||', got[id]);
+  const before = await frameOf('below').evaluate(() => document.getElementById('p').value);
+  await fp.evaluate(() => document.getElementById('below').scrollIntoView());
+  await frameOf('below')
+    .waitForFunction(() => document.getElementById('p').value !== '', { timeout: 5000 })
+    .catch(() => {});
+  const after = await frameOf('below').evaluate(() => document.getElementById('p').value);
+  check(
+    'a frame below the fold waits, and fills once scrolled to',
+    before === '' && after === 'Camille',
+    `${before} → ${after}`,
+  );
+  await fp.close();
+}
+
 // ── Several CVs: the panel's picker ─────────────────────────────────────────────────────
 //
 // A second, thin CV: a name and nothing else, so nothing is made from it. Choosing it in the

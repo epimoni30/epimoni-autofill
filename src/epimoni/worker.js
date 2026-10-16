@@ -13,7 +13,7 @@
 
 import { write, saveCv, unpairOnly } from '../shared/store.js';
 import { cvIsAnalysable, cvSummary, fieldCurrent, normalizeCvDoc, toProfile } from '../shared/cvdoc.js';
-import { track } from './telemetry.js';
+import { pageMeta, track } from './telemetry.js';
 import { apiFetch, whoIs } from './api.js';
 import { entitlement, forgetEntitlement, resolveIdentity } from './identity.js';
 import { AI_DATA, missing } from './consent.js';
@@ -831,7 +831,7 @@ export async function handleEpimoni(msg, state, sender) {
       // reporting that a form was filled is not a reason to create an account row for
       // somebody who has asked for nothing. An anonymous user who never runs an analysis
       // therefore sends nothing, which is the right default and a real gap in the numbers.
-      await track(state.jwt || state.anon?.jwt || null, msg.name, msg.meta || {});
+      await track(state.jwt || state.anon?.jwt || null, msg.name, pageMeta(msg.meta, sender?.url));
       return { ok: true };
     default:
       return undefined;
