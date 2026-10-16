@@ -935,10 +935,9 @@ const pressGo = async (page) => {
 for (const [name, attack] of [
   ['faded to opacity 0 by the page', 'css'],
   ['under a click-through layer the page put on top', 'overlay'],
-  ['pressed the moment it appears', 'early'],
 ]) {
   const page = await jackedPage();
-  if (attack !== 'early') await armed(page, '#epimoni-offer');
+  await armed(page, '#epimoni-offer');
   if (attack === 'css') await page.addStyleTag({ content: '#epimoni-offer { opacity: 0 !important; }' });
   if (attack === 'overlay')
     await page.evaluate(() => {
@@ -946,15 +945,48 @@ for (const [name, attack] of [
       veil.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#fff;pointer-events:none';
       document.documentElement.appendChild(veil);
     });
-  // Past the tab's 200 ms slide-in, well inside the dwell: only the dwell can refuse it.
   await page.waitForTimeout(300);
   const got = await pressGo(page);
   check(
     `clickjacking: a button ${name} fills nothing`,
-    got.prenom === '' && !got.panel && (attack === 'early' || got.tab.includes(refusedLabel)),
+    got.prenom === '' && !got.panel && got.tab.includes(refusedLabel),
     JSON.stringify(got),
   );
   await page.close();
+}
+// Pressed the moment it appears, inside the dwell. A slow machine can take longer than the
+// dwell to get from "the button is there" to the click, and a click after arming is a real
+// click that should fill. So the page records when the button armed and when the click
+// arrived: only a click clearly before arming is conclusive, and a late one is retried on a
+// fresh page rather than read as a pass or a failure.
+{
+  let early = null;
+  let tries = 0;
+  for (; tries < 5 && !early; tries += 1) {
+    const page = await jackedPage();
+    await page.evaluate(() => {
+      const host = document.getElementById('epimoni-offer');
+      window.__armedAt = host.hasAttribute('data-epimoni-armed') ? 0 : null;
+      new MutationObserver(() => {
+        if (window.__armedAt === null && host.hasAttribute('data-epimoni-armed'))
+          window.__armedAt = performance.now();
+      }).observe(host, { attributes: true });
+      window.__clickAt = null;
+      document.addEventListener('click', (e) => (window.__clickAt ??= e.timeStamp), true);
+    });
+    // Past the tab's 200 ms slide-in, inside the dwell.
+    await page.waitForTimeout(220);
+    const got = await pressGo(page);
+    const at = await page.evaluate(() => ({ armed: window.__armedAt, click: window.__clickAt }));
+    if (at.click !== null && (at.armed === null || at.click < at.armed - 50))
+      early = { ...got, tries: tries + 1 };
+    await page.close();
+  }
+  check(
+    'clickjacking: a button pressed the moment it appears fills nothing',
+    Boolean(early) && early.prenom === '' && !early.panel,
+    early ? JSON.stringify(early) : `no click landed before arming in ${tries} tries`,
+  );
 }
 
 // ── Automatic filling, on a site the user turned it on for ──────────────────────────────
