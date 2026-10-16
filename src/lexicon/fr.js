@@ -283,7 +283,9 @@ export default {
         'anciennete',
         'annees de pratique',
       ],
-      not: [],
+      // "Années d'expérience en gestion de projet" asks about one domain, not the career total.
+      // Not a bare "en": "expérience en années" is the total.
+      not: ['d experience en', 'dans', 'avec', 'sur', 'chez', 'comme', 'en tant que'],
     },
     salary_expectation: {
       any: [

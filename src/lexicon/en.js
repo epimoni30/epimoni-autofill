@@ -273,8 +273,10 @@ export default {
       not: ['file', 'attach', 'upload', 'resume', 'cv'],
     },
     years_experience: {
-      any: ['years of experience', 'years experience', 'how many years', 'total experience'],
-      not: [],
+      // Total years only. "How many years of sales experience" or "years of experience with
+      // React" ask about one domain, and the career total would be a wrong answer there.
+      any: ['years of experience', 'years experience', 'total experience'],
+      not: ['in', 'with', 'using', 'as a', 'as an', 'managing', 'leading'],
     },
     salary_expectation: {
       any: [

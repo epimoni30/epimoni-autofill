@@ -185,7 +185,9 @@ export default {
     },
     years_experience: {
       any: ['anos de experiencia', 'cuantos anos de experiencia', 'experiencia en anos', 'antiguedad'],
-      not: [],
+      // "Años de experiencia con React" asks about one domain, not the career total. "en" is
+      // left out: "experiencia en años" is the total.
+      not: ['de experiencia en', 'con', 'como', 'usando'],
     },
     salary_expectation: {
       any: [

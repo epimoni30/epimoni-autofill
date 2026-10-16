@@ -426,3 +426,25 @@ test('"Current location" is where the person lives', () => {
   assert.equal(key('current location'), 'city');
   assert.equal(key(normalize('Localisation actuelle')), 'city');
 });
+
+// Measured on a live Teamtailor form: "How many years of outbound sales experience do you
+// have?" was answered with the career total. A question about one domain is not the total.
+test('years of experience means the total, never one domain', () => {
+  assert.equal(key(normalize("Nombre d'années d'expérience")), 'years_experience');
+  assert.equal(key(normalize('Expérience en années')), 'years_experience');
+  assert.equal(key(normalize('Years of experience')), 'years_experience');
+  assert.equal(key(normalize('Total experience')), 'years_experience');
+  assert.equal(key(normalize('Años de experiencia')), 'years_experience');
+  assert.equal(key(normalize('Experiencia en años')), 'years_experience');
+  for (const label of [
+    'How many years of outbound sales experience do you have?',
+    'Years of experience with React',
+    'Years of experience in B2B sales',
+    "Années d'expérience en gestion de projet",
+    'Ancienneté dans le poste actuel',
+    'Años de experiencia en ventas',
+    'Anos de experiência com React',
+    'Lata doświadczenia w sprzedaży',
+  ])
+    assert.notEqual(key(normalize(label)), 'years_experience', label);
+});

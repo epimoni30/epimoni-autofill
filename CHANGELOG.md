@@ -30,6 +30,9 @@ carries the same number, and the release workflow refuses a tag that does not ma
 
 ### Fixed
 
+- A question about years in one domain ("How many years of outbound sales experience?",
+  "Années d'expérience en gestion de projet") is no longer answered with your whole career's
+  total. Found on a live Teamtailor form; fixed in all five languages.
 - A dropdown wrapped in its own `<label>` (Lever does this) no longer reads its options as part
   of the question. "Which office would you prefer?" with "Mexico City" among the answers was
   read as a city field and got your home town.

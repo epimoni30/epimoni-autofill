@@ -178,7 +178,8 @@ export default {
     },
     years_experience: {
       any: ['lata doswiadczenia', 'liczba lat doswiadczenia', 'ile lat doswiadczenia', 'staz pracy'],
-      not: [],
+      // "Lata doświadczenia w sprzedaży" asks about one domain, not the career total.
+      not: ['w', 'z', 'jako', 'na stanowisku'],
     },
     salary_expectation: {
       any: [
