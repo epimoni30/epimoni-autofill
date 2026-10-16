@@ -9,6 +9,8 @@ carries the same number, and the release workflow refuses a tag that does not ma
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-16
+
 ### Added
 
 - Polish: the interface, and the form labels the extension recognises ("Imię i nazwisko",
@@ -65,6 +67,8 @@ carries the same number, and the release workflow refuses a tag that does not ma
   15 October (it was two from 1 October).
 
 ## [0.2.0] - 2026-10-02
+
+Prepared but never tagged: these changes were first published in 0.3.0.
 
 ### Added
 
@@ -185,5 +189,6 @@ First public version.
 - Community files: contributing guide, code of conduct, issue and pull request templates.
 - Dependabot, CodeQL, and a release workflow that builds the zip from a version tag.
 
-[Unreleased]: https://github.com/epimoni30/epimoni-autofill/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/epimoni30/epimoni-autofill/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/epimoni30/epimoni-autofill/compare/v0.1.0...v0.3.0
 [0.1.0]: https://github.com/epimoni30/epimoni-autofill/releases/tag/v0.1.0
