@@ -597,6 +597,43 @@ check(
   JSON.stringify(madeResult),
 );
 
+// ── What the user typed stays typed ─────────────────────────────────────────────────────
+// The complaint most often made of autofill tools: a custom answer wiped by a fill. A field
+// with anything in it is the user's, whatever the CV says, and a fill run twice changes
+// nothing the first one left.
+{
+  const typed = await ctx.newPage();
+  await typed.goto(`${base}/hellowork.html`, { waitUntil: 'load' });
+  await typed.fill('[name="job"]', 'Responsable marketing (intitulé exact)');
+  await typed.fill('[name="about"]', 'Ma propre présentation, écrite pour cette offre.');
+  const id = await sw.evaluate(
+    async () => (await chrome.tabs.query({})).find((t) => t.url?.includes('hellowork.html'))?.id,
+  );
+  for (let i = 0; i < 2; i += 1) {
+    await sw.evaluate(async (tab) => {
+      await chrome.scripting.executeScript({
+        target: { tabId: tab, allFrames: true },
+        files: ['content.js'],
+      });
+      await chrome.tabs.sendMessage(tab, { type: 'fill' });
+    }, id);
+    await typed.waitForTimeout(600);
+  }
+  const kept = await typed.evaluate(() => ({
+    job: document.querySelector('[name="job"]').value,
+    about: document.querySelector('[name="about"]').value,
+    mail: document.querySelector('[name="mail"]').value,
+  }));
+  check(
+    'a field the user typed in is never overwritten, even by a second fill',
+    kept.job === 'Responsable marketing (intitulé exact)' &&
+      kept.about === 'Ma propre présentation, écrite pour cette offre.',
+    JSON.stringify(kept),
+  );
+  check('the empty fields around them are still filled', kept.mail === profile.email, kept.mail);
+  await typed.close();
+}
+
 // ── Frames from another origin: filled only where somebody can see them ─────────────────
 // A frame cannot see the page around it, so every check inside it passes on a frame the page
 // faded out or shrank to a pixel. The browser's own visibility check can see it, and decides.

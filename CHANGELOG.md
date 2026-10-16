@@ -19,6 +19,9 @@ carries the same number, and the release workflow refuses a tag that does not ma
 - The tracker's CSV export keeps a page title that starts with `=`, `+`, `-` or `@` as text.
   A job page titled like a formula would otherwise run as one when the file is opened in a
   spreadsheet.
+- Usage reports from a page are cut down by the extension itself to counts and field names,
+  with the site taken from the browser rather than from the page. The page side never sent a
+  value, but nothing checked that it didn't.
 
 ## [0.3.0] - 2026-10-16
 
