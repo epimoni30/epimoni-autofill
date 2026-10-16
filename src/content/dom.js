@@ -7,6 +7,7 @@
 // discarded.
 
 import { MONTHS } from '../lexicon/index.js';
+import { workRightCovers } from '../schema/countries.js';
 
 /**
  * Lowercase, strip diacritics, reduce to words. `Prénom` and `PRENOM_1` both become `prenom 1`.
@@ -478,9 +479,21 @@ export function formatValue(el, bundle, v) {
  * The value a decision stands for: the flat profile for an unscoped key, the right entry of
  * the right section for a scoped one. `entries` comes from `toEntries` in shared/cvdoc.js.
  */
+/**
+ * Whether the stored answer for `key` may go into this question at all. Today one key needs it:
+ * a work authorisation holds for some countries, and "Oui" in a question about another one is
+ * false (src/schema/countries.js).
+ */
+export function answerHolds(key, bundle, profile) {
+  if (key !== 'work_authorization') return true;
+  const question = bundle.sources.map((s) => s.text).join(' ');
+  return workRightCovers(question, profile?.[key], profile?.country);
+}
+
 export function valueFor(decision, el, bundle, profile, entries) {
   const { key, index } = decision;
-  if (index === undefined || index === null) return formatValue(el, bundle, profile?.[key]);
+  if (index === undefined || index === null)
+    return answerHolds(key, bundle, profile) ? formatValue(el, bundle, profile?.[key]) : null;
   const dot = key.indexOf('.');
   const row = entries?.[key.slice(0, dot)]?.[index];
   return formatValue(el, bundle, row?.[key.slice(dot + 1)]);

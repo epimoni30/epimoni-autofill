@@ -30,6 +30,10 @@ carries the same number, and the release workflow refuses a tag that does not ma
 
 ### Fixed
 
+- Your work authorisation answer only goes into a question about a country it covers. "Oui,
+  ressortissant UE" answers "…in France?" or "…in Germany?", but no longer "…in the United
+  States?", nor a question about "the country listed". An answer that names no country is
+  read as being about the country you live in.
 - A question asking whether you need a visa or sponsorship is no longer read as the work
   authorisation question. The stored answer ("Oui, ressortissant UE") picked "Oui" there,
   which told the employer you need a visa. Found on live Greenhouse forms; fixed in all five

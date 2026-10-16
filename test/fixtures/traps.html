@@ -73,4 +73,13 @@
     <option>Non</option>
   </select>
 </form>
+<!-- The right question about the wrong country. The stored answer is "Oui, ressortissant UE":
+     true in France, false in the United States, and "Oui" here would say otherwise. -->
+<form id="other-country">
+  <fieldset>
+    <legend>Êtes-vous autorisé(e) à travailler aux États-Unis ?</legend>
+    <label><input type="radio" name="auth_us" value="oui" data-expect="none"> Oui</label>
+    <label><input type="radio" name="auth_us" value="non" data-expect="none"> Non</label>
+  </fieldset>
+</form>
 </body></html>

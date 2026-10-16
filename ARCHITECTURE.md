@@ -169,6 +169,21 @@ The deterministic half keeps what justifies it: no network call, instant, uncapp
 wrong-fill floor `traps.html` can enforce in CI. The scout takes what it cannot name: unnamed
 prose, open questions, the cover letter, and any page where deterministic coverage is poor.
 
+## An answer that only holds somewhere
+
+Most stored values are true wherever they are asked: a name, an email. A work authorisation
+isn't. "Oui, ressortissant UE" is true for France and false for the United States, and a form
+asks about one country at a time. So `answerHolds` in `dom.js` gates that key on both write
+paths (fields and radio groups): when the question names a country, the answer must cover it
+(`src/schema/countries.js`), by naming it, by an EU/EEA word for an EU/EEA country, or, when it
+names no place at all, through the country the person lives in. A question about a place it
+doesn't name ("the country listed") gets nothing.
+
+The polarity half of the same lesson lives in the packs: "Will you require sponsorship?" asks
+the opposite of "Are you authorised to work?", and the same stored "Oui" would answer both.
+`work_authorization` lists only questions asked the positive way, and visa, sponsorship and
+need/require disqualify it in every language.
+
 ## Fillers: evidence and guarded writers, never decisions
 
 This used to say per-ATS adapters were deliberately absent, and the argument behind that still
