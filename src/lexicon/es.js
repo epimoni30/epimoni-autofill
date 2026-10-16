@@ -208,17 +208,19 @@ export default {
       not: [],
     },
     work_authorization: {
+      // Positive questions only. One asking whether the person needs a visa or sponsorship is
+      // the opposite question, and the stored answer would pick its "yes".
       any: [
         'permiso de trabajo',
         'autorizacion de trabajo',
         'derecho a trabajar',
-        'visado',
-        'visa',
         'autorizacion para trabajar',
         'permiso para trabajar',
         'derecho a trabajar en',
+        'autorizado para trabajar',
+        'autorizada para trabajar',
       ],
-      not: [],
+      not: ['patrocinio', 'visado', 'visa', 'necesita', 'necesitara', 'necesitas', 'requiere', 'requerira'],
     },
     education_degree: {
       any: ['titulacion', 'titulo', 'nivel de estudios', 'formacion', 'estudios'],

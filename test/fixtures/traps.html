@@ -57,4 +57,20 @@
   <label for="dy2">Années d'expérience en gestion de projet</label>
   <input id="dy2" name="question_2" type="number" data-expect="none">
 </form>
+<!-- The opposite question. Seen on live Greenhouse forms: "Will you require sponsorship?" was
+     read as the work authorisation question, and the stored answer ("Oui, ressortissant UE")
+     picks "Oui" here, telling the employer the person needs a visa. -->
+<form id="sponsorship">
+  <fieldset>
+    <legend>Aurez-vous besoin d'un parrainage de visa pour travailler en France ?</legend>
+    <label><input type="radio" name="sponsor_fr" value="oui" data-expect="none"> Oui</label>
+    <label><input type="radio" name="sponsor_fr" value="non" data-expect="none"> Non</label>
+  </fieldset>
+  <label for="sp2">Will you now or in the future require sponsorship for employment visa status?</label>
+  <select id="sp2" name="question_9" data-expect="none">
+    <option value="">Select...</option>
+    <option>Oui</option>
+    <option>Non</option>
+  </select>
+</form>
 </body></html>

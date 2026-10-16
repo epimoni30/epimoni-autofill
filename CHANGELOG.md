@@ -30,6 +30,10 @@ carries the same number, and the release workflow refuses a tag that does not ma
 
 ### Fixed
 
+- A question asking whether you need a visa or sponsorship is no longer read as the work
+  authorisation question. The stored answer ("Oui, ressortissant UE") picked "Oui" there,
+  which told the employer you need a visa. Found on live Greenhouse forms; fixed in all five
+  languages.
 - A question about years in one domain ("How many years of outbound sales experience?",
   "Années d'expérience en gestion de projet") is no longer answered with your whole career's
   total. Found on a live Teamtailor form; fixed in all five languages.

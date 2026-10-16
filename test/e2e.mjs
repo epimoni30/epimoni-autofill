@@ -323,9 +323,12 @@ await sw.evaluate(async (id) => {
 }, trapTabId);
 await traps.waitForTimeout(600);
 const touched = await traps.evaluate(() =>
-  Array.from(document.querySelectorAll('input'))
-    .filter((i) => i.value && i.value !== 'REF-2026-118')
-    .map((i) => i.id),
+  Array.from(document.querySelectorAll('input, select'))
+    // A radio or checkbox always has a value; whether it was chosen is `checked`.
+    .filter((i) =>
+      i.type === 'radio' || i.type === 'checkbox' ? i.checked : i.value && i.value !== 'REF-2026-118',
+    )
+    .map((i) => i.id || i.name),
 );
 check('no trap field was filled', touched.length === 0, touched.join(', '));
 

@@ -448,3 +448,25 @@ test('years of experience means the total, never one domain', () => {
   ])
     assert.notEqual(key(normalize(label)), 'years_experience', label);
 });
+
+// Measured on live Greenhouse forms: a sponsorship question was read as the authorisation
+// question, whose stored answer then says "yes" to needing a visa.
+test('a question about needing a visa is never the work authorisation question', () => {
+  for (const label of [
+    'Are you legally authorised to work in France?',
+    'Êtes-vous autorisé(e) à travailler en France ?',
+    'Do you have the right to work in the UK?',
+    '¿Tiene permiso de trabajo en España?',
+  ])
+    assert.equal(key(normalize(label)), 'work_authorization', label);
+  for (const label of [
+    'Will you now or in the future require sponsorship for employment visa status?',
+    'Would you require a visa sponsorship or visa transfer?',
+    "Aurez-vous besoin d'un parrainage de visa ?",
+    'Avez-vous besoin d’un titre de séjour pour travailler en France ?',
+    '¿Necesitará patrocinio de visado?',
+    'Você precisará de visto de trabalho?',
+    'Czy potrzebujesz wizy do pracy w Polsce?',
+  ])
+    assert.notEqual(key(normalize(label)), 'work_authorization', label);
+});

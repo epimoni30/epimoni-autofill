@@ -206,8 +206,20 @@ export default {
       not: ['podrozy', 'delegacji', 'przeprowadzki', 'godziny'],
     },
     work_authorization: {
+      // Positive questions only. One asking whether the person needs a visa or sponsorship is
+      // the opposite question, and the stored answer would pick its "yes".
       any: ['pozwolenie na prace', 'zezwolenie na prace', 'prawo do pracy'],
-      not: [],
+      not: [
+        'sponsor',
+        'sponsorowania',
+        'sponsoring',
+        'wiza',
+        'wizy',
+        'wize',
+        'potrzebuje',
+        'potrzebujesz',
+        'wymaga',
+      ],
     },
     education_degree: {
       any: ['wyksztalcenie', 'poziom wyksztalcenia', 'tytul zawodowy', 'stopien naukowy'],

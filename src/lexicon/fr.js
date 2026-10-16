@@ -314,20 +314,30 @@ export default {
       not: [],
     },
     work_authorization: {
+      // Positive questions only. "Avez-vous besoin d'un visa ?" asks the opposite, and the
+      // stored answer ("Oui, ressortissant UE") would pick its "Oui".
       any: [
         'autorisation de travail',
         'permis de travail',
-        'titre de sejour',
         'droit de travailler',
         'autorise a travailler',
-        'visa',
         'autorisation de travailler',
         'autorise a travailler en france',
         'droit de travail',
         'permis de travailler',
         'autorisation de travail en france',
       ],
-      not: [],
+      not: [
+        'parrainage',
+        'sponsor',
+        'sponsoring',
+        'sponsorisation',
+        'visa',
+        'besoin',
+        'necessite',
+        'necessiter',
+        'titre de sejour',
+      ],
     },
     education_degree: {
       any: [

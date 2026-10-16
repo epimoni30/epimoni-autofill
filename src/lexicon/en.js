@@ -297,20 +297,22 @@ export default {
       not: [],
     },
     work_authorization: {
+      // Positive questions only: "are you authorized to work…". "Will you require sponsorship?"
+      // and "Do you need a visa?" ask the opposite, and the stored answer ("Yes, EU citizen")
+      // would pick their "Yes", saying the person needs a visa.
       any: [
         'work authorization',
         'work authorisation',
         'right to work',
         'work permit',
-        'visa',
         'legally authorized',
-        'sponsorship',
+        'legally authorised',
         'authorized to work',
         'authorised to work',
         'eligible to work',
         'right to work in',
       ],
-      not: [],
+      not: ['sponsor', 'sponsorship', 'visa', 'require', 'required to obtain', 'need', 'needs'],
     },
     education_degree: {
       any: ['degree', 'highest degree', 'education level', 'qualification', 'field of study'],
