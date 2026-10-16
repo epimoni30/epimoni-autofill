@@ -77,6 +77,10 @@ valid report.
   and nowhere else, run only their own scripts, can't be framed and can't post forms. The build
   refuses a policy that doesn't allow the API the code actually calls, or that loosens
   `script-src` or `object-src`.
+- Untrusted files. The PDF reader and the JSON Résumé import are fuzzed on every pull request
+  and more deeply every week (`test/fuzz.test.mjs`): mutated real PDFs, arbitrary bytes and
+  arbitrary JSON must never throw, hang or return the wrong shape. A crashing input is a
+  valid report.
 - Messages. The worker answers a content script only for a short list of message types, and the
   site's pairing request must be confirmed by a real click on an extension page.
 

@@ -1,0 +1,31 @@
+name: fuzz
+
+# The same properties `npm test` checks on every pull request, with fifty times the cases: the
+# PDF reader on mutated real PDFs, the JSON Résumé import on arbitrary JSON, the label
+# normaliser on arbitrary text (test/fuzz.test.mjs). Too slow for every push, cheap once a week.
+# A failure prints the smallest input that reproduces it; paste it into a regular test.
+
+on:
+  schedule:
+    - cron: '41 3 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fuzz:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: node --test test/fuzz.test.mjs
+        env:
+          FUZZ_RUNS: '10000'
