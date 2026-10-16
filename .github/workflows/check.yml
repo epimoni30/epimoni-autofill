@@ -39,3 +39,13 @@ jobs:
       # wrong fill in a job application is unrecoverable. A change that breaks that
       # floor must go red here rather than in somebody's application.
       - run: npm run check
+
+      # Two clean production builds must be byte-identical. SECURITY.md tells people they can
+      # diff a store package against `npm run build` at the same tag, which only works if the
+      # build has no timestamps, random ids or file-order luck in it.
+      - name: Reproducible build
+        run: |
+          sums() { (cd dist && find . -type f -print0 | sort -z | xargs -0 sha256sum); }
+          rm -rf dist && node build.mjs > /dev/null && sums > "$RUNNER_TEMP/a"
+          rm -rf dist && node build.mjs > /dev/null && sums > "$RUNNER_TEMP/b"
+          diff "$RUNNER_TEMP/a" "$RUNNER_TEMP/b"

@@ -17,6 +17,9 @@
     "https://fpd66hmugz4o7j6g7t4obpxlca0bgrvk.lambda-url.eu-central-1.on.aws/*"
   ],
   "optional_host_permissions": ["https://*/*", "http://*/*"],
+  "content_security_policy": {
+    "extension_pages": "default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; connect-src https://fpd66hmugz4o7j6g7t4obpxlca0bgrvk.lambda-url.eu-central-1.on.aws"
+  },
   "externally_connectable": {
     "matches": ["https://www.epimoni30.com/*"]
   },

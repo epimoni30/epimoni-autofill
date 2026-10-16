@@ -93,8 +93,23 @@ await writeFile(join(DIST, 'popup.js'), await read('src/popup/popup.js'));
 // account) and the application tracker, behind one menu. Its scripts are ES modules copied as
 // they are to dist/src/dashboard, where `../shared/` resolves exactly as it does in src/.
 await writeFile(join(DIST, 'dashboard.html'), await read('src/dashboard/dashboard.html'));
-// The "Remplir avec Epimoni" button: a plain script, no imports, loaded by name.
-await cp(join(ROOT, 'src/offer/offer.js'), join(DIST, 'offer.js'));
+// The "Remplir avec Epimoni" button: a plain script, loaded by name. It shares one module with
+// the content script, the clickjacking guard, inlined here (it has no imports of its own).
+{
+  const guard = (await read('src/content/clickguard.js')).replace(/^export /gm, '');
+  if (/^\s*import\s/m.test(guard))
+    throw new Error('src/content/clickguard.js must not import: offer.js inlines it');
+  await writeFile(
+    join(DIST, 'offer.js'),
+    [
+      '// Built by build.mjs from src/: do not edit.',
+      '(() => {',
+      guard,
+      await read('src/offer/offer.js'),
+      '})();',
+    ].join('\n'),
+  );
+}
 await cp(join(ROOT, 'src/dashboard'), join(DIST, 'src/dashboard'), {
   recursive: true,
   filter: (f) => !f.endsWith('.html'),
@@ -303,8 +318,37 @@ if (DEV) {
   // its own fixture tab. In production that access comes from the user's click (activeTab);
   // a test has no user to click.
   manifest.host_permissions = [...manifest.host_permissions, ...LOCAL];
+  // And the extension pages may reach a local API (`EPIMONI_API`, `npm run live`).
+  const csp = manifest.content_security_policy;
+  csp.extension_pages = csp.extension_pages.replace(
+    /connect-src ([^;]*)/,
+    (_, hosts) => `connect-src ${hosts} http://127.0.0.1:* http://localhost:*`,
+  );
 }
 const built = TARGET.transform(manifest);
+{
+  // The extension pages' CSP names every origin the worker may call. Checked against the API
+  // constant the worker actually uses, so moving the API cannot silently break every request,
+  // and a new origin cannot be added to the code without being added to the policy too.
+  const csp = built.content_security_policy?.extension_pages || '';
+  const connect = (csp.match(/connect-src ([^;]*)/)?.[1] || '').split(/\s+/);
+  const api = (await readFile(join(DIST, 'src/epimoni/api.js'), 'utf8')).match(
+    /export const API = '([^']*)'/,
+  )?.[1];
+  const allowed = (origin) =>
+    connect.some((c) => c === origin || (c.endsWith(':*') && origin.startsWith(c.slice(0, -2))));
+  const problems = [];
+  if (!/script-src 'self'(;|$)/.test(csp)) problems.push("script-src must be exactly 'self'");
+  if (!csp.includes("object-src 'none'")) problems.push("object-src must be 'none'");
+  if (!api) problems.push('no API constant in src/epimoni/api.js');
+  else if (!allowed(new URL(api).origin))
+    problems.push(`connect-src does not allow the API, ${new URL(api).origin}`);
+  if (problems.length) {
+    console.error('content_security_policy:');
+    for (const p of problems) console.error(`  - ${p}`);
+    process.exit(1);
+  }
+}
 validateManifest(built, JSON.parse(await read(`_locales/${built.default_locale}/messages.json`)));
 {
   // The target's own load-time rules, and one every target shares: a content script the

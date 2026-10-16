@@ -388,6 +388,30 @@ sites, which is never asked at install: the user turns it on from the popup or t
 goes. With that grant every site is also allowed for automatic filling, so the panel's
 « Toujours remplir ici », offered after any fill, takes one click there too.
 
+## A click the person saw: the clickjacking guard
+
+The button and the panel are drawn inside the page, so the page can do anything to them except
+read or press them (closed shadow roots, `isTrusted`). That still leaves the attack shown
+against password managers at DEF CON 33: fade our host to `opacity: 0`, or lay a
+`pointer-events: none` layer over it, and let a real click on what looks like the page's own
+"Accept" land on our button. With the button allowed on every site, any page could try it.
+
+`src/content/clickguard.js` decides whether a click counts. It needs a trusted event, half a
+second of the UI being visible before the click (so a button cannot be popped up under a
+cursor that is about to click), Chromium's IntersectionObserver v2 reporting the UI unoccluded
+and free of opacity, filters and transforms, and then our own checks, which are all Firefox
+has: computed styles on the host and `<html>`, a hit test at the click point inside and
+outside our shadow root, and nothing in the top layer or after our host overlapping the
+button. A refused click does nothing; when the cause is tampering the UI says so and points at
+the toolbar icon, which no page can cover.
+
+The panel is `box-sizing: border-box` for the same reason as for looks: with `content-box`
+its padding pushed a full panel above the viewport, and a UI that is never wholly on screen
+can never be armed. `offer.js` is a plain script, so `build.mjs` inlines the guard into it;
+the guard must not import anything. `test/e2e.mjs` replays the three attacks (faded, covered,
+pressed on arrival) and each was checked to fail with its defence removed. Tests wait for
+`data-epimoni-armed` on the host before clicking, exactly as a person would wait to see it.
+
 ## The application tracker
 
 Every page the extension fills is an application the user may want to follow, so the fill

@@ -100,7 +100,7 @@
     // corners (where chat widgets and reCAPTCHA live), visible without covering the form.
     const style = document.createElement('style');
     style.textContent = `
-      .tab { position: fixed; z-index: 2147483646; right: 0; top: 50%; transform: translateY(-50%);
+      .tab { position: fixed; z-index: 2147483647; right: 0; top: 50%; transform: translateY(-50%);
         width: 176px; background: #fff; color: #18181b; border: 1px solid #e4e4e7; border-right: 0;
         border-radius: 14px 0 0 14px; box-shadow: -6px 8px 28px rgba(0,0,0,.16); overflow: hidden;
         font: 13px/1.35 system-ui, -apple-system, sans-serif; animation: in .2s ease-out; }
@@ -142,14 +142,23 @@
     body.append(hint, go);
     pill.append(head, body);
     root.append(style, pill);
+    // Pressed only by a click the person made on a tab they could see: the page's script cannot
+    // press it, and a page that hides or covers it cannot borrow a click (src/content/clickguard.js).
+    const guard = clickGuard(host, root, pill, {
+      onRefuse: () => {
+        hint.textContent = t('guard_refused');
+      },
+    });
     go.addEventListener('click', (e) => {
-      if (!e.isTrusted) return; // the page's own script cannot press it
+      if (guard.allow(e, go)) return;
+      guard.stop();
       done = true;
       remove();
       send({ type: state.has_cv ? 'offer:fill' : 'open-options' });
     });
     x.addEventListener('click', (e) => {
       if (!e.isTrusted) return;
+      guard.stop();
       done = true;
       try {
         sessionStorage.setItem(HIDDEN, '1');

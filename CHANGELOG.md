@@ -16,6 +16,23 @@ carries the same number, and the release workflow refuses a tag that does not ma
   names, a middle name and a maiden name empty. Brazilian Portuguese came earlier and was not
   listed here.
 
+### Security
+
+- Clickjacking protection for the in-page button and panel. A click counts only if the person
+  could see what they clicked: the UI must have been on screen for half a second, and a page
+  that fades, filters, clips or covers it gets its click refused, with a note pointing at the
+  toolbar icon. This is the DOM-based extension clickjacking attack shown at DEF CON 33.
+- A Content Security Policy for the extension pages and the service worker: they may connect
+  to the API and nowhere else, run only their own scripts, can't be framed and can't post
+  forms.
+- Releases carry a `SHA256SUMS` file and a signed build provenance attestation, and CI checks
+  that two builds of the same source are byte-identical.
+
+### Fixed
+
+- A long panel no longer starts above the top of the window with its close button out of
+  reach.
+
 ### Changed
 
 - The CV and cover-letter PDFs keep Polish letters (ą, ć, ę, ł, ń, ś, ź, ż) instead of writing
