@@ -25,6 +25,9 @@ carries the same number, and the release workflow refuses a tag that does not ma
 - A Content Security Policy for the extension pages and the service worker: they may connect
   to the API and nowhere else, run only their own scripts, can't be framed and can't post
   forms.
+- The PDF reader, the JSON Résumé import and the label normaliser are fuzzed with property
+  tests (fast-check): mutated real PDFs, arbitrary bytes, arbitrary JSON. Every pull request
+  runs them; a weekly job runs fifty times as many cases.
 - Releases carry a `SHA256SUMS` file and a signed build provenance attestation, and CI checks
   that two builds of the same source are byte-identical.
 
