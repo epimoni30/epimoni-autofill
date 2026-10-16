@@ -87,7 +87,8 @@ valid report.
 ## Verifying a release
 
 Each GitHub release carries the Chrome and Firefox zips, a `SHA256SUMS` file, and a signed
-build provenance attestation. To check that a zip was built by this repository's release
+build provenance attestation, also attached as files (`.sigstore.json`, `.intoto.jsonl`) so it
+can be checked offline. To check that a zip was built by this repository's release
 workflow from the tagged source:
 
 ```bash

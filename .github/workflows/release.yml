@@ -113,9 +113,22 @@ jobs:
           name: release
           path: release
 
-      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+      - id: attest
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
         with:
           subject-path: release/*.zip
+
+      # The attestation also goes on the release itself, as files: the Sigstore bundle (verify
+      # with `gh attestation verify --bundle` or cosign, offline) and its in-toto statement.
+      # Tools that audit releases, OpenSSF Scorecard among them, look for exactly these.
+      - name: Attach the signed provenance to the release
+        env:
+          BUNDLE: ${{ steps.attest.outputs.bundle-path }}
+        run: |
+          name="epimoni-autofill-${GITHUB_REF_NAME}"
+          cp "$BUNDLE" "release/$name.sigstore.json"
+          jq -c .dsseEnvelope "$BUNDLE" > "release/$name.intoto.jsonl"
+          test -s "release/$name.sigstore.json" && test -s "release/$name.intoto.jsonl"
 
       - name: GitHub release
         env:
@@ -123,4 +136,4 @@ jobs:
         run: |
           ls -la release
           name="epimoni-autofill-${GITHUB_REF_NAME}"
-          gh release create "$GITHUB_REF_NAME" "release/$name.zip" "release/$name-firefox.zip" release/SHA256SUMS --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --notes-file release/notes.md --verify-tag
+          gh release create "$GITHUB_REF_NAME" "release/$name.zip" "release/$name-firefox.zip" release/SHA256SUMS "release/$name.sigstore.json" "release/$name.intoto.jsonl" --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --notes-file release/notes.md --verify-tag
