@@ -118,6 +118,8 @@
       .go:hover { background: #6a48ff; }`;
     const pill = document.createElement('div');
     pill.className = 'tab';
+    pill.setAttribute('role', 'region');
+    pill.setAttribute('aria-label', 'Epimoni');
     const head = document.createElement('div');
     head.className = 'head';
     const mark = document.createElement('span');
@@ -147,6 +149,7 @@
     const guard = clickGuard(host, root, pill, {
       onRefuse: () => {
         hint.textContent = t('guard_refused');
+        hint.setAttribute('role', 'status');
       },
     });
     go.addEventListener('click', (e) => {

@@ -882,6 +882,19 @@ check(
   afterPill.values.every(Boolean) && !afterPill.pill && !afterPill.submitted,
   JSON.stringify(afterPill),
 );
+const a11y = await offerPage.evaluate(() => {
+  const panel = document.getElementById('epimoni-panel')?.shadowRoot?.firstElementChild;
+  return {
+    role: panel?.getAttribute('role'),
+    name: panel?.getAttribute('aria-label'),
+    live: Boolean(panel?.querySelector('[aria-live="polite"]')),
+  };
+});
+check(
+  'the panel is a named region and announces what it filled',
+  a11y.role === 'region' && a11y.name === 'Epimoni' && a11y.live,
+  JSON.stringify(a11y),
+);
 const alwaysLabel = await sw.evaluate(() => chrome.i18n.getMessage('panel_always_on'));
 await armed(offerPage, '#epimoni-panel');
 await offerPage.locator('#epimoni-panel').getByRole('button', { name: alwaysLabel }).click();

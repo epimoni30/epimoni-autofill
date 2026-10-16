@@ -53,6 +53,8 @@ carries the same number, and the release workflow refuses a tag that does not ma
 
 ### Changed
 
+- The in-page panel is a named region for screen readers, announces what it filled, and closes
+  with Escape.
 - The CV and cover-letter PDFs keep Polish letters (ą, ć, ę, ł, ń, ś, ź, ż) instead of writing
   them without their accent, and a text extractor reads them back as written. A name outside
   ASCII now shows correctly in the PDF's title and author.
