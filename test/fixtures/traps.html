@@ -82,6 +82,20 @@
     <label><input type="radio" name="auth_us" value="non" data-expect="none"> Non</label>
   </fieldset>
 </form>
+<!-- A place the country table doesn't hold. Read as "no place named", it was answered through
+     the country the person lives in, and "Oui" here claims a right they may not have. -->
+<form id="unknown-country">
+  <fieldset>
+    <legend>Avez-vous le droit de travailler à Hong Kong ?</legend>
+    <label><input type="radio" name="auth_hk" value="oui" data-expect="none"> Oui</label>
+    <label><input type="radio" name="auth_hk" value="non" data-expect="none"> Non</label>
+  </fieldset>
+  <fieldset>
+    <legend>Are you legally authorized to work in the country where this job is located?</legend>
+    <label><input type="radio" name="auth_where" value="oui" data-expect="none"> Oui</label>
+    <label><input type="radio" name="auth_where" value="non" data-expect="none"> Non</label>
+  </fieldset>
+</form>
 <!-- "Location" about the job, not the person. Seen on live Ashby and Lever forms. The person
      lives in Nantes, so a city answer here would pick an office they never chose. -->
 <form id="job-location">
