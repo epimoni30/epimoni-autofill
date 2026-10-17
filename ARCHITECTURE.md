@@ -74,8 +74,8 @@ platform/               per-browser manifest transforms (chrome, firefox); build
 
 ── the Epimoni add-on: everything that talks to epimoni30.com ──────────────────────────────
 src/epimoni/worker.js   pairing with the site, the offer analysis, the allowance, reporting
-src/epimoni/identity.js which token a metered call goes out with, and what it may do
-src/epimoni/api.js      the backend, named statuses, and the anonymous session
+src/epimoni/identity.js what the paired account's token may do: its plan and its window
+src/epimoni/api.js      the backend and its named statuses
 src/epimoni/telemetry.js  counts-only usage events, riding on a token already held
 src/epimoni/tailor.js   the CV writer's proposals → a list to review → a tailored copy
 src/epimoni/import.js   the backend parser's fields → a CvDoc

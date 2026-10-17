@@ -59,35 +59,6 @@ export async function apiFetch(jwt, path, { method = 'GET', body = null } = {}) 
 }
 
 /**
- * Open a session with no account behind it: the same one the website opens for every
- * visitor before its first API call.
- *
- * This is what makes the extension usable by somebody who has never signed in. The session
- * is metered exactly like the site's free tier (one model-backed call an hour), so an
- * anonymous user of the extension gets the same deal as an anonymous user of the site, not a
- * loophole, and not a second free allowance either, since both surfaces draw on one window.
- *
- * `Access-Token` is sent when we already hold one: the backend hands the *same* identity
- * back rather than minting a second. A visitor split across two anonymous identities loses
- * whatever the first one owned, and the worker is killed every thirty seconds and asks again
- * on each wake, so without this it would split itself.
- */
-export async function anonymousLogin(existing = null) {
-  try {
-    const headers = { 'Content-type': 'application/json' };
-    if (existing) headers['Access-Token'] = existing;
-    const response = await fetch(`${API}/api/v1/users/anonymous-login`, { method: 'POST', headers });
-    if (!response.ok)
-      return { ok: false, kind: response.status === 429 ? 'quota' : 'failed', status: response.status };
-    const data = await response.json();
-    if (!data?.jwt || !data?.user_id) return { ok: false, kind: 'failed' };
-    return { ok: true, jwt: data.jwt, user_id: data.user_id };
-  } catch {
-    return { ok: false, kind: 'network' };
-  }
-}
-
-/**
  * Who this token belongs to, and what it is allowed to do.
  *
  * `preference.account_type` is `gratuit | starter | premium | admin`, and `rate_limit` is

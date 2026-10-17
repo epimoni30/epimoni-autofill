@@ -1661,10 +1661,10 @@ await importer.close();
 
 // ── No account at all ────────────────────────────────────────────────────────────────────
 //
-// The extension has to work for somebody who has never signed in: the CV lives here, the
-// worker opens its own anonymous session, and the backend meters it at one call an hour on
-// the same window as the website. This is that path end to end, in a real browser, with the
-// pairing removed rather than simulated.
+// The extension has to work for somebody who has never signed in: the CV lives here and the
+// forms fill, while the AI stays off and no session is opened on their behalf. The stubbed
+// `anonymous-login` below is a tripwire: the call count must stay at zero. This is that path
+// end to end, in a real browser, with the pairing removed rather than simulated.
 await sw.evaluate(async () => {
   globalThis.__calls = [];
   await chrome.storage.session.clear();

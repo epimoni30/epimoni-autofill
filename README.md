@@ -68,8 +68,8 @@ test already runs the core worker this way, with the network switched off.
   CV page. You don't need an Epimoni account.
 - Connecting to the site always goes through a confirmation page inside the extension. The site
   can ask, but only you can accept.
-- If you are not signed in on the site, its session token is never taken. The extension opens
-  its own session at your first analysis and keeps it for 31 days at most.
+- If you are not signed in on the site, its session token is never taken. Filling works all the
+  same; the analysis and the letter wait until you connect an Epimoni account.
 
 [PRIVACY.md](PRIVACY.md) has the full details, including what the usage statistics contain.
 

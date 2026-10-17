@@ -42,10 +42,8 @@ const DERIVED = ['cv', 'cv_label', 'cv_source', 'builder_id', 'taken_at'];
  *   active_cv_id which of them fills forms and gets compared against an advert
  *   extras      what a CV does not hold (address, notice period…), typed by the user; shared
  *               across the library, because they describe the person and not the document
- *   anon        `{jwt, user_id, at}`: the extension's own anonymous session, minted on the
- *               first metered call and never on install (see epimoni/identity.js)
- *   stale       the paired account token expired; filling still works, the analysis falls
- *               through to the anonymous tier
+ *   stale       the paired account token expired; filling still works, the AI waits for
+ *               a reconnect
  *
  * The invariant worth stating: **the active `cv`, `profile` and `extras` are enough to fill
  * a form.** None of the identity fields are on that path, which is why filling works with no

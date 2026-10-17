@@ -310,8 +310,9 @@ function collect() {
  * The status card: where this CV came from, how much of it a form can be filled from, and
  * which allowance the AI half is on.
  *
- * The tier line is the honest half of "free fill, paid AI": a free or anonymous user is
- * metered at one analysis an hour, the website's own window, not a second allowance, and a paying customer is not metered at all. Saying so here means nobody meets
+ * The tier line is the honest half of "free fill, paid AI": the AI needs a paired account,
+ * a free one is metered at one analysis an hour (the website's own window, not a second
+ * allowance), and a paying customer is not metered at all. Saying so here means nobody meets
  * that limit for the first time as a refusal on an advert they were about to apply to.
  */
 /**

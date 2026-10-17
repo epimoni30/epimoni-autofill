@@ -15,7 +15,7 @@ import { write, saveCv, unpairOnly } from '../shared/store.js';
 import { cvIsAnalysable, cvSummary, fieldCurrent, normalizeCvDoc, toProfile } from '../shared/cvdoc.js';
 import { pageMeta, track } from './telemetry.js';
 import { apiFetch, whoIs } from './api.js';
-import { entitlement, forgetEntitlement, resolveIdentity } from './identity.js';
+import { entitlement, forgetEntitlement } from './identity.js';
 import { AI_DATA, missing } from './consent.js';
 import { applyRewrite, proposalsFrom } from './tailor.js';
 import { fromExtraction } from './import.js';
@@ -451,16 +451,16 @@ const aiRefusal = async (state) => {
 };
 
 /**
- * One metered call to the backend, with the identity it goes out under.
+ * One metered call to the backend, on the paired account's token.
  *
  * Returns `{res, ident}`, or `{fail}` with the answer a surface should show. Shared
- * by every paid feature, because the rules are the same for all of them: resolve an identity
- * only now (it may open a session), retry once on a 401, and on a 429 forget the cached
+ * by every paid feature, because the rules are the same for all of them: only an account's
+ * live token goes out, a 401 marks the pairing stale, and a 429 forgets the cached
  * allowance so the panel stops promising a free call it was just refused.
  */
 async function meteredCall(state, msg, path, body) {
-  const ident = await resolveIdentity(state, { mint: false });
-  if (!ident.ok || ident.mode !== 'account') return { fail: { ok: false, kind: 'not-paired' } };
+  if (!state.jwt || state.stale) return { fail: { ok: false, kind: 'not-paired' } };
+  const ident = { jwt: state.jwt, mode: 'account' };
 
   const res = await apiFetch(ident.jwt, `${path}?lang=${encodeURIComponent(msg.lang || 'fr')}`, {
     method: 'POST',
@@ -470,7 +470,7 @@ async function meteredCall(state, msg, path, body) {
   // An expired account token is not retried on another identity: the AI is an account's,
   // so the answer is to reconnect. The pairing is marked stale, which is what makes the popup
   // and the panel say so.
-  if (!res.ok && res.kind === 'expired' && ident.mode === 'account') await write({ stale: true });
+  if (!res.ok && res.kind === 'expired') await write({ stale: true });
 
   if (!res.ok) {
     if (res.kind === 'quota') {
@@ -488,14 +488,13 @@ async function meteredCall(state, msg, path, body) {
  * Compare the CV against the advert the content script scraped.
  *
  * Every branch here decides whether the user spends a metered call, so the order matters:
- * refuse for free first (no CV, no advert), answer from cache second, and only then reach
- * the network, and only then resolve an identity, because resolving one opens a session.
+ * refuse for free first (no account, no CV, no advert), answer from cache second, and only
+ * then reach the network.
  *
- * It no longer requires a paired account. A free or anonymous caller is metered by the
- * backend at one model-backed call an hour, the website's own free tier, not a second
- * allowance, and a paying customer is not metered at all. So the tiering this
- * feature needs already exists server-side; the extension's job is to pick the right token
- * and to say plainly which tier the person is on.
+ * It needs a paired account. A free account is metered by the backend at one model-backed
+ * call an hour, the website's own window, not a second allowance, and a paying customer is
+ * not metered at all. So the tiering already exists server-side; the extension's job is to
+ * send the account's token and say plainly which tier the person is on.
  */
 async function analyse(state, msg) {
   const refused = await aiRefusal(state);
@@ -536,10 +535,10 @@ async function analyse(state, msg) {
   const answer = {
     ok: true,
     ml_id: ml.ml_id || ml.id || null,
-    // Only an account can open the run on the site: `/editeur` needs a session that owns it.
-    // Offering the link to an anonymous caller would send them to a page that finds nothing.
-    builder_id: ident.mode === 'account' ? state.builder_id || null : null,
-    linkable: ident.mode === 'account',
+    // The run is the account's, so the site can open it: `/editeur` reads it back through
+    // the session that owns it.
+    builder_id: state.builder_id || null,
+    linkable: true,
     mode: ident.mode,
     teaser: teaserFrom(ml.content),
   };
@@ -729,10 +728,8 @@ async function importText(state, msg) {
 /**
  * What the surfaces may say about the user's allowance, without spending anything.
  *
- * Asked when a panel or the popup opens, never on the fill path. It resolves an identity,
- * which for an anonymous user means opening their session: acceptable here and not on
- * install, because they have opened a page with a job advert on it and are about to be
- * offered an analysis.
+ * Asked when a panel or the popup opens, never on the fill path. Without a paired account
+ * it answers locally; with one, it is one unmetered read of `/users/me`, cached.
  */
 async function tier(state) {
   // Without a paired account there is no AI to meter, so nothing to ask the server: the
@@ -774,9 +771,8 @@ export async function epimoniState(state) {
     consent: refused?.kind === 'consent',
     mode: state.jwt && !state.stale ? 'account' : 'none',
     paired_at: state.paired_at || null,
-    // The 31-day token expired. Filling still works from the local profile, and the analysis
-    // falls through to the anonymous tier, so this is a prompt to reconnect rather than a
-    // broken extension.
+    // The 31-day token expired. Filling still works from the local profile; the AI waits
+    // for a reconnect, so this is a prompt to reconnect rather than a broken extension.
     stale: !!state.stale,
   };
 }
@@ -829,9 +825,9 @@ export async function handleEpimoni(msg, state, sender) {
     case 'report':
       // Telemetry rides on a token we already hold and never opens a session of its own:
       // reporting that a form was filled is not a reason to create an account row for
-      // somebody who has asked for nothing. An anonymous user who never runs an analysis
-      // therefore sends nothing, which is the right default and a real gap in the numbers.
-      await track(state.jwt || state.anon?.jwt || null, msg.name, pageMeta(msg.meta, sender?.url));
+      // somebody who has asked for nothing. An install with no paired account therefore
+      // sends nothing, which is the right default and a real gap in the numbers.
+      await track(state.jwt || null, msg.name, pageMeta(msg.meta, sender?.url));
       return { ok: true };
     default:
       return undefined;
