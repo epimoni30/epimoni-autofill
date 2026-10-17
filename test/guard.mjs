@@ -31,7 +31,21 @@ await page.setContent(`
     <li id="stray" role="option">Outside the popup</li>
     <input id="other">
     <label><input type="checkbox" id="consent"> I agree</label>
-  </form>`);
+    <div id="ov" class="tz-select"><div class="trigger" id="ov-trigger">Choisir...</div></div>
+    <button type="button" id="before">Already on the page</button>
+  </form>
+  <script>
+    // An overlay library: the list is rendered at the end of <body> on click, declared nowhere.
+    document.getElementById('ov-trigger').addEventListener('click', () => {
+      const pane = document.createElement('div');
+      pane.className = 'cdk-overlay-pane';
+      pane.innerHTML =
+        '<button type="button" id="ov-a" class="item">1 à 3 ans</button>' +
+        '<button type="button" id="ov-b" class="item">5 à 10 ans</button>' +
+        '<button id="ov-submit" type="submit" form="f">Envoyer</button>';
+      document.body.appendChild(pane);
+    });
+  </script>`);
 
 const results = await page.evaluate(`(() => {
   ${bundleContent(join(HERE, '..'))}
@@ -50,6 +64,16 @@ const results = await page.evaluate(`(() => {
   r.checkboxOutside = api.open($('consent'));
   r.pickPrefix = api.pick(['Select One', 'Master\\'s degree', 'Master'], 'master');
   r.pickNone = api.pick(['Licence', 'Doctorat'], 'Master Marketing digital');
+  // A popup the control's own open() rendered elsewhere is the control's; nothing else is.
+  const ov = createGuard($('ov'), { setValue, clearValue, matchOption: matcherFor('years_experience') });
+  const early = createGuard($('ov'), { setValue, clearValue, matchOption });
+  r.overlayOpened = ov.open($('ov-trigger'));
+  r.overlayPopups = ov.popups().length;
+  r.overlayOption = ov.choose($('ov-b'));
+  r.overlaySubmit = ov.choose($('ov-submit'));
+  r.overlayBefore = ov.choose($('before'));
+  r.overlayNotOpenedHere = early.choose($('ov-a'));
+  r.overlayPickYears = ov.pick(['1 à 3 ans', '5 à 10 ans', 'Plus de 10 ans'], '8');
   // The budget: six clicks per write, whatever the filler's loop does.
   const budget = createGuard(box, { setValue, clearValue, matchOption });
   let n = 0;
@@ -98,6 +122,19 @@ check('nothing was submitted', results.submitted === false);
 check('the consent box was not ticked', results.consentTicked === false);
 check('the page did not navigate', results.navigated === false);
 check('every refusal was recorded', results.refusals >= 6, String(results.refusals));
+check(
+  'an overlay the control opened is its popup',
+  results.overlayOpened && results.overlayPopups >= 1 && results.overlayOption === true,
+  JSON.stringify([results.overlayOpened, results.overlayPopups, results.overlayOption]),
+);
+check('a submit button in that overlay is still refused', results.overlaySubmit === false);
+check('a button that was already on the page is not part of it', results.overlayBefore === false);
+check('another control that opened nothing cannot click it', results.overlayNotOpenedHere === false);
+check(
+  'pick follows the key: eight years pick "5 à 10 ans"',
+  results.overlayPickYears === 1,
+  String(results.overlayPickYears),
+);
 check(
   'a hint that agrees with the ids fills',
   results.hintAgrees?.section === 'work' && results.hintAgrees.index === 0 && !results.hintAgrees.weak,

@@ -368,15 +368,18 @@ const BARE_EXPERIENCE = new Set([
 ]);
 
 function asksYearsByBrackets(el, described, options) {
+  const label = described.filter((s) => s.weight >= 0.9);
+  if (!label.length || !label.every((s) => BARE_EXPERIENCE.has(s.text))) return false;
+  // A list whose answers only appear once opened can't be checked here. It is still a list,
+  // not prose, and the pick (matcherFor) writes nothing unless its options are year brackets
+  // and exactly one holds the total, so the bare label is enough to try.
+  if (options === true) return true;
   const texts = Array.isArray(options)
     ? options
     : el.tagName === 'SELECT'
       ? Array.from(el.options).map((o) => o.textContent)
       : null;
-  if (!texts) return false;
-  const label = described.filter((s) => s.weight >= 0.9);
-  if (!label.length || !label.every((s) => BARE_EXPERIENCE.has(s.text))) return false;
-  return texts.filter((t) => yearsRange(t)).length >= 3;
+  return Boolean(texts) && texts.filter((t) => yearsRange(t)).length >= 3;
 }
 
 /** How much a filler's description of a control is trusted: above a `name`, below a label. */
@@ -440,6 +443,24 @@ function optionList(el, bundle) {
   if (el.tagName === 'SELECT')
     return Array.from(el.options).map((o) => ({ text: o.textContent, value: o.value }));
   return null;
+}
+
+/**
+ * `matchOption` for one key: the literal match first, then the rule that key's answers follow
+ * when the form words them its own way (years as brackets, a language level as words). Used
+ * where the options only exist once a widget is opened, so `valueFor` could not apply it.
+ */
+export function matcherFor(key) {
+  const field = key?.includes('.') ? key.slice(key.indexOf('.') + 1) : key;
+  return (list, value) => {
+    const hit = matchOption(list, value);
+    if (hit) return hit;
+    const texts = list.map((o) => o.text);
+    let i = -1;
+    if (key === 'years_experience') i = pickYears(texts, String(value ?? ''));
+    else if (field === 'fluency') i = pickByLevel(texts.map(normalize), normalize(value));
+    return i === -1 ? null : list[i];
+  };
 }
 
 /**

@@ -481,6 +481,27 @@ check(
 );
 await tz.close();
 
+// Taleez's <tz-select>: the list opens into an overlay at the end of <body>, and eight years
+// pick the "8 ans d'expérience" bracket. The domain question and the salary stay empty, and the
+// submit button the overlay renders is never pressed.
+const tzs = await fillPage('fillers/taleez-select/apply.html');
+await tzs.waitForTimeout(300);
+const tzsResult = await tzs.evaluate(() => ({
+  state: window.__state,
+  overlayOpen: document.querySelector('.cdk-overlay-container').children.length > 0,
+  submitted: window.__submitted === true,
+}));
+check(
+  'a Taleez dropdown is opened and the bracket holding the total is chosen, nothing else',
+  tzsResult.state?.xp === "8 ans d'expérience" &&
+    !tzsResult.state?.xp_mgmt &&
+    !tzsResult.state?.salary &&
+    !tzsResult.overlayOpen &&
+    !tzsResult.submitted,
+  JSON.stringify(tzsResult),
+);
+await tzs.close();
+
 const indexed = await fillPage('fillers/workday/my-experience.html');
 const indexedResult = await indexed.evaluate(() => ({
   state: window.__state,

@@ -242,8 +242,13 @@ against the options by the core's own rule (`api.pick`).
 Why it cannot submit, tick or navigate. A filler acts only through `guard.js`, bound to
 the one control it was asked to write. The guard refuses submit and reset buttons, a `<button>`
 with no type inside a form (a submit button by default), links, checkboxes, radios, file and
-password inputs, anything outside the control and the popup it declares (`aria-controls`,
-`aria-owns`), and more than six clicks per write. Refusals are misses, never errors. And
+password inputs, anything outside the control and its popup, and more than six clicks per
+write. The popup is the one the control declares (`aria-controls`, `aria-owns`) or the one its
+own `open()` click made appear: overlay libraries (Angular CDK, portals) render the list at the
+end of `<body>` and declare nothing, so whatever that click adds to the page within two seconds
+belongs to the control, and an element that was already there never does. `api.pick` applies
+the core's rule for the field being written, so years can pick a bracket and a language level a
+word, in a list nobody could read before opening it. Refusals are misses, never errors. And
 `tools/bundle.mjs` refuses, at build time and with the line number, filler code that could go
 around it: `.click(`, `submit`, keyboard events, `fetch`, `chrome.`, `eval`, `innerHTML`,
 `.checked =`. A rule that lives only in review is one that eventually gets merged past.

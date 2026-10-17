@@ -12,5 +12,6 @@
 
 import workday from './site/workday.js';
 import ariaCombobox from './widget/aria-combobox.js';
+import taleezSelect from './widget/taleez-select.js';
 
-export const FILLERS = [workday, ariaCombobox];
+export const FILLERS = [workday, taleezSelect, ariaCombobox];

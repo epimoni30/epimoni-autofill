@@ -753,7 +753,7 @@
         byUser(async () => {
           // Through the same path as a fill, the native setter, or the owning filler's writer,
           // or a controlled form keeps the old value in its state and submits that instead.
-          const { ok, undo } = await writeOne(s.el, s.value, s.owner);
+          const { ok, undo } = await writeOne(s.el, s.value, s.owner, [], s.key);
           if (!ok) return;
           s.undo = undo;
           s.accepted = true;
