@@ -17,6 +17,7 @@ export function fixtureList(fixturesDir) {
     'uploads.html',
     'ats-lever.html',
     'ats-ashby.html',
+    'ats-taleez.html',
     // Every filler's own pages, discovered: a filler is measured the moment it has a fixture.
     ...readdirSync(join(fixturesDir, 'fillers')).flatMap((id) =>
       readdirSync(join(fixturesDir, 'fillers', id))

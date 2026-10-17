@@ -9,6 +9,7 @@
 import { MONTHS } from '../lexicon/index.js';
 import { workRightCovers } from '../schema/countries.js';
 import { pickByLevel } from '../schema/fluency.js';
+import { forDialCode } from '../schema/phone.js';
 import { speaksAnswer, yesIndex, yesWord } from '../schema/languages.js';
 
 /**
@@ -262,6 +263,34 @@ function forLabelText(el) {
 }
 
 /**
+ * The `<label>` of the row a control sits in, when the markup doesn't link the two.
+ *
+ * Component libraries draw a row as `<div><label>Téléphone</label><widget>…<input></widget></div>`:
+ * a real label, with no `for` and not wrapping the input. The text nearest the input is then the
+ * widget's own (an icon, a drop zone's hint), so `nearbyText` stops on that. This climbs to the
+ * first ancestor holding a label that belongs to no other control, and trusts it only when that
+ * ancestor holds exactly one label and exactly one control: two of either and the row can't be
+ * told apart from its neighbour. Before or after the input both count, since a floating label
+ * comes after it in the markup.
+ */
+function fieldLabelText(el) {
+  let node = el.parentElement;
+  for (let hops = 0; node && hops < 5; hops += 1, node = node.parentElement) {
+    const labels = Array.from(node.querySelectorAll('label')).filter(
+      (l) => !l.querySelector(CONTROL) && (!l.htmlFor || l.htmlFor === el.id),
+    );
+    if (!labels.length) continue;
+    const controls = Array.from(node.querySelectorAll(CONTROL)).filter((c) => c.type !== 'hidden');
+    return labels.length === 1 && controls.length === 1 ? labelWords(labels[0]) : '';
+  }
+  return '';
+}
+
+// Icon fonts draw a glyph from a word: <span class="material-icons">keyboard_arrow_down</span>.
+// The word is not text anyone reads.
+const ICON_FONT = '.material-icons, [class*="material-icons-"], [class*="material-symbols"]';
+
+/**
  * Text around the control, for forms that label by position only, which is most French
  * job boards.
  *
@@ -275,6 +304,13 @@ function forLabelText(el) {
  *
  * Bounded to three hops for the same reason.
  */
+function withoutIcons(node) {
+  if (!node.querySelector(ICON_FONT)) return node.textContent || '';
+  const copy = node.cloneNode(true);
+  for (const icon of copy.querySelectorAll(ICON_FONT)) icon.remove();
+  return copy.textContent || '';
+}
+
 function nearbyText(el) {
   let node = el,
     hops = 0,
@@ -287,9 +323,12 @@ function nearbyText(el) {
       .filter(
         (n) =>
           n.nodeType === Node.TEXT_NODE ||
-          (n.nodeType === Node.ELEMENT_NODE && !n.matches?.(CONTROL) && !n.querySelector?.(CONTROL)),
+          (n.nodeType === Node.ELEMENT_NODE &&
+            !n.matches?.(CONTROL) &&
+            !n.querySelector?.(CONTROL) &&
+            !n.matches?.(ICON_FONT)),
       )
-      .map((n) => n.textContent || '')
+      .map((n) => (n.nodeType === Node.ELEMENT_NODE ? withoutIcons(n) : n.textContent || ''))
       .join(' ')
       .replace(/\s+/g, ' ')
       .trim();
@@ -321,6 +360,7 @@ export function labelBundle(el, extra = {}) {
   const near = nearbyText(el);
   const sources = [
     ['label', forLabelText(el), 0.95],
+    ['field-label', fieldLabelText(el), 0.92],
     ['aria-label', el.getAttribute('aria-label'), 0.95],
     ['aria-labelledby', labelledByText(el), 0.95],
     ['placeholder', el.getAttribute('placeholder'), 0.8],
@@ -478,6 +518,34 @@ export function formatValue(el, bundle, v) {
 }
 
 /**
+ * The dialling code a phone widget shows beside its input ("+33 ▾"), as digits, or null.
+ * Read only inside the input's own row: a wrapper holding a second control is another field.
+ */
+function dialCodeBeside(el) {
+  let node = el.parentElement;
+  for (let hops = 0; node && hops < 3; hops += 1, node = node.parentElement) {
+    if (Array.from(node.querySelectorAll(CONTROL)).filter((c) => c.type !== 'hidden').length > 1) return null;
+    for (const e of node.querySelectorAll('button, span, div, strong, b')) {
+      if (e.contains(el) || (e.children.length && !e.matches('button'))) continue;
+      const m = withoutIcons(e)
+        .trim()
+        .match(/^\+\s?(\d{1,4})$/);
+      if (m) return m[1];
+    }
+  }
+  return null;
+}
+
+/** A text input that opens a calendar: Material's, or any component naming itself a date picker. */
+function datePicker(el) {
+  return (
+    el.hasAttribute('data-mat-calendar') ||
+    /datepicker|date-picker/i.test(el.className || '') ||
+    Boolean(el.closest('[class*="datepicker" i], [class*="date-picker" i], mat-datepicker, tz-datepicker'))
+  );
+}
+
+/**
  * The value a decision stands for: the flat profile for an unscoped key, the right entry of
  * the right section for a scoped one. `entries` comes from `toEntries` in shared/cvdoc.js.
  */
@@ -495,8 +563,19 @@ export function answerHolds(key, bundle, profile) {
 export function valueFor(decision, el, bundle, profile, entries) {
   const { key, index } = decision;
   if (key === 'speaks_language') return speaksValue(el, bundle, entries);
-  if (index === undefined || index === null)
-    return answerHolds(key, bundle, profile) ? formatValue(el, bundle, profile?.[key]) : null;
+  if (index === undefined || index === null) {
+    if (!answerHolds(key, bundle, profile)) return null;
+    const got = formatValue(el, bundle, profile?.[key]);
+    // "Immédiate" or "Dans un mois" typed into a date picker is not a date, and the picker
+    // either rejects it or keeps it as garbage. Offered instead, for the person to pick a day.
+    if (got?.value && datePicker(el) && !/\d/.test(got.value)) return { suggest: got.value };
+    // A phone field showing its own country code takes the national number (schema/phone.js).
+    if (key === 'phone' && got?.value) {
+      const dial = dialCodeBeside(el);
+      if (dial) return forDialCode(got.value, dial, el.getAttribute('placeholder') || '');
+    }
+    return got;
+  }
   const dot = key.indexOf('.');
   const row = entries?.[key.slice(0, dot)]?.[index];
   const field = key.slice(dot + 1);

@@ -13,6 +13,7 @@ export const SAMPLE_EXTRAS = {
   postal_code: '44000',
   street: '12 rue du Calvaire',
   country: 'France',
+  availability_date: 'Immédiate',
   // Stored as the user typed it. A radio group offering "Oui"/"Non" still resolves, because
   // matching falls back from exact to prefix.
   work_authorization: 'Oui, ressortissant UE',

@@ -463,6 +463,22 @@ check(
 );
 await speakPage.close();
 
+// A Taleez-shaped row: labels the markup doesn't link, an icon font beside the phone, a drop
+// zone around the file input. The phone field shows "+33" itself, so it takes the national
+// number, in the shape its placeholder shows.
+const tz = await fillPage('ats-taleez.html');
+const tzResult = await tz.evaluate(() => ({
+  phone: document.getElementById('tz-phone').value,
+  file: document.querySelector('input[type="file"]').files.length,
+  date: document.querySelector('.mat-datepicker-input').value,
+}));
+check(
+  'an unlinked row label names the field, and a phone beside its own +33 gets the national number',
+  tzResult.phone === '06 12 34 56 78' && tzResult.file === 1 && tzResult.date === '',
+  JSON.stringify(tzResult),
+);
+await tz.close();
+
 const indexed = await fillPage('fillers/workday/my-experience.html');
 const indexedResult = await indexed.evaluate(() => ({
   state: window.__state,

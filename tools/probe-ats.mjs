@@ -15,7 +15,9 @@
 //
 // Columns: decision, key, then what was written ("= …") or why nothing was ("(reason)"), then
 // the control and the text it was matched on. `--shots=<dir>` also saves a full-page
-// screenshot of each page after the fill.
+// screenshot of each page after the fill. `--open=<text>` clicks the first button or link
+// whose text is exactly that ("Postuler", "Apply") before measuring, for an ATS that only
+// shows its form after it; the abort rule above is what keeps that click from sending anything.
 
 import { readFileSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
@@ -29,6 +31,7 @@ import { loadChromium } from './chromium.mjs';
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const args = process.argv.slice(2);
 const shots = args.find((a) => a.startsWith('--shots='))?.slice('--shots='.length);
+const open = args.find((a) => a.startsWith('--open='))?.slice('--open='.length);
 const urls = args.filter((a) => !a.startsWith('--'));
 if (!urls.length) {
   console.error('usage: npm run probe:ats -- <apply-url> [<apply-url> ...] [--shots=<dir>]');
@@ -91,6 +94,18 @@ for (const url of urls) {
     console.log(`  (page did not settle: ${e.message.split('\n')[0]}; measuring what loaded)`);
   }
   await page.waitForTimeout(2000);
+  if (open) {
+    const opener = page
+      .locator('button, a, [role="button"]')
+      .filter({ hasText: new RegExp(`^\\s*${open.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`, 'i') })
+      .first();
+    try {
+      await opener.click({ timeout: 5000 });
+      await page.waitForTimeout(2500);
+    } catch {
+      console.log(`  (no "${open}" to click; measuring the page as it is)`);
+    }
+  }
   for (const frame of page.frames()) {
     let got;
     try {

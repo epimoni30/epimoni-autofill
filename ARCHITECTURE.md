@@ -69,6 +69,7 @@ src/content/framegate.js whether a form in a frame is on screen, before anything
 src/schema/fields.js    every canonical field: its shape, and where it lives in JSON Résumé
 src/schema/fluency.js   language levels on one CEFR scale, and the one option a level fits
 src/schema/languages.js which languages a question names, and whether the CV backs a yes
+src/schema/phone.js     a phone number for a field that shows its own country code
 src/lexicon/<lang>.js   one language pack each: phrases, section headings, dates; index.js lists them
 src/fillers/            site and widget fillers: evidence and guarded writers, never decisions
 tools/bundle.mjs        ES modules → the content script; enforces the filler contract
@@ -723,6 +724,21 @@ The same rule runs inside the extension. The worker answers a content script (wh
 job board's renderer, next to code we do not control) only for what filling needs: the
 profile, the offer analysis, the allowance, usage reports, opening the CV page. Reading the
 whole library, editing it, erasing it and unpairing are for extension pages only.
+
+## A row's label, when the markup doesn't link it
+
+Component libraries draw a field as `<div><label>Téléphone</label><widget>…<input></widget></div>`:
+a real `<label>`, with no `for` and not wrapping the input. The text nearest the input is then the
+widget's own, an icon font's ligature ("keyboard_arrow_down") or a drop zone's hint, and reading
+that as the label missed the phone and the CV on a live Taleez form. `fieldLabelText` in `dom.js`
+climbs to the first ancestor holding a label that belongs to no other control, and trusts it
+only when that ancestor holds exactly one label and one control. Icon-font elements are dropped
+from nearby text altogether.
+
+Two values depend on the widget around the input. A phone field that shows its own country code
+("+33 ▾") takes the national number in the shape its placeholder shows, and a number from
+another country is only offered (`src/schema/phone.js`). A date picker never receives free text
+such as "Immédiate": that is offered too.
 
 ## Gotchas worth knowing before editing
 
