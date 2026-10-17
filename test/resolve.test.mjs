@@ -520,3 +520,17 @@ test('the school someone is enrolled in is not the last one on their CV', () => 
     assert.notEqual(key(normalize(label)), 'education_institution', label);
   assert.equal(key(normalize('School name')), 'education_institution');
 });
+
+// Measured on five live Ashby forms: the "Autofill from resume" parse box has no label, only
+// text around it, and was offered the CV. A file there is read back over the fields we just
+// filled. Vague text may not veto a key for the whole control, but it can't argue for a key
+// while naming one of that key's vetoes itself.
+test('a hint that names its own veto does not suggest', () => {
+  const near = (text) => key('', { type: 'file', nearby: normalize(text), precise: false });
+  assert.equal(
+    near('Autofill from resume. Upload your resume here to autofill key application fields.'),
+    'skip:no-match',
+  );
+  assert.equal(near('Déposez votre CV pour pré-remplir le formulaire'), 'skip:no-match');
+  assert.equal(near('Upload your resume'), 'suggest:low-confidence');
+});

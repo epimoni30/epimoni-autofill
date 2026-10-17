@@ -411,6 +411,10 @@ export default {
         'justificatif',
         'attestation',
         'recommandation',
+        'remplissage automatique',
+        'remplir automatiquement',
+        'pre remplir',
+        'preremplir',
       ],
     },
     'work.position': {

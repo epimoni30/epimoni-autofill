@@ -15,6 +15,17 @@
     <label for="_pref_location" class="field-label">Which office are you applying for?</label>
     <input id="_pref_location" name="preferredPostingLocation" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" data-expect="none">
   </div>
+  <!-- Ashby puts a parse box above the form: a file dropped here is read back into the fields,
+       over what was just filled. The application's own CV is the "Resume" field below. -->
+  <div class="field-entry">
+    <label for="_autofill" class="field-label">Autofill from resume</label>
+    <p>Upload your resume here to autofill key application fields.</p>
+    <input id="_autofill" type="file" accept=".pdf,.doc,.docx" data-expect="none">
+  </div>
+  <div class="field-entry">
+    <label for="_systemfield_resume" class="field-label">Resume</label>
+    <input id="_systemfield_resume" name="_systemfield_resume" type="file" accept=".pdf,.doc,.docx" data-expect="cv_file">
+  </div>
   <button type="submit">Submit application</button>
 </form>
 <script src="_react.js"></script><script>window.__controlAll()</script>

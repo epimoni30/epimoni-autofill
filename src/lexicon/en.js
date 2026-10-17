@@ -392,6 +392,12 @@ export default {
         'supporting',
         'reference',
         'references',
+        // A parse box ("Autofill from resume") reads the file back into the fields, over
+        // what was just filled; the application's CV is the upload beside it.
+        'autofill',
+        'auto fill',
+        'prefill',
+        'pre fill',
       ],
     },
     'work.position': {
