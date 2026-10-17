@@ -68,6 +68,7 @@ src/content/keywords.js which of the CV's skills the advert names, and marking t
 src/content/framegate.js whether a form in a frame is on screen, before anything is written into it
 src/schema/fields.js    every canonical field: its shape, and where it lives in JSON Résumé
 src/schema/fluency.js   language levels on one CEFR scale, and the one option a level fits
+src/schema/languages.js which languages a question names, and whether the CV backs a yes
 src/lexicon/<lang>.js   one language pack each: phrases, section headings, dates; index.js lists them
 src/fillers/            site and widget fillers: evidence and guarded writers, never decisions
 tools/bundle.mjs        ES modules → the content script; enforces the filler contract
@@ -192,6 +193,14 @@ written, `src/schema/fluency.js` puts both on the CEFR scale (A1 to C2, plus a f
 language) and picks an option only when the level fits exactly one. Words are ranges
 ("Courant" is C1 or C2), so "C1" against a list with both "Avancé" and "Courant" fits two and
 is left for the person: a stated level is something an interview checks.
+
+"Do you speak fluent French?" is the third, and the strictest. The answer depends on which
+language the question names, so `speaks_language` has no stored value: `src/schema/languages.js`
+reads the language off the question, finds it in the CV, and backs a **yes** only when the CV's
+level reaches what was asked (C1 for "fluent", B1 otherwise). It never answers no. A language
+absent from the CV, or listed without a level, is a question left for the person, because a
+missing answer costs a click and a wrong "no" can end an application. A form asks it once per
+language, so the field is `perQuestion` in the registry and is exempt from the duplicate-key rule.
 
 ## Fillers: evidence and guarded writers, never decisions
 

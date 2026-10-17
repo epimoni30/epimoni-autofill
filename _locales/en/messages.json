@@ -86,6 +86,9 @@
   "field_languages": {
     "message": "Languages"
   },
+  "field_speaks_language": {
+    "message": "Language spoken"
+  },
   "field_cv_file": {
     "message": "Resume (PDF file)"
   },

@@ -534,3 +534,20 @@ test('a hint that names its own veto does not suggest', () => {
   assert.equal(near('Déposez votre CV pour pré-remplir le formulaire'), 'skip:no-match');
   assert.equal(near('Upload your resume'), 'suggest:low-confidence');
 });
+
+// Measured on a live Lever form: "What is your expected salary range for this role?" asks the
+// person's own figure, and a veto on "range for this role" (meant for questions about the
+// advertised range) refused it. The veto now names the agreeing, not the range.
+test('an expected salary range is asked of the person; agreeing with the advertised one is not', () => {
+  assert.equal(
+    key(normalize('What is your expected salary range for this role? (annual gross)')),
+    'salary_expectation',
+  );
+  for (const label of [
+    'Are you comfortable with the salary range for this role?',
+    'Is the salary range for this role acceptable to you?',
+    'Does the salary range for this role align with your expectations?',
+    'Êtes-vous à l’aise avec la fourchette de salaire proposée ?',
+  ])
+    assert.notEqual(key(normalize(label)), 'salary_expectation', label);
+});

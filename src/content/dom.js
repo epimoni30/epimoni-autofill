@@ -9,6 +9,7 @@
 import { MONTHS } from '../lexicon/index.js';
 import { workRightCovers } from '../schema/countries.js';
 import { pickByLevel } from '../schema/fluency.js';
+import { speaksAnswer, yesIndex, yesWord } from '../schema/languages.js';
 
 /**
  * Lowercase, strip diacritics, reduce to words. `Prénom` and `PRENOM_1` both become `prenom 1`.
@@ -493,6 +494,7 @@ export function answerHolds(key, bundle, profile) {
 
 export function valueFor(decision, el, bundle, profile, entries) {
   const { key, index } = decision;
+  if (key === 'speaks_language') return speaksValue(el, bundle, entries);
   if (index === undefined || index === null)
     return answerHolds(key, bundle, profile) ? formatValue(el, bundle, profile?.[key]) : null;
   const dot = key.indexOf('.');
@@ -503,6 +505,43 @@ export function valueFor(decision, el, bundle, profile, entries) {
     if (level) return level;
   }
   return formatValue(el, bundle, row?.[field]);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// "Do you speak fluent French?": a yes the CV backs, or nothing (src/schema/languages.js).
+
+/** The question, read from the sources that describe this control, not the text around it. */
+const questionOf = (bundle) =>
+  bundle.sources
+    .filter((s) => s.weight >= 0.65)
+    .map((s) => s.text)
+    .join(' ');
+
+const languageRows = (entries) =>
+  (entries?.languages || []).map((r) => ({ language: normalize(r.language), fluency: normalize(r.fluency) }));
+
+function speaksValue(el, bundle, entries) {
+  const question = questionOf(bundle);
+  const list = optionList(el, bundle);
+  if (list) {
+    if (speaksAnswer(question, languageRows(entries)) !== true) return null;
+    const i = yesIndex(list.map((o) => normalize(o.text)));
+    return i === -1 ? null : { value: list[i].value };
+  }
+  // A dropdown whose answers only exist once opened (`tag` is select with no list): the
+  // filler matches the yes word when it opens it.
+  if (bundle.tag !== 'select') return null;
+  if (speaksAnswer(question, languageRows(entries), { fluentOnly: true }) !== true) return null;
+  const word = yesWord(question);
+  return word ? { value: word } : null;
+}
+
+/** The label of the yes option in a radio group, when the CV backs a yes; else null. */
+export function speaksRadioValue(group, bundle, entries) {
+  if (speaksAnswer(questionOf(bundle), languageRows(entries)) !== true) return null;
+  const labels = group.inputs.map(radioLabel);
+  const i = yesIndex(labels);
+  return i === -1 ? null : labels[i];
 }
 
 /**

@@ -31,6 +31,7 @@ import {
   radioAnswered,
   radioGroupBundle,
   radioGroups,
+  speaksRadioValue,
   setFile,
   setRadio,
   setValue,
@@ -236,8 +237,8 @@ export async function runFill({
     radioRows.push(rrow);
     if (group.inputs.some((r) => skip?.has(r))) continue;
     if (radioAnswered(group) || d.action !== 'fill') continue;
-    const value = profile[d.key];
-    if (value === undefined || !answerHolds(d.key, gb, profile)) continue;
+    const value = d.key === 'speaks_language' ? speaksRadioValue(group, gb, entries) : profile[d.key];
+    if (value === undefined || value === null || !answerHolds(d.key, gb, profile)) continue;
     const chosen = setRadio(group, value);
     if (!chosen) continue;
     rrow.chosen = chosen;

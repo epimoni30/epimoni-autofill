@@ -309,7 +309,16 @@ export default {
         'attentes salariales',
         'package souhaite',
       ],
-      not: ['actuel', 'propose', 'offert', 'fourchette de l offre'],
+      not: [
+        'actuel',
+        'propose',
+        'proposee',
+        'offert',
+        'fourchette de l offre',
+        'a l aise',
+        'convient',
+        'acceptez',
+      ],
     },
     notice_period: {
       any: ['preavis', 'duree de preavis', 'delai de preavis'],
@@ -380,6 +389,10 @@ export default {
     languages: {
       any: ['langues', 'langues parlees', 'vos langues', 'niveau de langue'],
       not: ['programmation', 'informatique'],
+    },
+    speaks_language: {
+      any: ['parlez vous', 'parles tu', 'maitrisez vous'],
+      not: ['languages', 'langues', 'idiomas', 'jezyki', 'list', 'liste', 'lista'],
     },
     // A file input only (the registry's `file` shape). Every other upload on the form (the
     // letter, a diploma, a photo, "autre document") names itself, and any of those words

@@ -237,6 +237,10 @@ export default {
       any: ['jezyki', 'jezyki obce', 'znajomosc jezykow'],
       not: ['programowania'],
     },
+    speaks_language: {
+      any: ['czy mowisz', 'czy mowi pan', 'czy mowi pani', 'czy wladasz'],
+      not: ['languages', 'langues', 'idiomas', 'jezyki', 'list', 'liste', 'lista'],
+    },
     // A file input only. The letter, a photo, a diploma or "inne dokumenty" each rule it out.
     cv_file: {
       any: ['cv', 'zyciorys', 'twoje cv', 'zalacz cv', 'dodaj cv', 'przeslij cv', 'wgraj cv'],

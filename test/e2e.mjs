@@ -45,7 +45,7 @@ const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; cha
 const server = createServer(async (req, res) => {
   try {
     const body = await readFile(join(HERE, 'fixtures', req.url.split('?')[0].replace(/^\//, '')));
-    res.writeHead(200, { 'content-type': MIME[extname(req.url)] || 'text/plain' });
+    res.writeHead(200, { 'content-type': MIME[extname(req.url.split('?')[0])] || 'text/plain' });
     res.end(body);
   } catch {
     res.writeHead(404);
@@ -444,6 +444,24 @@ check(
   blockResult.panelText.includes(blockSay.eduLeft),
   blockResult.panelText.slice(0, 120),
 );
+
+// "Do you speak…?" with the full CV stored (French first language, English C1): a yes where
+// the CV backs one, nothing anywhere else, and never a no.
+// Its own hash: the first radios.html tab is still open, and a tab is found by URL.
+const speakPage = await fillPage('radios.html#cv-full');
+const spoken = await speakPage.evaluate(() => ({
+  frYes: document.getElementById('lf1').checked,
+  frNo: document.getElementById('lf2').checked,
+  es: document.getElementById('le1').checked || document.getElementById('le2').checked,
+  en: document.getElementById('sp-en').value,
+  it: document.getElementById('sp-it').value,
+}));
+check(
+  'a language question gets a yes the CV backs, and no answer it does not',
+  spoken.frYes && !spoken.frNo && !spoken.es && spoken.en === '1' && spoken.it === '',
+  JSON.stringify(spoken),
+);
+await speakPage.close();
 
 const indexed = await fillPage('fillers/workday/my-experience.html');
 const indexedResult = await indexed.evaluate(() => ({

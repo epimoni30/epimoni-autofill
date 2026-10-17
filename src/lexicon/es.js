@@ -238,6 +238,10 @@ export default {
       any: ['idiomas', 'idiomas hablados', 'nivel de idioma'],
       not: ['programacion'],
     },
+    speaks_language: {
+      any: ['habla usted', 'hablas', 'domina usted'],
+      not: ['languages', 'langues', 'idiomas', 'jezyki', 'list', 'liste', 'lista'],
+    },
     // A file input only. The letter, a title, a photo or "otros documentos" each rule it out.
     cv_file: {
       any: [

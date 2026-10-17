@@ -321,7 +321,19 @@ export default {
         'compensation expectation',
         'expected compensation',
       ],
-      not: ['current', 'offered', 'range for this role'],
+      // Questions about the advertised figure ("are you comfortable with the range for this
+      // role?") are yes/no, and the person's own number would be the wrong answer.
+      not: [
+        'current',
+        'offered',
+        'comfortable',
+        'acceptable',
+        'align',
+        'aligned',
+        'agree',
+        'okay',
+        'ok with',
+      ],
     },
     notice_period: {
       any: ['notice period', 'notice'],
@@ -365,6 +377,13 @@ export default {
     languages: {
       any: ['languages', 'languages spoken', 'language level'],
       not: ['programming'],
+    },
+    // A yes/no question about one language, answered only with a yes the CV backs
+    // (src/schema/languages.js). "Which languages do you speak?" asks for a list: that is
+    // the key above.
+    speaks_language: {
+      any: ['do you speak', 'can you speak', 'are you fluent', 'fluent in', 'speak fluent'],
+      not: ['languages', 'langues', 'idiomas', 'jezyki', 'list', 'liste', 'lista'],
     },
     // A file input only. "Resume" here is the CV; the French summary sense cannot reach a
     // file picker, because the `file` shape admits no other key.

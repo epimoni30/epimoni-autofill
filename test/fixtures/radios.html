@@ -25,6 +25,28 @@
     <label for="r2">Non</label><input type="radio" id="r2" name="teletravail" value="non" data-expect="none">
   </fieldset>
 
+  <!-- "Do you speak…?" against a CV with French as a first language, English at C1, and no
+       Spanish or Italian. A yes only where the CV backs one; never a no. Seen on live Lever
+       and Greenhouse forms. -->
+  <fieldset id="fs-fr">
+    <legend>Do you speak fluent French?</legend>
+    <label for="lf1">Yes</label><input type="radio" id="lf1" name="speak_fr" value="yes" data-controlled data-expect="speaks_language">
+    <label for="lf2">No</label><input type="radio" id="lf2" name="speak_fr" value="no" data-expect="none">
+  </fieldset>
+  <fieldset id="fs-es">
+    <legend>Do you speak fluent Spanish?</legend>
+    <label for="le1">Yes</label><input type="radio" id="le1" name="speak_es" value="yes" data-expect="none">
+    <label for="le2">No</label><input type="radio" id="le2" name="speak_es" value="no" data-expect="none">
+  </fieldset>
+  <label for="sp-en">Parlez-vous couramment anglais ?</label>
+  <select id="sp-en" name="speak_en" data-controlled data-expect="speaks_language">
+    <option value="">Choisir…</option><option value="1">Oui</option><option value="0">Non</option>
+  </select>
+  <label for="sp-it">Do you speak Italian?</label>
+  <select id="sp-it" name="speak_it" data-expect="none">
+    <option value="">Select…</option><option>Yes</option><option>No</option>
+  </select>
+
   <label for="cgu">J'accepte les conditions générales</label>
   <input type="checkbox" id="cgu" name="cgu" data-expect="none">
   <label for="news">Je souhaite recevoir des offres par e-mail</label>

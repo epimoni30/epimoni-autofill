@@ -315,7 +315,7 @@ export function createResolver({ lexicons, autocomplete = {} }) {
     const decisions = bundles.map((b) => resolve(b));
     const taken = new Map();
     decisions.forEach((d, i) => {
-      if (d.action !== 'fill') return;
+      if (d.action !== 'fill' || fieldOf(d.key)?.perQuestion) return;
       const claim = d.index == null ? d.key : `${d.key}#${d.index}#${d.part || ''}`;
       const prev = taken.get(claim);
       if (prev === undefined) {
