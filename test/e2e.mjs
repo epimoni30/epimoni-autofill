@@ -423,6 +423,16 @@ check(
 );
 check('a field outside every block takes no entry', blockResult.wanted === '', blockResult.wanted);
 check('nothing was submitted on the block form', blockResult.submitted === false);
+// The CV says "langue maternelle" and "C1"; the form offers words. The first matches as
+// written, the second only through the language-level scale (src/schema/fluency.js).
+const levels = await parcours.evaluate(() =>
+  ['lang_a_niveau', 'lang_b_niveau'].map((n) => document.querySelector(`[name="${n}"]`).value),
+);
+check(
+  'a CEFR level picks the one option it fits on a form that words its levels',
+  levels[0] === 'Langue maternelle' && levels[1] === 'Courant',
+  levels.join(' / '),
+);
 const blockSay = await sw.evaluate(() => ({
   current: chrome.i18n.getMessage('panel_tick_current'),
   eduLeft: chrome.i18n.getMessage('panel_leftover', ['1', chrome.i18n.getMessage('cvsection_education')]),

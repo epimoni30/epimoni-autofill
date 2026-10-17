@@ -8,6 +8,7 @@
 
 import { MONTHS } from '../lexicon/index.js';
 import { workRightCovers } from '../schema/countries.js';
+import { pickByLevel } from '../schema/fluency.js';
 
 /**
  * Lowercase, strip diacritics, reduce to words. `Prénom` and `PRENOM_1` both become `prenom 1`.
@@ -496,7 +497,28 @@ export function valueFor(decision, el, bundle, profile, entries) {
     return answerHolds(key, bundle, profile) ? formatValue(el, bundle, profile?.[key]) : null;
   const dot = key.indexOf('.');
   const row = entries?.[key.slice(0, dot)]?.[index];
-  return formatValue(el, bundle, row?.[key.slice(dot + 1)]);
+  const field = key.slice(dot + 1);
+  if (field === 'fluency') {
+    const level = levelOption(el, bundle, row?.[field]);
+    if (level) return level;
+  }
+  return formatValue(el, bundle, row?.[field]);
+}
+
+/**
+ * A language level the option list words differently: "C1" in the CV, "Courant" on the
+ * form. Only when nothing matches as written, and only when exactly one option fits the
+ * level (src/schema/fluency.js says why).
+ */
+function levelOption(el, bundle, v) {
+  if (typeof v !== 'string' || !v.trim()) return null;
+  const list = optionList(el, bundle);
+  if (!list || matchOption(list, v)) return null;
+  const i = pickByLevel(
+    list.map((o) => normalize(o.text)),
+    normalize(v),
+  );
+  return i === -1 ? null : { value: list[i].value };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

@@ -67,6 +67,7 @@ src/content/posting.js  the job advert on the page → text worth analysing
 src/content/keywords.js which of the CV's skills the advert names, and marking them in the page
 src/content/framegate.js whether a form in a frame is on screen, before anything is written into it
 src/schema/fields.js    every canonical field: its shape, and where it lives in JSON Résumé
+src/schema/fluency.js   language levels on one CEFR scale, and the one option a level fits
 src/lexicon/<lang>.js   one language pack each: phrases, section headings, dates; index.js lists them
 src/fillers/            site and widget fillers: evidence and guarded writers, never decisions
 tools/bundle.mjs        ES modules → the content script; enforces the filler contract
@@ -184,6 +185,13 @@ The polarity half of the same lesson lives in the packs: "Will you require spons
 the opposite of "Are you authorised to work?", and the same stored "Oui" would answer both.
 `work_authorization` lists only questions asked the positive way, and visa, sponsorship and
 need/require disqualify it in every language.
+
+A language level is the other answer whose wording depends on the form. The CV says "C1",
+the form offers "Débutant / Intermédiaire / Courant / Bilingue". When nothing matches as
+written, `src/schema/fluency.js` puts both on the CEFR scale (A1 to C2, plus a first
+language) and picks an option only when the level fits exactly one. Words are ranges
+("Courant" is C1 or C2), so "C1" against a list with both "Avancé" and "Courant" fits two and
+is left for the person: a stated level is something an interview checks.
 
 ## Fillers: evidence and guarded writers, never decisions
 
