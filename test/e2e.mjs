@@ -31,11 +31,12 @@ const extensionIdFor = (absPath) =>
     .map((c) => 'abcdefghijklmnop'[parseInt(c, 16)])
     .join('');
 
-// A stuck browser should fail the run, not hold the terminal.
+// A stuck browser should fail the run, not hold the terminal. Twice the suite's own length on
+// a laptop, because CI runners are slower: this is for a hang, not a budget.
 const watchdog = setTimeout(() => {
-  console.log('\nFAILED: timed out after 90s');
+  console.log('\nFAILED: timed out after 180s');
   process.exit(1);
-}, 90000);
+}, 180000);
 watchdog.unref?.();
 
 const HERE = fileURLToPath(new URL('.', import.meta.url));

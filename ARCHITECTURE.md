@@ -71,6 +71,8 @@ src/schema/fluency.js   language levels on one CEFR scale, and the one option a 
 src/schema/languages.js which languages a question names, and whether the CV backs a yes
 src/schema/phone.js     a phone number for a field that shows its own country code
 src/schema/years.js     a total of years against a form's brackets ("5 à 10 ans", "10+ years")
+src/schema/degrees.js   the CV's highest degree on the bac+N scale, against a form's levels
+src/schema/salary.js    the salary the person typed against a form's brackets
 src/lexicon/<lang>.js   one language pack each: phrases, section headings, dates; index.js lists them
 src/fillers/            site and widget fillers: evidence and guarded writers, never decisions
 tools/bundle.mjs        ES modules → the content script; enforces the filler contract
@@ -201,6 +203,14 @@ an / 1 à 3 ans / … / Plus de 10 ans"), and `src/schema/years.js` picks the on
 holds the total, or nothing when it sits on a shared edge. A bare "Votre expérience" is the
 years question only when it is a closed list of year brackets: as a textarea it asks for prose,
 and the lexicon alone can't tell the two apart.
+
+Two more answers follow the same rule. An education-level question takes the CV's highest
+degree, put on the French bac+N scale with the options (`src/schema/degrees.js`: a level an
+option states, "(bac +4)", wins over the name beside it). A salary asked as brackets takes the
+one bracket holding the whole figure the person typed (`src/schema/salary.js`), never a figure
+on an edge, a range across two brackets, or a monthly figure against yearly brackets. In
+fixtures, `data-expect-value` makes the measure check which option was chosen, not only which
+key: for these answers the key is the easy half.
 
 "Do you speak fluent French?" is the third, and the strictest. The answer depends on which
 language the question names, so `speaks_language` has no stored value: `src/schema/languages.js`

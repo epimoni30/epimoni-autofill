@@ -95,6 +95,13 @@
     <option value="">Choisir…</option><option>Junior</option><option>Confirmé</option><option>Senior</option>
   </select>
 </form>
+<!-- The salary someone earns now is not the one they ask for, even with the same brackets. -->
+<form id="current-salary">
+  <label for="cs">Salaire actuel</label>
+  <select id="cs" name="question_19" data-expect="none">
+    <option value="">Choisir…</option><option>30 000 à 40 000 €</option><option>40 000 à 50 000 €</option><option>Plus de 50 000 €</option>
+  </select>
+</form>
 <!-- A place the country table doesn't hold. Read as "no place named", it was answered through
      the country the person lives in, and "Oui" here claims a right they may not have. -->
 <form id="unknown-country">

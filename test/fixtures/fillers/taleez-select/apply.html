@@ -5,9 +5,9 @@
      renders the options into an overlay at the end of <body>, with a backdrop, the way Angular
      CDK does. Choosing an option shows it in the trigger and keeps it in window.__state.
 
-     The CV totals eight years, and its highest degree is a master (bac +5). Traps: the same brackets about one domain ("en management"), a
-     salary asked as brackets (a free-text key that never goes into a list), and a submit button
-     the overlay renders under the options. -->
+     The CV totals eight years, its highest degree is a master (bac +5), and the person typed
+     "42 000 €" as their salary. Traps: the same brackets about one domain ("en management") and
+     a submit button the overlay renders under the options. -->
 <meta charset="utf-8"><title>Postuler (tz-select)</title>
 <style>
   .trigger { border: 1px solid #999; min-height: 20px; min-width: 200px; padding: 4px; }
@@ -33,7 +33,7 @@
       <tz-input><div class="trigger"><span class="value placeholder">Choisir...</span></div>
       <input type="text" placeholder="Rechercher"></tz-input></tz-select></div>
   <div class="field question"><label><span>Salaire souhaité (brut par an)</span></label>
-    <tz-select data-state="salary" data-expect="none"
+    <tz-select data-state="salary" data-expect="salary_expectation"
       data-options="30 000 à 35 000 € brut annuel|35 000 à 40 000 € brut annuel|40 000 à 45 000 € brut annuel">
       <tz-input><div class="trigger"><span class="value placeholder">Choisir...</span></div>
       <input type="text" placeholder="Rechercher"></tz-input></tz-select></div>

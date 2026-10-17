@@ -12,6 +12,7 @@ import { pickByLevel } from '../schema/fluency.js';
 import { forDialCode } from '../schema/phone.js';
 import { pickYears, yearsRange } from '../schema/years.js';
 import { highestDegree, pickDegree } from '../schema/degrees.js';
+import { pickSalary } from '../schema/salary.js';
 import { speaksAnswer, yesIndex, yesWord } from '../schema/languages.js';
 
 /**
@@ -460,6 +461,7 @@ export function matcherFor(key) {
     let i = -1;
     if (key === 'years_experience') i = pickYears(texts, String(value ?? ''));
     else if (key === 'education_degree') i = pickDegree(texts, String(value ?? ''));
+    else if (key === 'salary_expectation') i = pickSalary(texts, String(value ?? ''));
     else if (field === 'fluency') i = pickByLevel(texts.map(normalize), normalize(value));
     return i === -1 ? null : list[i];
   };
@@ -626,8 +628,8 @@ export function valueFor(decision, el, bundle, profile, entries) {
   if (key === 'speaks_language') return speaksValue(el, bundle, entries);
   if (index === undefined || index === null) {
     if (!answerHolds(key, bundle, profile)) return null;
-    if (key === 'years_experience') {
-      const bracket = yearsOption(el, bundle, profile?.[key]);
+    if (key === 'years_experience' || key === 'salary_expectation') {
+      const bracket = bracketOption(key, el, bundle, profile?.[key]);
       if (bracket) return bracket;
     }
     if (key === 'education_degree') {
@@ -702,17 +704,28 @@ export function speaksRadioValue(group, bundle, entries) {
 }
 
 /**
- * A total of years against the form's brackets ("5 à 10 ans", "10+ years"), when nothing
- * matches as written and exactly one bracket holds it (src/schema/years.js).
+ * A figure against the form's brackets ("5 à 10 ans", "40 000 à 45 000 €"), when nothing
+ * matches as written and exactly one bracket holds it (src/schema/years.js, salary.js).
  */
-function yearsOption(el, bundle, v) {
+function bracketOption(key, el, bundle, v) {
   const list = optionList(el, bundle);
   if (!list || v === undefined || v === null || matchOption(list, String(v))) return null;
-  const i = pickYears(
-    list.map((o) => o.text),
-    String(v),
-  );
-  return i === -1 ? null : { value: list[i].value };
+  const hit = matcherFor(key)(list, String(v));
+  return hit ? { value: hit.value } : null;
+}
+
+/**
+ * The label of the radio a stored answer picks, by the key's own rule when the options word
+ * it differently (brackets, levels), or null to let `setRadio` match it as written.
+ */
+export function radioChoice(key, group, value) {
+  if (value === undefined || value === null) return null;
+  // Raw labels: normalising drops the "-" and "+" a bracket is written with.
+  const list = group.inputs.map((r) => {
+    const raw = String(forLabelText(r) || r.getAttribute('aria-label') || r.value || '').trim();
+    return { text: raw, value: raw };
+  });
+  return matcherFor(key)(list, String(value))?.value ?? null;
 }
 
 /**

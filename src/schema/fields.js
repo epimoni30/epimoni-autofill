@@ -74,7 +74,8 @@ const FLAT = [
   { key: 'summary', shape: 'long', oneLine: true, source: 'cv' },
   { key: 'cover_letter', shape: 'long', source: 'none' },
   { key: 'years_experience', shape: 'any', select: true, source: 'cv' },
-  { key: 'salary_expectation', shape: 'any', source: 'extras' },
+  // Into a list only as a bracket that holds the whole figure (src/schema/salary.js).
+  { key: 'salary_expectation', shape: 'any', select: true, source: 'extras' },
   { key: 'notice_period', shape: 'any', select: true, source: 'extras' },
   { key: 'availability_date', shape: 'any', select: true, source: 'extras' },
   { key: 'work_authorization', shape: 'any', select: true, personal: false, source: 'extras' },
