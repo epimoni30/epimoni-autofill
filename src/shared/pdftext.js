@@ -361,13 +361,24 @@ const WIN = {
 // (` ^ ~) are real characters too, so a mark only goes back on a letter when Unicode has one
 // precomposed character for the pair: "è" comes back, "~5 ans", "x^2" and "`code`" stay.
 const MARK_BEFORE = {
-  '`': '\u0300', '\u00b4': '\u0301', '^': '\u0302', '\u02c6': '\u0302', '~': '\u0303',
-  '\u02dc': '\u0303', '\u00a8': '\u0308', '\u02da': '\u030a', '\u02c7': '\u030c',
-  '\u02d8': '\u0306', '\u02d9': '\u0307',
+  '`': '\u0300',
+  '\u00b4': '\u0301',
+  '^': '\u0302',
+  '\u02c6': '\u0302',
+  '~': '\u0303',
+  '\u02dc': '\u0303',
+  '\u00a8': '\u0308',
+  '\u02da': '\u030a',
+  '\u02c7': '\u030c',
+  '\u02d8': '\u0306',
+  '\u02d9': '\u0307',
 };
 // Cedilla and ogonek hang below the letter, and LaTeX draws them after it: "Franc¸ais".
 const MARK_AFTER = { '\u00b8': '\u0327', '\u02db': '\u0328' };
-const DETACHED_BEFORE = /(\p{L})?( ?)([`\u00b4^\u02c6~\u02dc\u00a8\u02da\u02c7\u02d8\u02d9\u0300-\u036f])(\p{L})(?=(\p{L}?))/gu;
+// A combining mark sits outside the class: a class mixing letters and combining marks reads
+// as one thing and matches another.
+const DETACHED_BEFORE =
+  /(\p{L})?( ?)([`\u00b4^\u02c6~\u02dc\u00a8\u02da\u02c7\u02d8\u02d9]|\p{Mn})(\p{L})(?=(\p{L}?))/gu;
 const DETACHED_AFTER = /(\p{L}) ?([\u00b8\u02db])/gu;
 
 const composed = (letter, mark) => {
