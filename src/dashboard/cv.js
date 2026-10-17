@@ -310,8 +310,9 @@ function collect() {
  * The status card: where this CV came from, how much of it a form can be filled from, and
  * which allowance the AI half is on.
  *
- * The tier line is the honest half of "free fill, paid AI": a free or anonymous user is
- * metered at one analysis an hour, the website's own window, not a second allowance, and a paying customer is not metered at all. Saying so here means nobody meets
+ * The tier line is the honest half of "free fill, paid AI": the AI needs a paired account,
+ * a free one is metered at one analysis an hour (the website's own window, not a second
+ * allowance), and a paying customer is not metered at all. Saying so here means nobody meets
  * that limit for the first time as a refusal on an advert they were about to apply to.
  */
 /**
@@ -494,11 +495,16 @@ async function renderStatus() {
   // resolves an identity and reaches the network, and nothing else on this page may wait on
   // that. Awaiting it used to hold up everything rendered afterwards, so a slow or failed
   // request left the page showing no CV list at all: the one thing it exists to show.
+  //
+  // Without a paired account there is no allowance to describe: the AI is refused outright,
+  // and saying "1 analysis per hour" here would promise what the panel then refuses.
   send({ type: 'tier' }).then((tier) => {
-    if (tier.paid) line(box, t('opt_tier_paid'), 'ok');
+    if (!tier.ai) {
+      if (!state.paired) line(box, t('opt_ai_needs_account'), 'muted');
+    } else if (tier.paid) line(box, t('opt_tier_paid'), 'ok');
     else if (tier.rate_limited)
       line(box, t('opt_tier_spent', [String(Math.ceil((tier.reset_seconds || 0) / 60))]), 'muted');
-    else if (tier.mode) line(box, t(tier.mode === 'account' ? 'opt_tier_free' : 'opt_tier_anon'), 'muted');
+    else line(box, t('opt_tier_free'), 'muted');
   });
 }
 

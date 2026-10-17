@@ -25,6 +25,66 @@
     <label for="r2">Non</label><input type="radio" id="r2" name="teletravail" value="non" data-expect="none">
   </fieldset>
 
+  <!-- "Do you speak…?" against a CV with French as a first language, English at C1, and no
+       Spanish or Italian. A yes only where the CV backs one; never a no. Seen on live Lever
+       and Greenhouse forms. -->
+  <fieldset id="fs-fr">
+    <legend>Do you speak fluent French?</legend>
+    <label for="lf1">Yes</label><input type="radio" id="lf1" name="speak_fr" value="yes" data-controlled data-expect="speaks_language">
+    <label for="lf2">No</label><input type="radio" id="lf2" name="speak_fr" value="no" data-expect="none">
+  </fieldset>
+  <fieldset id="fs-es">
+    <legend>Do you speak fluent Spanish?</legend>
+    <label for="le1">Yes</label><input type="radio" id="le1" name="speak_es" value="yes" data-expect="none">
+    <label for="le2">No</label><input type="radio" id="le2" name="speak_es" value="no" data-expect="none">
+  </fieldset>
+  <label for="sp-en">Parlez-vous couramment anglais ?</label>
+  <select id="sp-en" name="speak_en" data-controlled data-expect="speaks_language" data-expect-value="1">
+    <option value="">Choisir…</option><option value="1">Oui</option><option value="0">Non</option>
+  </select>
+  <label for="sp-it">Do you speak Italian?</label>
+  <select id="sp-it" name="speak_it" data-expect="none">
+    <option value="">Select…</option><option>Yes</option><option>No</option>
+  </select>
+
+  <!-- Years of experience as brackets. The CV totals eight years. -->
+  <label for="xp">Votre expérience</label>
+  <select id="xp" name="experience" data-controlled data-expect="years_experience" data-expect-value="d">
+    <option value="">Choisir…</option><option value="a">Moins d'1 an</option><option value="b">1 à 3 ans</option>
+    <option value="c">3 à 5 ans</option><option value="d">5 à 10 ans</option><option value="e">Plus de 10 ans</option>
+  </select>
+
+  <!-- Salary as brackets, as a list and as radios. The person typed "42 000 €". -->
+  <label for="sal">Prétentions salariales</label>
+  <select id="sal" name="salaire" data-controlled data-expect="salary_expectation" data-expect-value="s3">
+    <option value="">Choisir…</option><option value="s1">30 000 à 35 000 € brut annuel</option>
+    <option value="s2">35 000 à 40 000 € brut annuel</option><option value="s3">40 000 à 45 000 € brut annuel</option>
+    <option value="s4">45 000 à 50 000 € brut annuel</option>
+  </select>
+  <fieldset id="fs-sal">
+    <legend>Salaire souhaité</legend>
+    <label for="sr1">30-40k€</label><input type="radio" id="sr1" name="salaire_r" value="a" data-expect="none">
+    <label for="sr2">40-50k€</label><input type="radio" id="sr2" name="salaire_r" value="b" data-controlled data-expect="salary_expectation">
+    <label for="sr3">Plus de 50k€</label><input type="radio" id="sr3" name="salaire_r" value="c" data-expect="none">
+  </fieldset>
+
+  <!-- The level of one named language, as on a live Personio form and on French forms
+       ("Niveau d'anglais"). French is a first language on the CV, English C1, German absent:
+       absent is not "No proficiency", it is a question left for the person. -->
+  <label for="ll-fr">How well are your French language skills?</label>
+  <select id="ll-fr" name="lvl_fr" data-controlled data-expect="language_level" data-expect-value="n"><option value="">Veuillez sélectionner</option><option value="n">Native speaker or bilingual</option><option value="b">Business fluent</option><option value="s">Basic skills</option><option value="x">No proficiency</option></select>
+  <label for="ll-en">How well are your English language skills?</label>
+  <select id="ll-en" name="lvl_en" data-controlled data-expect="language_level" data-expect-value="b"><option value="">Veuillez sélectionner</option><option value="n">Native speaker or bilingual</option><option value="b">Business fluent</option><option value="s">Basic skills</option><option value="x">No proficiency</option></select>
+  <label for="ll-de">How well are your German language skills?</label>
+  <select id="ll-de" name="lvl_de" data-expect="none"><option value="">Veuillez sélectionner</option><option value="n">Native speaker or bilingual</option><option value="b">Business fluent</option><option value="s">Basic skills</option><option value="x">No proficiency</option></select>
+  <fieldset id="fs-lvl">
+    <legend>Niveau d'anglais</legend>
+    <label for="la1">Débutant</label><input type="radio" id="la1" name="niv_en" value="1" data-expect="none">
+    <label for="la2">Intermédiaire</label><input type="radio" id="la2" name="niv_en" value="2" data-expect="none">
+    <label for="la3">Courant</label><input type="radio" id="la3" name="niv_en" value="3" data-controlled data-expect="language_level">
+    <label for="la4">Bilingue</label><input type="radio" id="la4" name="niv_en" value="4" data-expect="none">
+  </fieldset>
+
   <label for="cgu">J'accepte les conditions générales</label>
   <input type="checkbox" id="cgu" name="cgu" data-expect="none">
   <label for="news">Je souhaite recevoir des offres par e-mail</label>

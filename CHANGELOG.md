@@ -9,6 +9,45 @@ carries the same number, and the release workflow refuses a tag that does not ma
 
 ## [Unreleased]
 
+### Added
+
+- Taleez forms: the phone, the CV and the three dropdowns (level of study, years of
+  experience, expected salary) are filled. The dropdowns open into an overlay at the end of the
+  page, and the extension may now click inside a list that its own click on the dropdown made
+  appear, and nowhere else.
+- "Do you speak fluent French?" is answered yes when the CV holds French at the level asked,
+  and "How well are your English language skills?" or "Niveau d'anglais" with the CV's level
+  for that language. A language the CV doesn't list is left for you; the extension never
+  answers no.
+- Answers worded differently from the CV: "C1" picks "Courant", eight years pick "5 à 10 ans",
+  a master picks "Bac +5", and "42 000 €" picks the "40 000 à 45 000 €" bracket. Each happens
+  only when exactly one option fits; a figure on the edge of two brackets is left for you.
+- A step of a form that was already in the page and is only shown later (a wizard switching
+  steps) is filled as it appears.
+
+### Fixed
+
+- A row whose label the page doesn't link to its field is read by that label. On Taleez the
+  phone and the CV were read as their widget's icon text and missed.
+- A phone field showing its own "+33" gets the national number, and one pre-filled with only
+  "+33" (Recruitee) is no longer taken as already answered.
+- The e-mail on HelloWork, marked up as a list of domain suggestions, is typed in. A
+  suggestion list with no match no longer leaves half-typed text behind.
+- A location field that asks a server for suggestions is given time to answer, instead of
+  being picked from the previous list.
+- A bare "Location", "Where are you based?" and plural "salary expectations" are recognised.
+  "Which school are you enrolled in?" and a work-right question about a country the extension
+  can't name (Hong Kong, "the country where this job is located") are left alone.
+- Ashby's "Autofill from resume" box is no longer offered the CV: a file there is read back
+  over what was just filled.
+- Free text such as "Immédiate" is offered for a date picker rather than typed into it.
+- The CV page no longer promises an analysis without an account, and counts each CV once.
+
+### Removed
+
+- The extension's own anonymous session, which nothing could reach since the analysis needs an
+  account.
+
 ### Security
 
 - A form inside a frame is filled only once the browser says a person can see it. A page could

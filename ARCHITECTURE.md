@@ -67,6 +67,12 @@ src/content/posting.js  the job advert on the page → text worth analysing
 src/content/keywords.js which of the CV's skills the advert names, and marking them in the page
 src/content/framegate.js whether a form in a frame is on screen, before anything is written into it
 src/schema/fields.js    every canonical field: its shape, and where it lives in JSON Résumé
+src/schema/fluency.js   language levels on one CEFR scale, and the one option a level fits
+src/schema/languages.js which languages a question names, and whether the CV backs a yes
+src/schema/phone.js     a phone number for a field that shows its own country code
+src/schema/years.js     a total of years against a form's brackets ("5 à 10 ans", "10+ years")
+src/schema/degrees.js   the CV's highest degree on the bac+N scale, against a form's levels
+src/schema/salary.js    the salary the person typed against a form's brackets
 src/lexicon/<lang>.js   one language pack each: phrases, section headings, dates; index.js lists them
 src/fillers/            site and widget fillers: evidence and guarded writers, never decisions
 tools/bundle.mjs        ES modules → the content script; enforces the filler contract
@@ -74,8 +80,8 @@ platform/               per-browser manifest transforms (chrome, firefox); build
 
 ── the Epimoni add-on: everything that talks to epimoni30.com ──────────────────────────────
 src/epimoni/worker.js   pairing with the site, the offer analysis, the allowance, reporting
-src/epimoni/identity.js which token a metered call goes out with, and what it may do
-src/epimoni/api.js      the backend, named statuses, and the anonymous session
+src/epimoni/identity.js what the paired account's token may do: its plan and its window
+src/epimoni/api.js      the backend and its named statuses
 src/epimoni/telemetry.js  counts-only usage events, riding on a token already held
 src/epimoni/tailor.js   the CV writer's proposals → a list to review → a tailored copy
 src/epimoni/import.js   the backend parser's fields → a CvDoc
@@ -185,6 +191,40 @@ the opposite of "Are you authorised to work?", and the same stored "Oui" would a
 `work_authorization` lists only questions asked the positive way, and visa, sponsorship and
 need/require disqualify it in every language.
 
+A language level is the other answer whose wording depends on the form. The CV says "C1",
+the form offers "Débutant / Intermédiaire / Courant / Bilingue". When nothing matches as
+written, `src/schema/fluency.js` puts both on the CEFR scale (A1 to C2, plus a first
+language) and picks an option only when the level fits exactly one. Words are ranges
+("Courant" is C1 or C2), so "C1" against a list with both "Avancé" and "Courant" fits two and
+is left for the person: a stated level is something an interview checks.
+
+Years of experience work the same way. The CV gives a total, forms offer brackets ("Moins d'1
+an / 1 à 3 ans / … / Plus de 10 ans"), and `src/schema/years.js` picks the one bracket that
+holds the total, or nothing when it sits on a shared edge. A bare "Votre expérience" is the
+years question only when it is a closed list of year brackets: as a textarea it asks for prose,
+and the lexicon alone can't tell the two apart.
+
+Two more answers follow the same rule. An education-level question takes the CV's highest
+degree, put on the French bac+N scale with the options (`src/schema/degrees.js`: a level an
+option states, "(bac +4)", wins over the name beside it). A salary asked as brackets takes the
+one bracket holding the whole figure the person typed (`src/schema/salary.js`), never a figure
+on an edge, a range across two brackets, or a monthly figure against yearly brackets. In
+fixtures, `data-expect-value` makes the measure check which option was chosen, not only which
+key: for these answers the key is the easy half.
+
+"Do you speak fluent French?" is the third, and the strictest. The answer depends on which
+language the question names, so `speaks_language` has no stored value: `src/schema/languages.js`
+reads the language off the question, finds it in the CV, and backs a **yes** only when the CV's
+level reaches what was asked (C1 for "fluent", B1 otherwise). It never answers no. A language
+absent from the CV, or listed without a level, is a question left for the person, because a
+missing answer costs a click and a wrong "no" can end an application. A form asks it once per
+language, so the field is `perQuestion` in the registry and is exempt from the duplicate-key rule.
+
+"How well are your French language skills?" and "Niveau d'anglais" are its sibling,
+`language_level`: a list of levels about the one language the question names, answered with the
+CV's level for that language through the fluency scale. A language the CV doesn't list gets
+nothing, never "No proficiency".
+
 ## Fillers: evidence and guarded writers, never decisions
 
 This used to say per-ATS adapters were deliberately absent, and the argument behind that still
@@ -217,8 +257,13 @@ against the options by the core's own rule (`api.pick`).
 Why it cannot submit, tick or navigate. A filler acts only through `guard.js`, bound to
 the one control it was asked to write. The guard refuses submit and reset buttons, a `<button>`
 with no type inside a form (a submit button by default), links, checkboxes, radios, file and
-password inputs, anything outside the control and the popup it declares (`aria-controls`,
-`aria-owns`), and more than six clicks per write. Refusals are misses, never errors. And
+password inputs, anything outside the control and its popup, and more than six clicks per
+write. The popup is the one the control declares (`aria-controls`, `aria-owns`) or the one its
+own `open()` click made appear: overlay libraries (Angular CDK, portals) render the list at the
+end of `<body>` and declare nothing, so whatever that click adds to the page within two seconds
+belongs to the control, and an element that was already there never does. `api.pick` applies
+the core's rule for the field being written, so years can pick a bracket and a language level a
+word, in a list nobody could read before opening it. Refusals are misses, never errors. And
 `tools/bundle.mjs` refuses, at build time and with the line number, filler code that could go
 around it: `.click(`, `submit`, keyboard events, `fetch`, `chrome.`, `eval`, `innerHTML`,
 `.checked =`. A rule that lives only in review is one that eventually gets merged past.
@@ -358,8 +403,11 @@ silently. The watch ends on "tout annuler", on the next click (which starts a ne
 its timeout. The panel is updated in place rather than rebuilt, so an offer analysis already on
 screen survives a re-fill.
 
-Only additions wake it. A control revealed by toggling `display` is not an added node, and a
-toolbar click still covers that case.
+Two things wake it: added nodes that hold a control, and a container holding controls that a
+`style`, `class`, `hidden`, `aria-hidden` or `open` change has just made visible (a wizard that
+keeps every step in the page and shows one at a time). A control's own attributes don't count,
+since our outline is one of them, and neither do `<html>` and `<body>`, which sites restyle on
+scroll. A step inside a shadow root is still only covered by a toolbar click.
 
 ## Automatic filling, one site at a time
 
@@ -703,6 +751,21 @@ The same rule runs inside the extension. The worker answers a content script (wh
 job board's renderer, next to code we do not control) only for what filling needs: the
 profile, the offer analysis, the allowance, usage reports, opening the CV page. Reading the
 whole library, editing it, erasing it and unpairing are for extension pages only.
+
+## A row's label, when the markup doesn't link it
+
+Component libraries draw a field as `<div><label>Téléphone</label><widget>…<input></widget></div>`:
+a real `<label>`, with no `for` and not wrapping the input. The text nearest the input is then the
+widget's own, an icon font's ligature ("keyboard_arrow_down") or a drop zone's hint, and reading
+that as the label missed the phone and the CV on a live Taleez form. `fieldLabelText` in `dom.js`
+climbs to the first ancestor holding a label that belongs to no other control, and trusts it
+only when that ancestor holds exactly one label and one control. Icon-font elements are dropped
+from nearby text altogether.
+
+Two values depend on the widget around the input. A phone field that shows its own country code
+("+33 ▾") takes the national number in the shape its placeholder shows, and a number from
+another country is only offered (`src/schema/phone.js`). A date picker never receives free text
+such as "Immédiate": that is offered too.
 
 ## Gotchas worth knowing before editing
 

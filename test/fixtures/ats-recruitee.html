@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="fr" data-must-fill>
+<!-- The shape of a live Recruitee application form, rebuilt in our own words. The phone row is a
+     country <select> beside an input the widget has already filled with the dialling code,
+     "+33". That code is not an answer anyone gave: the field is still empty, and the number goes
+     in whole. A number the person did type is theirs and stays. -->
+<meta charset="utf-8"><title>Candidature (forme Recruitee)</title>
+<body>
+<form id="rc" onsubmit="window.__submitted = true; return false">
+  <label for="rn">Nom complet</label><input id="rn" name="candidate.name" data-controlled data-expect="full_name">
+  <label for="rm">Adresse e-mail</label><input id="rm" name="candidate.email" type="email" data-controlled data-expect="email">
+  <div class="phone">
+    <label for="rp">Numéro de téléphone</label>
+    <div class="row">
+      <select name="candidate.phone_country" aria-label="Pays"><option>Belgique</option><option selected>France</option></select>
+      <input id="rp" name="candidate.phone" type="tel" value="+33" data-controlled data-expect="phone" data-expect-value="+33 6 12 34 56 78">
+    </div>
+  </div>
+  <label for="rcv">CV</label><input id="rcv" type="file" data-expect="cv_file">
+  <fieldset>
+    <legend>Contact d'un ancien employeur</legend>
+    <label for="ro">Numéro de téléphone (domicile)</label><input id="ro" type="tel" value="+33 2 40 00 00 00" data-expect="none">
+  </fieldset>
+  <button type="submit">Envoyer</button>
+</form>
+<script src="_react.js"></script><script>window.__controlAll()</script>
+</body></html>

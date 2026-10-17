@@ -8,8 +8,11 @@
 // things, and says no quietly: a refused action is a miss, and a miss costs one keystroke.
 //
 // Each API is bound to one control (the one the filler was asked to write) and may only act
-// on that control, on elements inside it, or inside the popup it declares it owns
-// (`aria-controls` / `aria-owns`). A filler for the degree dropdown cannot reach the
+// on that control, on elements inside it, or inside its popup: the one it declares it owns
+// (`aria-controls` / `aria-owns`), or the one its own `open()` click made appear. Design systems
+// built on overlays (Angular CDK, Floating UI portals) render the list at the end of <body>,
+// declared nowhere, so what that click adds to the page in the next two seconds is the
+// control's popup and nothing else is. A filler for the degree dropdown cannot reach the
 // "Envoyer ma candidature" button three sections down, whatever its code says.
 
 const CLICK_BUDGET = 6; // per write: open, maybe scroll a list, choose. Never a loop.
@@ -64,8 +67,28 @@ function popupsOf(control) {
 export function createGuard(control, { setValue, clearValue, matchOption }) {
   let clicks = 0;
   const refusals = [];
+  // What an open() click added to the page: the popup an overlay library rendered elsewhere.
+  const opened = [];
+  const record = (muts) => {
+    for (const m of muts)
+      for (const n of m.addedNodes)
+        if (
+          n.nodeType === 1 &&
+          !control.contains(n) &&
+          !n.contains(control) &&
+          !opened.some((o) => o.contains(n))
+        )
+          opened.push(n);
+  };
+  const watchOpen = () => {
+    const obs = new MutationObserver(record);
+    obs.observe(control.ownerDocument.documentElement, { childList: true, subtree: true });
+    setTimeout(() => obs.disconnect(), WAIT_CAP_MS);
+    return obs;
+  };
+  const shown = () => [...popupsOf(control), ...opened.filter((n) => n.isConnected)];
   const within = (target) =>
-    target === control || control.contains(target) || popupsOf(control).some((p) => p.contains(target));
+    target === control || control.contains(target) || shown().some((p) => p.contains(target));
   const refuse = (why, target) => {
     refusals.push(`${why}: <${target?.tagName?.toLowerCase?.() || '?'}>`);
     return false;
@@ -91,10 +114,16 @@ export function createGuard(control, { setValue, clearValue, matchOption }) {
   };
 
   return {
-    /** The popups this control declares, for a filler to look for its options in. */
-    popups: () => popupsOf(control),
+    /** The popups this control declares or opened, for a filler to look for its options in. */
+    popups: () => shown(),
     /** Open the widget: a click on the control or something inside it. */
-    open: (target = control) => press(target),
+    open: (target = control) => {
+      const obs = watchOpen();
+      const ok = press(target);
+      // Whatever the click rendered synchronously is in the record before the filler looks.
+      record(obs.takeRecords());
+      return ok;
+    },
     /** Pick an option. It must be inside the control or the popup the control declares. */
     choose: (option) => press(option),
     /** Write text into an input inside the widget: the native setter, then `input`. Never a key. */

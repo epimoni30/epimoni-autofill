@@ -10,9 +10,9 @@
 //   cd extension && EPIMONI_API=http://127.0.0.1:8000 node build.mjs --dev && node test/live.mjs
 //
 // What it proves that a stub cannot: that `host_permissions` reach the API at all, that the
-// worker's `Access-Token` header is the one `VerifyToken` accepts, that a session opened by
-// the extension can spend a metered route, and that the response shape the panel reads is the
-// shape the server sends.
+// worker's `Access-Token` header is the one `VerifyToken` accepts, that a paired account's
+// token can spend a metered route, and that the response shape the panel reads is the shape
+// the server sends.
 
 import { mkdtemp, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -86,7 +86,7 @@ const check = (name, ok, detail = '') => {
 };
 console.log(`extension ${extId} against ${API}\n`);
 
-// A CV typed into the extension by somebody with no account: the whole point of the run.
+// A CV typed into the extension. It fills forms with no account; the analysis needs one.
 const CV = {
   basics: {
     name: 'Camille Dupont',
@@ -131,28 +131,49 @@ check(
   JSON.stringify(saved?.summary),
 );
 
-const state = await ask({ type: 'state' });
+const unpaired = await ask({ type: 'state' });
 check(
-  'and the install is usable with no account',
-  state?.has_cv === true && state?.paired === false && state?.mode === 'anonymous',
-  JSON.stringify({ mode: state?.mode, fields: state?.fields }),
+  'with no account the install fills, and offers no AI',
+  unpaired?.has_cv === true && unpaired?.paired === false && unpaired?.ai === false,
+  JSON.stringify({ ai: unpaired?.ai, fields: unpaired?.fields }),
+);
+const refused = await ask({
+  type: 'analyse',
+  posting: { ok: true, text: ADVERT, via: 'heuristic', words: 120 },
+  lang: 'fr',
+});
+check('and the analysis is refused as such', refused?.kind === 'not-paired', JSON.stringify(refused));
+
+// A pairing, as the confirmation page would store it once the user accepts. The token comes
+// from this backend so `VerifyToken` accepts it; the pairing's own checks (the token verified
+// against /users/me, the click, the cooldown) are covered by test/pair.test.mjs.
+const minted = await fetch(`${API}/api/v1/users/anonymous-login`, { method: 'POST' }).then((r) => r.json());
+await sw.evaluate(async (t) => {
+  const { epimoni: bag } = await chrome.storage.local.get('epimoni');
+  await chrome.storage.local.set({
+    epimoni: {
+      ...bag,
+      paired: true,
+      paired_at: Date.now(),
+      jwt: t.jwt,
+      user_id: t.user_id,
+      user_type: 'google',
+    },
+  });
+}, minted);
+const paired = await ask({ type: 'state' });
+check(
+  'once paired, the AI is on',
+  paired?.ai === true && paired?.mode === 'account',
+  JSON.stringify(paired?.mode),
 );
 
-// The first thing that touches the network: `/users/anonymous-login`, then `/users/me`.
+// The first thing that touches the network: `/users/me`, one unmetered read.
 const tier = await ask({ type: 'tier' });
 check(
-  'the worker opens its own session and reads the tier back',
-  tier?.tier === 'gratuit' && tier?.mode === 'anonymous',
+  'the tier is read back from the server',
+  tier?.ai === true && tier?.mode === 'account' && typeof tier?.paid === 'boolean',
   JSON.stringify(tier),
-);
-const stored = await sw.evaluate(async () => (await chrome.storage.local.get('epimoni')).epimoni);
-check(
-  'the session is kept locally so it is not re-minted on every wake',
-  !!stored?.anon?.jwt && !!stored.anon.user_id,
-);
-check(
-  'and it is kept apart from the paired-account fields',
-  stored?.jwt === undefined && stored?.paired === false,
 );
 
 // The metered call, for real. This runs a model and takes several seconds.
@@ -184,7 +205,7 @@ for (let attempt = 1; attempt <= 4; attempt += 1) {
   console.log(`  ..    attempt ${attempt} assessed nothing (502 scoring_empty); retrying`);
 }
 check(
-  'an anonymous session can spend a metered route',
+  "a paired account's token can spend a metered route",
   res?.ok === true,
   res?.ok ? `${secs}s after ${refusals} refusal(s)` : JSON.stringify(res),
 );
@@ -204,7 +225,7 @@ check(
   JSON.stringify(res?.teaser?.weakest),
 );
 check('an ml id is returned', !!res?.ml_id, res?.ml_id || '');
-check('no link to the site is offered for a run the site cannot open', res?.linkable === false);
+check("the run is the account's, so the link back to the site is offered", res?.linkable === true);
 
 // Every section name the teaser can show must have a label, or the panel renders a bare
 // internal key on a French form. The server decides these names, so only a live run can check.
@@ -221,6 +242,43 @@ const again = await ask({
   lang: 'fr',
 });
 check('the same advert is served from cache rather than charged twice', again?.cached === true);
+
+// The cover letter, against a real model. France Travail caps the letter at 1500 characters,
+// and the backend is meant to hold that budget itself (one measured repair pass), so the
+// count the panel shows has to be the one the server kept to. Placeholders like "[Nom de
+// l'entreprise]" are the other way a letter fails: it reads fine and cannot be sent.
+console.log('  ..    writing the real letter (a model call, ~5-30s)');
+const t1 = Date.now();
+const letter = await ask({
+  type: 'letter',
+  posting: { ok: true, text: ADVERT, via: 'heuristic', words: 120 },
+  host: 'candidat.francetravail.fr',
+  lang: 'fr',
+  max_chars: 1500,
+});
+const letterSecs = Math.round((Date.now() - t1) / 100) / 10;
+if (process.env.EPIMONI_RAW) console.log('  RAW', JSON.stringify(letter));
+check('a letter comes back', letter?.ok === true, letter?.ok ? `${letterSecs}s` : JSON.stringify(letter));
+check(
+  'held to the 1500-character limit, measured the way the panel counts it',
+  letter?.within === true && letter?.chars <= 1500 && letter?.text?.length === letter?.chars,
+  `${letter?.chars} chars`,
+);
+check(
+  'and long enough to be a letter',
+  letter?.chars >= 600 && letter?.paragraphs?.length >= 2,
+  `${letter?.paragraphs?.length} paragraphs`,
+);
+const blanks = (letter?.text || '').match(/\[[^\]]{2,60}\]|\{[^}]{2,60}\}|X{3,}/g) || [];
+check('with no placeholder left to fill in', blanks.length === 0, blanks.join(' '));
+const letterAgain = await ask({
+  type: 'letter',
+  posting: { ok: true, text: ADVERT, via: 'heuristic', words: 120 },
+  host: 'candidat.francetravail.fr',
+  lang: 'fr',
+  max_chars: 1500,
+});
+check('the same letter is not paid for twice', letterAgain?.cached === true);
 
 await ctx.close();
 clearTimeout(watchdog);

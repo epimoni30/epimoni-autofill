@@ -470,3 +470,84 @@ test('a question about needing a visa is never the work authorisation question',
   ])
     assert.notEqual(key(normalize(label)), 'work_authorization', label);
 });
+
+// Measured on live Ashby, Lever and Greenhouse forms: the city was asked as a bare
+// "Location" combobox and as "Where are you currently based?", and both were left empty,
+// while "Which location are you applying for?" asks about the job, not the person.
+test('where the person lives, asked as a location', () => {
+  for (const label of [
+    'Location',
+    'What is your location?',
+    'Where are you currently based?',
+    'Where are you based?',
+    'Où êtes-vous basé(e) ?',
+    'Lieu de résidence',
+  ])
+    assert.equal(key(normalize(label)), 'city', label);
+  for (const label of [
+    'Which location are you applying for?',
+    'Preferred work location',
+    'Are you based in the same location as the role?',
+    'Are you willing to relocate to another location?',
+    'Office location',
+    'Location of the job',
+    'Lieu de travail souhaité',
+  ])
+    assert.notEqual(key(normalize(label)), 'city', label);
+});
+
+// Measured on a live Ashby form: the plural "salary expectations" matched nothing while the
+// singular did.
+test('salary expectations, singular or plural', () => {
+  for (const label of [
+    'What are your salary expectations (yearly)?',
+    'Salary requirements',
+    'Compensation expectations',
+    'Vos prétentions ?',
+  ])
+    assert.equal(key(normalize(label), { tag: 'textarea' }), 'salary_expectation', label);
+  assert.notEqual(key(normalize('What is your current salary?')), 'salary_expectation');
+});
+
+// Measured on a live Ashby form: "In which school are you enrolled for this work-study
+// program?" took the CV's most recent school, which for a graduate is the wrong answer. The
+// question asks about now, and the CV only says where they studied.
+test('the school someone is enrolled in is not the last one on their CV', () => {
+  for (const label of [
+    'In which school are you enrolled for this work-study program?',
+    'Dans quelle école êtes-vous inscrit(e) ?',
+  ])
+    assert.notEqual(key(normalize(label)), 'education_institution', label);
+  assert.equal(key(normalize('School name')), 'education_institution');
+});
+
+// Measured on five live Ashby forms: the "Autofill from resume" parse box has no label, only
+// text around it, and was offered the CV. A file there is read back over the fields we just
+// filled. Vague text may not veto a key for the whole control, but it can't argue for a key
+// while naming one of that key's vetoes itself.
+test('a hint that names its own veto does not suggest', () => {
+  const near = (text) => key('', { type: 'file', nearby: normalize(text), precise: false });
+  assert.equal(
+    near('Autofill from resume. Upload your resume here to autofill key application fields.'),
+    'skip:no-match',
+  );
+  assert.equal(near('Déposez votre CV pour pré-remplir le formulaire'), 'skip:no-match');
+  assert.equal(near('Upload your resume'), 'suggest:low-confidence');
+});
+
+// Measured on a live Lever form: "What is your expected salary range for this role?" asks the
+// person's own figure, and a veto on "range for this role" (meant for questions about the
+// advertised range) refused it. The veto now names the agreeing, not the range.
+test('an expected salary range is asked of the person; agreeing with the advertised one is not', () => {
+  assert.equal(
+    key(normalize('What is your expected salary range for this role? (annual gross)')),
+    'salary_expectation',
+  );
+  for (const label of [
+    'Are you comfortable with the salary range for this role?',
+    'Is the salary range for this role acceptable to you?',
+    'Does the salary range for this role align with your expectations?',
+    'Êtes-vous à l’aise avec la fourchette de salaire proposée ?',
+  ])
+    assert.notEqual(key(normalize(label)), 'salary_expectation', label);
+});

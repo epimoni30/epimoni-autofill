@@ -312,9 +312,14 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
         const bag = await read();
         const uploads = await listFileMeta().catch(() => ({}));
         const files = {};
+        // Counted the way the fill reads each CV (its stored profile, plus the extras), the
+        // same as the `state` answer: counting from the document alone made the active CV
+        // show two different numbers on one page whenever a pairing sent its own profile.
+        const counts = {};
         for (const r of rows) {
           const doc = (bag.cvs || []).find((c) => c.id === r.id)?.cv || null;
           files[r.id] = uploads[r.id] || (doc ? fileMeta(await cvFileOf(r.id, doc)) : null);
+          counts[r.id] = Object.keys(profileOf(await readAs(r.id))).length;
         }
         respond({
           // The summary is built here because `cvSummary` lives with the document model and
@@ -323,7 +328,7 @@ chrome.runtime.onMessage.addListener((msg, sender, respond) => {
             const doc = (bag.cvs || []).find((c) => c.id === r.id)?.cv || null;
             return {
               ...r,
-              summary: doc ? cvSummary(doc, bag.extras || {}) : null,
+              summary: doc ? { ...cvSummary(doc, bag.extras || {}), fields: counts[r.id] } : null,
               analysable: doc ? cvIsAnalysable(doc) : false,
               file: files[r.id] || null,
             };

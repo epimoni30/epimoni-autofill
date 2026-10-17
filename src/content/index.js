@@ -328,21 +328,38 @@
    * resolver and the same refusals, and only new ones (`handled`). It stops after
    * `WATCH_MS`, on "tout annuler", and on the next click, which starts it again.
    *
-   * Only added nodes wake it, and only when they hold a form control: the page's own
-   * animations, and this panel, never trigger a scan.
+   * Added nodes that hold a form control wake it, and so does a container holding controls
+   * that a style, a class or `hidden` has just shown. The page's own animations on <html> or
+   * <body>, a control's own attributes, and this panel never trigger a scan.
    */
   function watch(ctx) {
     let timer = null;
     let running = false;
     const CONTROLS = 'input, textarea, select, [role="combobox"]';
+    // A step can arrive two ways: rendered into the page, or there all along and shown by a
+    // style, a class or `hidden`. The second only changes attributes, on a container. A
+    // control's own attributes are left out (our outline is one of them), and so are <html>
+    // and <body>, which sites restyle on every scroll.
+    const shows = (t) =>
+      t.nodeType === 1 &&
+      t !== document.documentElement &&
+      t !== document.body &&
+      t.id !== 'epimoni-panel' &&
+      !t.matches(CONTROLS) &&
+      // Hiding a step never needs a fill, and this keeps a class that flips back and forth on
+      // a hidden container from re-scanning the page.
+      (t.checkVisibility ? t.checkVisibility() : true) &&
+      Boolean(t.querySelector(CONTROLS));
     const obs = new MutationObserver((muts) => {
       const grew = muts.some((m) =>
-        Array.from(m.addedNodes).some(
-          (n) =>
-            n.nodeType === 1 &&
-            n.id !== 'epimoni-panel' &&
-            (n.matches(CONTROLS) || n.querySelector(CONTROLS)),
-        ),
+        m.type === 'attributes'
+          ? shows(m.target)
+          : Array.from(m.addedNodes).some(
+              (n) =>
+                n.nodeType === 1 &&
+                n.id !== 'epimoni-panel' &&
+                (n.matches(CONTROLS) || n.querySelector(CONTROLS)),
+            ),
       );
       if (!grew) return;
       clearTimeout(timer);
@@ -357,7 +374,12 @@
     const idle = setTimeout(stop, WATCH_MS);
     const self = { stop };
     watcher = self;
-    obs.observe(document.documentElement, { childList: true, subtree: true });
+    obs.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['style', 'class', 'hidden', 'aria-hidden', 'open'],
+    });
 
     async function refill() {
       if (running || watcher !== self) return;
@@ -731,7 +753,7 @@
         byUser(async () => {
           // Through the same path as a fill, the native setter, or the owning filler's writer,
           // or a controlled form keeps the old value in its state and submits that instead.
-          const { ok, undo } = await writeOne(s.el, s.value, s.owner);
+          const { ok, undo } = await writeOne(s.el, s.value, s.owner, [], s.key);
           if (!ok) return;
           s.undo = undo;
           s.accepted = true;
@@ -838,7 +860,7 @@
         if (tier.paid) note.textContent = t('panel_tier_paid');
         else if (tier.rate_limited)
           note.textContent = t('panel_tier_spent', [String(Math.ceil((tier.reset_seconds || 0) / 60))]);
-        else note.textContent = t(tier.mode === 'account' ? 'panel_tier_free' : 'panel_tier_anon');
+        else note.textContent = t('panel_tier_free');
       });
     };
 
@@ -1209,8 +1231,9 @@
    * LLM call, and spending somebody's hourly quota because they opened a page is both a cost
    * and a consent problem. One click, and only after they ask.
    *
-   * It no longer requires an account. A free or anonymous caller gets one analysis an hour,
-   * the website's own window, and a paying customer is not metered at all. The cost is named *before* the button, not discovered as a refusal afterwards.
+   * It needs a paired account. A free account gets one analysis an hour, the website's own
+   * window, and a paying customer is not metered at all. The cost is named *before* the
+   * button, not discovered as a refusal afterwards.
    */
   function offerSection(panel) {
     if (!posting) posting = extractPosting(document, location.href);
@@ -1265,7 +1288,7 @@
           // The free hour is spent: the way past the wait is a plan, said before the click
           // rather than only after a refused one.
           cta(note, plans, t('panel_quota_cta')).style.display = 'block';
-        } else note.textContent = t(tier.mode === 'account' ? 'panel_tier_free' : 'panel_tier_anon');
+        } else note.textContent = t('panel_tier_free');
       });
     };
 

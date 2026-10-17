@@ -28,9 +28,11 @@ import {
   isFile,
   labelBundle,
   matchOption,
+  matcherFor,
   radioAnswered,
   radioGroupBundle,
   radioGroups,
+  radioValueFor,
   setFile,
   setRadio,
   setValue,
@@ -79,10 +81,10 @@ export function activeFillers(fillers, doc, url, errors = []) {
  * Returns `{ok, undo}`. The panel's "accept" button uses this too, so an accepted suggestion
  * on a custom dropdown is written exactly as a fill would be.
  */
-export async function writeOne(el, value, owner, errors = []) {
+export async function writeOne(el, value, owner, errors = [], key = null) {
   if (isFile(value)) return { ok: setFile(el, value), undo: null };
   if (owner?.write) {
-    const api = createGuard(el, { setValue, clearValue, matchOption });
+    const api = createGuard(el, { setValue, clearValue, matchOption: key ? matcherFor(key) : matchOption });
     let res;
     try {
       res = await owner.write(el, value, api);
@@ -219,7 +221,7 @@ export async function runFill({
       suggestions.push({ el, key: d.key, index: d.index, value: got.suggest || got.value, owner });
       continue;
     }
-    const { ok, undo } = await writeOne(el, got.value, owner, errors);
+    const { ok, undo } = await writeOne(el, got.value, owner, errors, d.key);
     if (!ok) continue; // a <select> or a dropdown with no matching option
     row.wrote = { key: d.key, index: d.index, value: got.value };
     filled.push({ el, key: d.key, index: d.index, value: got.value, via: d.via, undo });
@@ -236,8 +238,8 @@ export async function runFill({
     radioRows.push(rrow);
     if (group.inputs.some((r) => skip?.has(r))) continue;
     if (radioAnswered(group) || d.action !== 'fill') continue;
-    const value = profile[d.key];
-    if (value === undefined || !answerHolds(d.key, gb, profile)) continue;
+    const value = radioValueFor(d.key, group, gb, profile, entries);
+    if (value === undefined || value === null || !answerHolds(d.key, gb, profile)) continue;
     const chosen = setRadio(group, value);
     if (!chosen) continue;
     rrow.chosen = chosen;
