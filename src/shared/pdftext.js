@@ -356,6 +356,45 @@ const WIN = {
   159: 'Ÿ',
 };
 
+// Accent marks that LaTeX typesets as their own glyph. `\'e` is drawn as an acute and then
+// an e, so a LaTeX CV reads "Soci´et´e G´en´erale" or "Sosth`ene". The ASCII forms
+// (` ^ ~) are real characters too, so a mark only goes back on a letter when Unicode has one
+// precomposed character for the pair: "è" comes back, "~5 ans", "x^2" and "`code`" stay.
+const MARK_BEFORE = {
+  '`': '\u0300', '\u00b4': '\u0301', '^': '\u0302', '\u02c6': '\u0302', '~': '\u0303',
+  '\u02dc': '\u0303', '\u00a8': '\u0308', '\u02da': '\u030a', '\u02c7': '\u030c',
+  '\u02d8': '\u0306', '\u02d9': '\u0307',
+};
+// Cedilla and ogonek hang below the letter, and LaTeX draws them after it: "Franc¸ais".
+const MARK_AFTER = { '\u00b8': '\u0327', '\u02db': '\u0328' };
+const DETACHED_BEFORE = /(\p{L})?( ?)([`\u00b4^\u02c6~\u02dc\u00a8\u02da\u02c7\u02d8\u02d9\u0300-\u036f])(\p{L})(?=(\p{L}?))/gu;
+const DETACHED_AFTER = /(\p{L}) ?([\u00b8\u02db])/gu;
+
+const composed = (letter, mark) => {
+  const result = (letter + mark).normalize('NFC');
+  return [...result].length === 1 ? result : null;
+};
+
+/**
+ * Put accents that a PDF split off back on their letter.
+ *
+ * NFC runs first, so a mark already attached the usual way (a decomposed "é" from a Mac) is
+ * composed before the repair and never moved onto the next letter. A space between the mark
+ * and the previous letter is dropped mid-word ("Soci ́et ́e"), and kept before a standalone "à".
+ */
+export function repairDetachedAccents(text) {
+  return String(text || '')
+    .normalize('NFC')
+    .replace(DETACHED_BEFORE, (match, before = '', space, mark, letter, next) => {
+      const fixed = composed(letter, MARK_BEFORE[mark] || mark);
+      if (!fixed) return match;
+      const keepSpace = space && (!before || (fixed === 'à' && !next));
+      return before + (keepSpace ? ' ' : '') + fixed;
+    })
+    .replace(DETACHED_AFTER, (match, letter, mark) => composed(letter, MARK_AFTER[mark]) || match)
+    .normalize('NFC');
+}
+
 /**
  * The text of a PDF, line by line.
  *
@@ -667,8 +706,7 @@ export async function pdfText(input) {
     await run(joined, res, ID, 0);
     lines.push(...assemble(), '');
   }
-  const text = lines
-    .join('\n')
+  const text = repairDetachedAccents(lines.join('\n'))
     .replace(/\n{3,}/g, '\n\n')
     .trim();
   const letters = (text.match(/\p{L}/gu) || []).length;
