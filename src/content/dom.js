@@ -1206,5 +1206,8 @@ export function clearValue(el) {
 export function hasUserValue(el) {
   if (el.getAttribute('data-epimoni-filled')) return false;
   if (el.tagName === 'SELECT') return el.selectedIndex > 0 && !!el.value;
-  return String(el.value || '').trim().length > 0;
+  const v = String(el.value || '').trim();
+  // A phone widget that pre-fills its dialling code ("+33") has not been answered: nobody types
+  // a code alone as their number.
+  return v.length > 0 && !/^\+\s?\d{1,4}$/.test(v);
 }

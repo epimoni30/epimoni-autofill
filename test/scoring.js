@@ -85,7 +85,8 @@ export function verdictOf(r) {
   if (r.wroteKey === r.expect)
     return r.stateOk === false || (r.expectValue !== null && r.domValue !== r.expectValue) ? 'wrong' : 'hit';
   if (r.wroteKey) return 'wrong';
-  if (r.action === 'fill' && r.key === r.expect) return 'nodata';
+  // A row that names the value it expects has the data: writing nothing there is a miss.
+  if (r.action === 'fill' && r.key === r.expect) return r.expectValue !== null ? 'miss' : 'nodata';
   return r.action === 'suggest' || r.action === 'ai-candidate' ? 'soft' : 'miss';
 }
 
