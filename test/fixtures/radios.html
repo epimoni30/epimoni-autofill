@@ -47,6 +47,13 @@
     <option value="">Select…</option><option>Yes</option><option>No</option>
   </select>
 
+  <!-- Years of experience as brackets. The CV totals eight years. -->
+  <label for="xp">Votre expérience</label>
+  <select id="xp" name="experience" data-controlled data-expect="years_experience">
+    <option value="">Choisir…</option><option value="a">Moins d'1 an</option><option value="b">1 à 3 ans</option>
+    <option value="c">3 à 5 ans</option><option value="d">5 à 10 ans</option><option value="e">Plus de 10 ans</option>
+  </select>
+
   <label for="cgu">J'accepte les conditions générales</label>
   <input type="checkbox" id="cgu" name="cgu" data-expect="none">
   <label for="news">Je souhaite recevoir des offres par e-mail</label>

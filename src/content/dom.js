@@ -10,6 +10,7 @@ import { MONTHS } from '../lexicon/index.js';
 import { workRightCovers } from '../schema/countries.js';
 import { pickByLevel } from '../schema/fluency.js';
 import { forDialCode } from '../schema/phone.js';
+import { pickYears, yearsRange } from '../schema/years.js';
 import { speaksAnswer, yesIndex, yesWord } from '../schema/languages.js';
 
 /**
@@ -344,6 +345,40 @@ function nearbyText(el) {
   return { text: best.slice(0, 160), precise };
 }
 
+// "Votre expérience" alone asks for prose in a textarea and for a number of years in a list of
+// brackets. The lexicon can't tell the two apart, the options can: a closed list whose label is
+// only this, and whose answers are year brackets, is the years question.
+const BARE_EXPERIENCE = new Set([
+  'experience',
+  'votre experience',
+  'experience professionnelle',
+  'niveau d experience',
+  'your experience',
+  'work experience',
+  'professional experience',
+  'experiencia',
+  'su experiencia',
+  'tu experiencia',
+  'experiencia profesional',
+  'sua experiencia',
+  'experiencia profissional',
+  'doswiadczenie',
+  'twoje doswiadczenie',
+  'doswiadczenie zawodowe',
+]);
+
+function asksYearsByBrackets(el, described, options) {
+  const texts = Array.isArray(options)
+    ? options
+    : el.tagName === 'SELECT'
+      ? Array.from(el.options).map((o) => o.textContent)
+      : null;
+  if (!texts) return false;
+  const label = described.filter((s) => s.weight >= 0.9);
+  if (!label.length || !label.every((s) => BARE_EXPERIENCE.has(s.text))) return false;
+  return texts.filter((t) => yearsRange(t)).length >= 3;
+}
+
 /** How much a filler's description of a control is trusted: above a `name`, below a label. */
 export const FILLER_WEIGHT = 0.85;
 
@@ -374,6 +409,9 @@ export function labelBundle(el, extra = {}) {
   const described = sources
     .map(([kind, raw, weight]) => ({ kind, text: normalize(raw), weight }))
     .filter((s) => s.text.length > 1);
+  if (asksYearsByBrackets(el, described, extra.options)) {
+    described.push({ kind: 'options', text: 'years of experience', weight: 0.9 });
+  }
   // `true` is a closed list whose answers are not on the page until it is opened: shaped as a
   // dropdown for the resolver, matched by the filler at write time with the same rule.
   const closed = extra.options === true;
@@ -565,6 +603,10 @@ export function valueFor(decision, el, bundle, profile, entries) {
   if (key === 'speaks_language') return speaksValue(el, bundle, entries);
   if (index === undefined || index === null) {
     if (!answerHolds(key, bundle, profile)) return null;
+    if (key === 'years_experience') {
+      const bracket = yearsOption(el, bundle, profile?.[key]);
+      if (bracket) return bracket;
+    }
     const got = formatValue(el, bundle, profile?.[key]);
     // "Immédiate" or "Dans un mois" typed into a date picker is not a date, and the picker
     // either rejects it or keeps it as garbage. Offered instead, for the person to pick a day.
@@ -621,6 +663,20 @@ export function speaksRadioValue(group, bundle, entries) {
   const labels = group.inputs.map(radioLabel);
   const i = yesIndex(labels);
   return i === -1 ? null : labels[i];
+}
+
+/**
+ * A total of years against the form's brackets ("5 à 10 ans", "10+ years"), when nothing
+ * matches as written and exactly one bracket holds it (src/schema/years.js).
+ */
+function yearsOption(el, bundle, v) {
+  const list = optionList(el, bundle);
+  if (!list || v === undefined || v === null || matchOption(list, String(v))) return null;
+  const i = pickYears(
+    list.map((o) => o.text),
+    String(v),
+  );
+  return i === -1 ? null : { value: list[i].value };
 }
 
 /**

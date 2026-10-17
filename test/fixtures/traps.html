@@ -82,6 +82,19 @@
     <label><input type="radio" name="auth_us" value="non" data-expect="none"> Non</label>
   </fieldset>
 </form>
+<!-- "Votre expérience" is the years question only as a list of year brackets with nothing else
+     in its label. As prose, about one domain, or as seniority words, it is something else. -->
+<form id="experience-not-years">
+  <label for="xp1">Votre expérience</label><textarea id="xp1" name="question_16" data-expect="none"></textarea>
+  <label for="xp2">Votre expérience en management</label>
+  <select id="xp2" name="question_17" data-expect="none">
+    <option value="">Choisir…</option><option>Moins d'1 an</option><option>1 à 3 ans</option><option>5 à 10 ans</option><option>Plus de 10 ans</option>
+  </select>
+  <label for="xp3">Votre expérience</label>
+  <select id="xp3" name="question_18" data-expect="none">
+    <option value="">Choisir…</option><option>Junior</option><option>Confirmé</option><option>Senior</option>
+  </select>
+</form>
 <!-- A place the country table doesn't hold. Read as "no place named", it was answered through
      the country the person lives in, and "Oui" here claims a right they may not have. -->
 <form id="unknown-country">

@@ -70,6 +70,7 @@ src/schema/fields.js    every canonical field: its shape, and where it lives in 
 src/schema/fluency.js   language levels on one CEFR scale, and the one option a level fits
 src/schema/languages.js which languages a question names, and whether the CV backs a yes
 src/schema/phone.js     a phone number for a field that shows its own country code
+src/schema/years.js     a total of years against a form's brackets ("5 à 10 ans", "10+ years")
 src/lexicon/<lang>.js   one language pack each: phrases, section headings, dates; index.js lists them
 src/fillers/            site and widget fillers: evidence and guarded writers, never decisions
 tools/bundle.mjs        ES modules → the content script; enforces the filler contract
@@ -194,6 +195,12 @@ written, `src/schema/fluency.js` puts both on the CEFR scale (A1 to C2, plus a f
 language) and picks an option only when the level fits exactly one. Words are ranges
 ("Courant" is C1 or C2), so "C1" against a list with both "Avancé" and "Courant" fits two and
 is left for the person: a stated level is something an interview checks.
+
+Years of experience work the same way. The CV gives a total, forms offer brackets ("Moins d'1
+an / 1 à 3 ans / … / Plus de 10 ans"), and `src/schema/years.js` picks the one bracket that
+holds the total, or nothing when it sits on a shared edge. A bare "Votre expérience" is the
+years question only when it is a closed list of year brackets: as a textarea it asks for prose,
+and the lexicon alone can't tell the two apart.
 
 "Do you speak fluent French?" is the third, and the strictest. The answer depends on which
 language the question names, so `speaks_language` has no stored value: `src/schema/languages.js`

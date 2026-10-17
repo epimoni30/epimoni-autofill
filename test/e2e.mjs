@@ -455,12 +455,14 @@ const spoken = await speakPage.evaluate(() => ({
   es: document.getElementById('le1').checked || document.getElementById('le2').checked,
   en: document.getElementById('sp-en').value,
   it: document.getElementById('sp-it').value,
+  xp: document.getElementById('xp').value,
 }));
 check(
   'a language question gets a yes the CV backs, and no answer it does not',
   spoken.frYes && !spoken.frNo && !spoken.es && spoken.en === '1' && spoken.it === '',
   JSON.stringify(spoken),
 );
+check('eight years pick the "5 à 10 ans" bracket', spoken.xp === 'd', spoken.xp);
 await speakPage.close();
 
 // A Taleez-shaped row: labels the markup doesn't link, an icon font beside the phone, a drop
