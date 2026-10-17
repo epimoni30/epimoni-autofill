@@ -3,7 +3,7 @@
     "message": "Epimoni: Job Application Autofill"
   },
   "ext_description": {
-    "message": "Fills your job applications and analyses job ads: France Travail, HelloWork, APEC, LinkedIn. With or without an Epimoni account."
+    "message": "Fills your job applications, even without an Epimoni account, and analyses job ads: France Travail, HelloWork, APEC, LinkedIn."
   },
   "action_title": {
     "message": "Fill this application"
@@ -442,9 +442,6 @@
   "panel_tier_free": {
     "message": "1 analysis per hour on the free account."
   },
-  "panel_tier_anon": {
-    "message": "1 analysis per hour, no account needed. No CV is kept on our servers."
-  },
   "panel_tier_spent": {
     "message": "Analysis already used. Next one in $MINUTES$ min.",
     "placeholders": {
@@ -485,9 +482,6 @@
   },
   "popup_tier_free": {
     "message": "1 analysis per hour (free account)"
-  },
-  "popup_tier_anon": {
-    "message": "1 analysis per hour, no account"
   },
   "popup_tier_spent": {
     "message": "Analysis used. Next one in $MINUTES$ min.",
@@ -684,8 +678,8 @@
   "opt_tier_free": {
     "message": "1 job-ad analysis per hour on the free account."
   },
-  "opt_tier_anon": {
-    "message": "1 job-ad analysis per hour, no account."
+  "opt_ai_needs_account": {
+    "message": "Job-ad analysis and cover letters need a connected Epimoni account."
   },
   "opt_tier_spent": {
     "message": "Analysis used. Next one in $MINUTES$ min.",

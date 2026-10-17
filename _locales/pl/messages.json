@@ -3,7 +3,7 @@
     "message": "Epimoni: automatyczne wypełnianie aplikacji"
   },
   "ext_description": {
-    "message": "Wypełnia formularze aplikacyjne i analizuje oferty pracy na LinkedIn i portalach z ogłoszeniami. Z kontem Epimoni lub bez."
+    "message": "Wypełnia formularze aplikacyjne, także bez konta Epimoni, i analizuje oferty pracy na LinkedIn i portalach z ogłoszeniami."
   },
   "action_title": {
     "message": "Wypełnij tę aplikację"
@@ -442,9 +442,6 @@
   "panel_tier_free": {
     "message": "1 analiza na godzinę na darmowym koncie."
   },
-  "panel_tier_anon": {
-    "message": "1 analiza na godzinę, bez zakładania konta. Nie przechowujemy żadnego CV na naszych serwerach."
-  },
   "panel_tier_spent": {
     "message": "Analiza już wykorzystana. Następna za $MINUTES$ min.",
     "placeholders": {
@@ -485,9 +482,6 @@
   },
   "popup_tier_free": {
     "message": "1 analiza na godzinę (darmowe konto)"
-  },
-  "popup_tier_anon": {
-    "message": "1 analiza na godzinę, bez konta"
   },
   "popup_tier_spent": {
     "message": "Analiza wykorzystana. Następna za $MINUTES$ min.",
@@ -684,8 +678,8 @@
   "opt_tier_free": {
     "message": "1 analiza oferty na godzinę na darmowym koncie."
   },
-  "opt_tier_anon": {
-    "message": "1 analiza oferty na godzinę, bez konta."
+  "opt_ai_needs_account": {
+    "message": "Analiza ogłoszeń i list motywacyjny wymagają połączonego konta Epimoni."
   },
   "opt_tier_spent": {
     "message": "Analiza wykorzystana. Następna za $MINUTES$ min.",

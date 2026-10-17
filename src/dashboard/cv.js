@@ -494,11 +494,16 @@ async function renderStatus() {
   // resolves an identity and reaches the network, and nothing else on this page may wait on
   // that. Awaiting it used to hold up everything rendered afterwards, so a slow or failed
   // request left the page showing no CV list at all: the one thing it exists to show.
+  //
+  // Without a paired account there is no allowance to describe: the AI is refused outright,
+  // and saying "1 analysis per hour" here would promise what the panel then refuses.
   send({ type: 'tier' }).then((tier) => {
-    if (tier.paid) line(box, t('opt_tier_paid'), 'ok');
+    if (!tier.ai) {
+      if (!state.paired) line(box, t('opt_ai_needs_account'), 'muted');
+    } else if (tier.paid) line(box, t('opt_tier_paid'), 'ok');
     else if (tier.rate_limited)
       line(box, t('opt_tier_spent', [String(Math.ceil((tier.reset_seconds || 0) / 60))]), 'muted');
-    else if (tier.mode) line(box, t(tier.mode === 'account' ? 'opt_tier_free' : 'opt_tier_anon'), 'muted');
+    else line(box, t('opt_tier_free'), 'muted');
   });
 }
 

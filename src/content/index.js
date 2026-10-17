@@ -838,7 +838,7 @@
         if (tier.paid) note.textContent = t('panel_tier_paid');
         else if (tier.rate_limited)
           note.textContent = t('panel_tier_spent', [String(Math.ceil((tier.reset_seconds || 0) / 60))]);
-        else note.textContent = t(tier.mode === 'account' ? 'panel_tier_free' : 'panel_tier_anon');
+        else note.textContent = t('panel_tier_free');
       });
     };
 
@@ -1265,7 +1265,7 @@
           // The free hour is spent: the way past the wait is a plan, said before the click
           // rather than only after a refused one.
           cta(note, plans, t('panel_quota_cta')).style.display = 'block';
-        } else note.textContent = t(tier.mode === 'account' ? 'panel_tier_free' : 'panel_tier_anon');
+        } else note.textContent = t('panel_tier_free');
       });
     };
 

@@ -3,7 +3,7 @@
     "message": "Epimoni: rellenar candidaturas"
   },
   "ext_description": {
-    "message": "Rellena sus candidaturas y analiza las ofertas: France Travail, HelloWork, APEC, LinkedIn. Con o sin cuenta Epimoni."
+    "message": "Rellena sus candidaturas, incluso sin cuenta Epimoni, y analiza las ofertas: France Travail, HelloWork, APEC, LinkedIn."
   },
   "action_title": {
     "message": "Rellenar esta candidatura"
@@ -442,9 +442,6 @@
   "panel_tier_free": {
     "message": "1 análisis por hora con la cuenta gratuita."
   },
-  "panel_tier_anon": {
-    "message": "1 análisis por hora, sin cuenta. No guardamos ningún CV en nuestros servidores."
-  },
   "panel_tier_spent": {
     "message": "Análisis ya utilizado. El próximo en $MINUTES$ min.",
     "placeholders": {
@@ -485,9 +482,6 @@
   },
   "popup_tier_free": {
     "message": "1 análisis por hora (cuenta gratuita)"
-  },
-  "popup_tier_anon": {
-    "message": "1 análisis por hora, sin cuenta"
   },
   "popup_tier_spent": {
     "message": "Análisis utilizado. El próximo en $MINUTES$ min.",
@@ -684,8 +678,8 @@
   "opt_tier_free": {
     "message": "1 análisis de oferta por hora con la cuenta gratuita."
   },
-  "opt_tier_anon": {
-    "message": "1 análisis de oferta por hora, sin cuenta."
+  "opt_ai_needs_account": {
+    "message": "El análisis de ofertas y la carta de presentación requieren una cuenta de Epimoni conectada."
   },
   "opt_tier_spent": {
     "message": "Análisis utilizado. El próximo en $MINUTES$ min.",

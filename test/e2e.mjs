@@ -1820,6 +1820,28 @@ check(
   opt.unresolved.join(', ') || `${opt.tagged} keys`,
 );
 check('the CV editor leaks no raw message keys', opt.raw.length === 0, opt.raw.join(', '));
+
+// This install is not paired, so there is no allowance to describe. The page used to say
+// "1 analysis per hour, no account", left over from the anonymous tier, which the panel then
+// refused. The tier line is asynchronous, so wait for it rather than read too early.
+const aiLine = await options
+  .waitForFunction(
+    () => {
+      const want = chrome.i18n.getMessage('opt_ai_needs_account');
+      const text = document.getElementById('status').innerText;
+      return text.includes(want) ? text : null;
+    },
+    null,
+    { timeout: 3000 },
+  )
+  .then((h) => h.jsonValue())
+  .catch(() => options.evaluate(() => document.getElementById('status').innerText));
+check(
+  'the CV page tells an unpaired install the AI needs an account, and promises no allowance',
+  aiLine.includes(await options.evaluate(() => chrome.i18n.getMessage('opt_ai_needs_account'))) &&
+    !aiLine.includes(await options.evaluate(() => chrome.i18n.getMessage('opt_tier_free'))),
+  aiLine.replace(/\s+/g, ' ').slice(-120),
+);
 check(
   'the CV editor loads the stored document',
   opt.name === 'Alex Martin' && opt.email === 'alex@example.org',
@@ -1866,6 +1888,26 @@ check(
 check(
   'the editor reports the CV as analysable once it holds a role and skills',
   saved.state?.cv_analysable === true,
+);
+
+// A pairing can store a profile that says more than the document (the site sends its own).
+// The CV page used to count the status line from that profile and the library row from the
+// document, so the same CV read "19 details" and "17 details" one card apart.
+await sw.evaluate(async () => {
+  const { epimoni: bag } = await chrome.storage.local.get('epimoni');
+  const entry = bag.cvs.find((c) => c.id === bag.active_cv_id);
+  entry.profile = { ...(entry.profile || {}), postal_code: '44000' };
+  await chrome.storage.local.set({ epimoni: bag });
+});
+const counted = await options.evaluate(async () => {
+  const ask = (msg) => new Promise((r) => chrome.runtime.sendMessage(msg, r));
+  const [state, list] = await Promise.all([ask({ type: 'state' }), ask({ type: 'cv:list' })]);
+  return { state: state.fields, row: list.cvs.find((c) => c.active)?.summary?.fields };
+});
+check(
+  'the CV page counts the active CV once, the same in the status and in the library',
+  counted.state === counted.row,
+  JSON.stringify(counted),
 );
 
 // ── The CV library ───────────────────────────────────────────────────────────────────────
