@@ -89,6 +89,9 @@
   "field_speaks_language": {
     "message": "Znajomość języka"
   },
+  "field_language_level": {
+    "message": "Poziom języka"
+  },
   "field_cv_file": {
     "message": "CV (plik PDF)"
   },

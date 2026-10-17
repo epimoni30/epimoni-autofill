@@ -237,6 +237,21 @@ export default {
       any: ['jezyki', 'jezyki obce', 'znajomosc jezykow'],
       not: ['programowania'],
     },
+    language_level: {
+      any: ['poziom jezyka', 'znajomosc jezyka'],
+      not: [
+        'languages',
+        'langues',
+        'idiomas',
+        'jezyki',
+        'list',
+        'liste',
+        'lista',
+        'education',
+        'etude',
+        'etudes',
+      ],
+    },
     speaks_language: {
       any: ['czy mowisz', 'czy mowi pan', 'czy mowi pani', 'czy wladasz'],
       not: ['languages', 'langues', 'idiomas', 'jezyki', 'list', 'liste', 'lista'],

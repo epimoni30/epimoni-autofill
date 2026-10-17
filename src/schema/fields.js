@@ -89,6 +89,9 @@ const FLAT = [
   // `perQuestion`: a form asks it once per language, so two controls claiming it are two
   // questions, not a duplicate.
   { key: 'speaks_language', shape: 'any', select: true, perQuestion: true, source: 'cv' },
+  // "How well are your French language skills?", "Niveau d'anglais": the CV's level for the one
+  // language the question names, picked by the fluency scale. Closed lists only.
+  { key: 'language_level', shape: 'any', select: true, perQuestion: true, source: 'cv' },
   // The CV itself, as the PDF the user attached to this library entry. A cover letter, a
   // diploma or a photo upload is a different question with a different file, and is left alone.
   { key: 'cv_file', shape: 'file', source: 'library' },

@@ -220,6 +220,11 @@ absent from the CV, or listed without a level, is a question left for the person
 missing answer costs a click and a wrong "no" can end an application. A form asks it once per
 language, so the field is `perQuestion` in the registry and is exempt from the duplicate-key rule.
 
+"How well are your French language skills?" and "Niveau d'anglais" are its sibling,
+`language_level`: a list of levels about the one language the question names, answered with the
+CV's level for that language through the fluency scale. A language the CV doesn't list gets
+nothing, never "No proficiency".
+
 ## Fillers: evidence and guarded writers, never decisions
 
 This used to say per-ATS adapters were deliberately absent, and the argument behind that still

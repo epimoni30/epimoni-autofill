@@ -89,6 +89,9 @@
   "field_speaks_language": {
     "message": "Langue parlée"
   },
+  "field_language_level": {
+    "message": "Niveau de langue"
+  },
   "field_cv_file": {
     "message": "CV (fichier PDF)"
   },

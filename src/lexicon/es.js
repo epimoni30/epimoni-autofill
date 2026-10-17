@@ -238,6 +238,28 @@ export default {
       any: ['idiomas', 'idiomas hablados', 'nivel de idioma'],
       not: ['programacion'],
     },
+    language_level: {
+      any: [
+        'nivel de ingles',
+        'nivel de frances',
+        'nivel de espanol',
+        'nivel de aleman',
+        'nivel de italiano',
+        'nivel de portugues',
+      ],
+      not: [
+        'languages',
+        'langues',
+        'idiomas',
+        'jezyki',
+        'list',
+        'liste',
+        'lista',
+        'education',
+        'etude',
+        'etudes',
+      ],
+    },
     speaks_language: {
       any: ['habla usted', 'hablas', 'domina usted'],
       not: ['languages', 'langues', 'idiomas', 'jezyki', 'list', 'liste', 'lista'],

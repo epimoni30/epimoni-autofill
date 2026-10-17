@@ -13,7 +13,7 @@ import { forDialCode } from '../schema/phone.js';
 import { pickYears, yearsRange } from '../schema/years.js';
 import { highestDegree, pickDegree } from '../schema/degrees.js';
 import { pickSalary } from '../schema/salary.js';
-import { speaksAnswer, yesIndex, yesWord } from '../schema/languages.js';
+import { languagesNamed, speaksAnswer, yesIndex, yesWord } from '../schema/languages.js';
 
 /**
  * Lowercase, strip diacritics, reduce to words. `Prénom` and `PRENOM_1` both become `prenom 1`.
@@ -462,7 +462,8 @@ export function matcherFor(key) {
     if (key === 'years_experience') i = pickYears(texts, String(value ?? ''));
     else if (key === 'education_degree') i = pickDegree(texts, String(value ?? ''));
     else if (key === 'salary_expectation') i = pickSalary(texts, String(value ?? ''));
-    else if (field === 'fluency') i = pickByLevel(texts.map(normalize), normalize(value));
+    else if (field === 'fluency' || key === 'language_level')
+      i = pickByLevel(texts.map(normalize), normalize(value));
     return i === -1 ? null : list[i];
   };
 }
@@ -626,6 +627,17 @@ export function answerHolds(key, bundle, profile) {
 export function valueFor(decision, el, bundle, profile, entries) {
   const { key, index } = decision;
   if (key === 'speaks_language') return speaksValue(el, bundle, entries);
+  if (key === 'language_level') {
+    const level = levelAsked(bundle, entries);
+    if (!level) return null;
+    const list = optionList(el, bundle);
+    if (list) {
+      const hit = matcherFor(key)(list, level);
+      return hit ? { value: hit.value } : null;
+    }
+    // A list whose options appear once opened: the filler picks through matcherFor.
+    return bundle.tag === 'select' ? { value: level } : null;
+  }
   if (index === undefined || index === null) {
     if (!answerHolds(key, bundle, profile)) return null;
     if (key === 'years_experience' || key === 'salary_expectation') {
@@ -693,6 +705,25 @@ function speaksValue(el, bundle, entries) {
   if (speaksAnswer(question, languageRows(entries), { fluentOnly: true }) !== true) return null;
   const word = yesWord(question);
   return word ? { value: word } : null;
+}
+
+/** The CV's fluency for the one language a level question names ("Niveau d'anglais"), or null. */
+function levelAsked(bundle, entries) {
+  const asked = languagesNamed(questionOf(bundle));
+  if (asked.length !== 1) return null;
+  const row = (entries?.languages || []).find((r) => languagesNamed(normalize(r.language))[0] === asked[0]);
+  return row && String(row.fluency || '').trim() ? String(row.fluency) : null;
+}
+
+/**
+ * What a radio group gets for a key: a yes the CV backs, a level for the language asked, a
+ * bracket or a level chosen by the key's rule, or the stored answer as written (which
+ * `setRadio` then matches). Null leaves the group alone.
+ */
+export function radioValueFor(key, group, bundle, profile, entries) {
+  if (key === 'speaks_language') return speaksRadioValue(group, bundle, entries);
+  if (key === 'language_level') return radioChoice(key, group, levelAsked(bundle, entries));
+  return radioChoice(key, group, profile?.[key]) ?? profile?.[key] ?? null;
 }
 
 /** The label of the yes option in a radio group, when the CV backs a yes; else null. */

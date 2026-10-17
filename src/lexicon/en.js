@@ -389,6 +389,30 @@ export default {
     // A yes/no question about one language, answered only with a yes the CV backs
     // (src/schema/languages.js). "Which languages do you speak?" asks for a list: that is
     // the key above.
+    // A dropdown of levels about one language the question names: the CV's level for that
+    // language, through src/schema/fluency.js.
+    language_level: {
+      any: [
+        'how well are your',
+        'language skills',
+        'language proficiency',
+        'proficiency in',
+        'how well do you speak',
+        'how fluent are you',
+      ],
+      not: [
+        'languages',
+        'langues',
+        'idiomas',
+        'jezyki',
+        'list',
+        'liste',
+        'lista',
+        'education',
+        'etude',
+        'etudes',
+      ],
+    },
     speaks_language: {
       any: ['do you speak', 'can you speak', 'are you fluent', 'fluent in', 'speak fluent'],
       not: ['languages', 'langues', 'idiomas', 'jezyki', 'list', 'liste', 'lista'],

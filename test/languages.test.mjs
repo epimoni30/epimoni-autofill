@@ -78,3 +78,22 @@ test('the yes option, and only an unambiguous one', () => {
   assert.equal(yesWord(normalize('Parlez-vous anglais ?')), 'oui');
   assert.equal(yesWord(normalize('Czy mówisz po angielsku?')), 'tak');
 });
+
+// Measured on a live Personio form: "How well are your French language skills?" with levels as
+// options. French forms ask the same as "Niveau d'anglais". The answer is the CV's level for
+// the language named, through the fluency scale.
+test('a level question about one named language is recognised', () => {
+  for (const q of [
+    'How well are your French language skills?',
+    'English language proficiency',
+    "Niveau d'anglais",
+    'Votre niveau en anglais',
+    'Nivel de inglés',
+    'Nível de inglês',
+    'Poziom języka angielskiego',
+  ])
+    assert.equal(keyOf(q, 'select'), 'language_level', q);
+  // A level question that names no language stays with the languages key or with nothing.
+  assert.notEqual(keyOf("Niveau d'étude", 'select'), 'language_level');
+  assert.notEqual(keyOf('Level of education', 'select'), 'language_level');
+});
