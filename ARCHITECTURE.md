@@ -375,8 +375,11 @@ silently. The watch ends on "tout annuler", on the next click (which starts a ne
 its timeout. The panel is updated in place rather than rebuilt, so an offer analysis already on
 screen survives a re-fill.
 
-Only additions wake it. A control revealed by toggling `display` is not an added node, and a
-toolbar click still covers that case.
+Two things wake it: added nodes that hold a control, and a container holding controls that a
+`style`, `class`, `hidden`, `aria-hidden` or `open` change has just made visible (a wizard that
+keeps every step in the page and shows one at a time). A control's own attributes don't count,
+since our outline is one of them, and neither do `<html>` and `<body>`, which sites restyle on
+scroll. A step inside a shadow root is still only covered by a toolbar click.
 
 ## Automatic filling, one site at a time
 

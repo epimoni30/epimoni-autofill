@@ -811,6 +811,38 @@ const fiveFilled = await sw.evaluate(() => chrome.i18n.getMessage('panel_filled_
 check('the panel counts the new fields', grown.panel.includes(fiveFilled), fiveFilled);
 check('nothing was submitted on the growing form', grown.submitted === false);
 
+// The same, when every step is already in the page and only shown later: by `display`, then
+// by a class. No node is added, so this is the observer watching attributes.
+const hiddenSteps = await fillPage('wizard-hidden.html');
+const step1 = await hiddenSteps.evaluate(() => ({
+  email: document.getElementById('he').value,
+  tel: document.getElementById('ht').value,
+}));
+check(
+  'a hidden step is not filled before it is shown',
+  step1.email === profile.email && step1.tel === '',
+  JSON.stringify(step1),
+);
+await hiddenSteps.click('#to2');
+await hiddenSteps
+  .waitForFunction(() => document.getElementById('ht').value, { timeout: 3000 })
+  .catch(() => {});
+await hiddenSteps.click('#to3');
+await hiddenSteps
+  .waitForFunction(() => document.getElementById('hv').value, { timeout: 3000 })
+  .catch(() => {});
+const revealed = await hiddenSteps.evaluate(() => ({
+  tel: document.getElementById('ht').value,
+  ville: document.getElementById('hv').value,
+  submitted: window.__submitted === true,
+}));
+check(
+  'a step shown by its style or its class is filled with no second click',
+  revealed.tel === profile.phone && revealed.ville === 'Nantes' && !revealed.submitted,
+  JSON.stringify(revealed),
+);
+await hiddenSteps.close();
+
 // ── The application tracker ──────────────────────────────────────────────────────────────
 //
 // The fill recorded this page, once, and the re-fill brought its field count up to date. The

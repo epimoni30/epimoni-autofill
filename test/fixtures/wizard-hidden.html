@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="fr">
+<!-- A wizard that keeps every step in the page from the start and shows them one at a time:
+     the second by its `display`, the third by dropping a class. Nothing is added to the page,
+     so a re-fill that only listens for new nodes never wakes. Not in the measured list, for the
+     same reason as steps.html: what is under test happens after the first fill. -->
+<meta charset="utf-8"><title>Candidature, étapes masquées</title>
+<style>.is-hidden { display: none; }</style>
+<body>
+<form id="wizard" onsubmit="window.__submitted = true; return false">
+  <fieldset id="h1">
+    <legend>Étape 1 sur 3</legend>
+    <label for="hp">Prénom</label><input id="hp" name="prenom">
+    <label for="he">Adresse e-mail</label><input id="he" name="email" type="email">
+    <button type="button" id="to2">Suivant</button>
+  </fieldset>
+  <fieldset id="h2" style="display: none">
+    <legend>Étape 2 sur 3</legend>
+    <label for="ht">Téléphone portable</label><input id="ht" name="tel" type="tel">
+    <button type="button" id="to3">Suivant</button>
+  </fieldset>
+  <fieldset id="h3" class="is-hidden">
+    <legend>Étape 3 sur 3</legend>
+    <label for="hv">Ville</label><input id="hv" name="ville">
+    <button type="submit">Envoyer ma candidature</button>
+  </fieldset>
+</form>
+<script>
+  document.getElementById('to2').addEventListener('click', () => {
+    document.getElementById('h1').style.display = 'none';
+    document.getElementById('h2').style.display = '';
+  });
+  document.getElementById('to3').addEventListener('click', () => {
+    document.getElementById('h2').style.display = 'none';
+    document.getElementById('h3').classList.remove('is-hidden');
+  });
+</script>
+</body></html>

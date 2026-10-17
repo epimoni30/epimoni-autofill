@@ -328,21 +328,38 @@
    * resolver and the same refusals, and only new ones (`handled`). It stops after
    * `WATCH_MS`, on "tout annuler", and on the next click, which starts it again.
    *
-   * Only added nodes wake it, and only when they hold a form control: the page's own
-   * animations, and this panel, never trigger a scan.
+   * Added nodes that hold a form control wake it, and so does a container holding controls
+   * that a style, a class or `hidden` has just shown. The page's own animations on <html> or
+   * <body>, a control's own attributes, and this panel never trigger a scan.
    */
   function watch(ctx) {
     let timer = null;
     let running = false;
     const CONTROLS = 'input, textarea, select, [role="combobox"]';
+    // A step can arrive two ways: rendered into the page, or there all along and shown by a
+    // style, a class or `hidden`. The second only changes attributes, on a container. A
+    // control's own attributes are left out (our outline is one of them), and so are <html>
+    // and <body>, which sites restyle on every scroll.
+    const shows = (t) =>
+      t.nodeType === 1 &&
+      t !== document.documentElement &&
+      t !== document.body &&
+      t.id !== 'epimoni-panel' &&
+      !t.matches(CONTROLS) &&
+      // Hiding a step never needs a fill, and this keeps a class that flips back and forth on
+      // a hidden container from re-scanning the page.
+      (t.checkVisibility ? t.checkVisibility() : true) &&
+      Boolean(t.querySelector(CONTROLS));
     const obs = new MutationObserver((muts) => {
       const grew = muts.some((m) =>
-        Array.from(m.addedNodes).some(
-          (n) =>
-            n.nodeType === 1 &&
-            n.id !== 'epimoni-panel' &&
-            (n.matches(CONTROLS) || n.querySelector(CONTROLS)),
-        ),
+        m.type === 'attributes'
+          ? shows(m.target)
+          : Array.from(m.addedNodes).some(
+              (n) =>
+                n.nodeType === 1 &&
+                n.id !== 'epimoni-panel' &&
+                (n.matches(CONTROLS) || n.querySelector(CONTROLS)),
+            ),
       );
       if (!grew) return;
       clearTimeout(timer);
@@ -357,7 +374,12 @@
     const idle = setTimeout(stop, WATCH_MS);
     const self = { stop };
     watcher = self;
-    obs.observe(document.documentElement, { childList: true, subtree: true });
+    obs.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['style', 'class', 'hidden', 'aria-hidden', 'open'],
+    });
 
     async function refill() {
       if (running || watcher !== self) return;
