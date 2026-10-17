@@ -470,3 +470,53 @@ test('a question about needing a visa is never the work authorisation question',
   ])
     assert.notEqual(key(normalize(label)), 'work_authorization', label);
 });
+
+// Measured on live Ashby, Lever and Greenhouse forms: the city was asked as a bare
+// "Location" combobox and as "Where are you currently based?", and both were left empty,
+// while "Which location are you applying for?" asks about the job, not the person.
+test('where the person lives, asked as a location', () => {
+  for (const label of [
+    'Location',
+    'What is your location?',
+    'Where are you currently based?',
+    'Where are you based?',
+    'Où êtes-vous basé(e) ?',
+    'Lieu de résidence',
+  ])
+    assert.equal(key(normalize(label)), 'city', label);
+  for (const label of [
+    'Which location are you applying for?',
+    'Preferred work location',
+    'Are you based in the same location as the role?',
+    'Are you willing to relocate to another location?',
+    'Office location',
+    'Location of the job',
+    'Lieu de travail souhaité',
+  ])
+    assert.notEqual(key(normalize(label)), 'city', label);
+});
+
+// Measured on a live Ashby form: the plural "salary expectations" matched nothing while the
+// singular did.
+test('salary expectations, singular or plural', () => {
+  for (const label of [
+    'What are your salary expectations (yearly)?',
+    'Salary requirements',
+    'Compensation expectations',
+    'Vos prétentions ?',
+  ])
+    assert.equal(key(normalize(label), { tag: 'textarea' }), 'salary_expectation', label);
+  assert.notEqual(key(normalize('What is your current salary?')), 'salary_expectation');
+});
+
+// Measured on a live Ashby form: "In which school are you enrolled for this work-study
+// program?" took the CV's most recent school, which for a graduate is the wrong answer. The
+// question asks about now, and the CV only says where they studied.
+test('the school someone is enrolled in is not the last one on their CV', () => {
+  for (const label of [
+    'In which school are you enrolled for this work-study program?',
+    'Dans quelle école êtes-vous inscrit(e) ?',
+  ])
+    assert.notEqual(key(normalize(label)), 'education_institution', label);
+  assert.equal(key(normalize('School name')), 'education_institution');
+});

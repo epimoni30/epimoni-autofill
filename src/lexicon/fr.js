@@ -194,7 +194,18 @@ export default {
       not: [],
     },
     city: {
-      any: ['ville', 'commune', 'localite', 'ville de residence', 'votre ville', 'localisation actuelle'],
+      any: [
+        'ville',
+        'commune',
+        'localite',
+        'ville de residence',
+        'votre ville',
+        'localisation actuelle',
+        'lieu de residence',
+        'ou etes vous base',
+        'ou residez vous',
+        'ou habitez vous',
+      ],
       not: ['naissance', 'entreprise', 'societe', 'poste', 'ecole', 'universite', 'etablissement'],
     },
     country: {
@@ -291,6 +302,7 @@ export default {
       any: [
         'pretentions salariales',
         'pretention salariale',
+        'pretentions',
         'salaire souhaite',
         'remuneration souhaitee',
         'salaire brut souhaite',
@@ -359,7 +371,7 @@ export default {
         'nom de l etablissement',
         'etablissement de formation',
       ],
-      not: [],
+      not: ['inscrit'],
     },
     skills: {
       any: ['competences', 'vos competences', 'competences cles', 'savoir faire'],

@@ -82,4 +82,18 @@
     <label><input type="radio" name="auth_us" value="non" data-expect="none"> Non</label>
   </fieldset>
 </form>
+<!-- "Location" about the job, not the person. Seen on live Ashby and Lever forms. The person
+     lives in Nantes, so a city answer here would pick an office they never chose. -->
+<form id="job-location">
+  <label for="jl1">Which location are you applying for?</label>
+  <select id="jl1" name="question_11" data-expect="none">
+    <option value="">Select...</option>
+    <option>Paris</option>
+    <option>Nantes</option>
+  </select>
+  <label for="jl2">Office location</label><input id="jl2" name="question_12" data-expect="none">
+  <label for="jl3">Preferred work location</label><input id="jl3" name="question_13" data-expect="none">
+  <label for="jl4">In which school are you enrolled for this work-study program?</label>
+  <input id="jl4" name="question_14" data-expect="none">
+</form>
 </body></html>

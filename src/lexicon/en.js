@@ -208,8 +208,38 @@ export default {
       not: [],
     },
     city: {
-      any: ['city', 'town', 'locality', 'city of residence', 'current location'],
-      not: ['birth', 'company', 'school', 'university'],
+      any: [
+        'city',
+        'town',
+        'locality',
+        'city of residence',
+        'current location',
+        'location',
+        'your location',
+        'where are you based',
+        'currently based',
+        'where do you live',
+        'place of residence',
+      ],
+      // A bare "location" is the person's only when nothing says it is the job's: "which
+      // location are you applying for", "office location", "same location as the role".
+      not: [
+        'birth',
+        'company',
+        'school',
+        'university',
+        'applying',
+        'apply',
+        'preferred',
+        'desired',
+        'office',
+        'work location',
+        'job',
+        'role',
+        'position',
+        'relocate',
+        'relocation',
+      ],
     },
     country: {
       any: ['country'],
@@ -281,6 +311,11 @@ export default {
     salary_expectation: {
       any: [
         'salary expectation',
+        'salary expectations',
+        'salary requirement',
+        'salary requirements',
+        'compensation expectations',
+        'desired compensation',
         'expected salary',
         'desired salary',
         'compensation expectation',
@@ -320,7 +355,8 @@ export default {
     },
     education_institution: {
       any: ['school', 'university', 'institution', 'college', 'school name'],
-      not: [],
+      // "Which school are you enrolled in?" asks about now; a CV only says where they studied.
+      not: ['enrolled', 'currently attending'],
     },
     skills: {
       any: ['skills', 'your skills', 'key skills'],
