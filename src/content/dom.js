@@ -347,6 +347,15 @@ function nearbyText(el) {
   return { text: best.slice(0, 160), precise };
 }
 
+// "Résumé" is a profile summary in French and a CV in English ("Resume", pasted as text).
+// A text box can't take the CV file in either sense, and the accent, in the box's own label,
+// is what says which language the word is in. Read on the raw label: normalising drops it.
+function asksSummaryInFrench(el) {
+  if (el.tagName !== 'TEXTAREA') return false;
+  const own = forLabelText(el) || fieldLabelText(el) || el.getAttribute('aria-label') || '';
+  return /^\s*r[ée]sum[ée]\s*(\([^)]*\))?\s*\*?\s*$/i.test(own) && /é/i.test(own);
+}
+
 // "Votre expérience" alone asks for prose in a textarea and for a number of years in a list of
 // brackets. The lexicon can't tell the two apart, the options can: a closed list whose label is
 // only this, and whose answers are year brackets, is the years question.
@@ -414,6 +423,8 @@ export function labelBundle(el, extra = {}) {
   const described = sources
     .map(([kind, raw, weight]) => ({ kind, text: normalize(raw), weight }))
     .filter((s) => s.text.length > 1);
+  if (asksSummaryInFrench(el))
+    described.push({ kind: 'language', text: 'professional summary', weight: 0.9 });
   if (asksYearsByBrackets(el, described, extra.options)) {
     described.push({ kind: 'options', text: 'years of experience', weight: 0.9 });
   }
