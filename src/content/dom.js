@@ -11,6 +11,7 @@ import { workRightCovers } from '../schema/countries.js';
 import { pickByLevel } from '../schema/fluency.js';
 import { forDialCode } from '../schema/phone.js';
 import { pickYears, yearsRange } from '../schema/years.js';
+import { highestDegree, pickDegree } from '../schema/degrees.js';
 import { speaksAnswer, yesIndex, yesWord } from '../schema/languages.js';
 
 /**
@@ -458,6 +459,7 @@ export function matcherFor(key) {
     const texts = list.map((o) => o.text);
     let i = -1;
     if (key === 'years_experience') i = pickYears(texts, String(value ?? ''));
+    else if (key === 'education_degree') i = pickDegree(texts, String(value ?? ''));
     else if (field === 'fluency') i = pickByLevel(texts.map(normalize), normalize(value));
     return i === -1 ? null : list[i];
   };
@@ -627,6 +629,19 @@ export function valueFor(decision, el, bundle, profile, entries) {
     if (key === 'years_experience') {
       const bracket = yearsOption(el, bundle, profile?.[key]);
       if (bracket) return bracket;
+    }
+    if (key === 'education_degree') {
+      // A level question wants the highest degree, which is not always the latest one.
+      const degree = highestDegree((entries?.education || []).map((r) => r.degree)) || profile?.[key];
+      const list = optionList(el, bundle);
+      if (list && degree && !matchOption(list, degree)) {
+        const i = pickDegree(
+          list.map((o) => o.text),
+          degree,
+        );
+        if (i !== -1) return { value: list[i].value };
+      }
+      if (degree && bundle.tag === 'select') return formatValue(el, bundle, degree);
     }
     const got = formatValue(el, bundle, profile?.[key]);
     // "Immédiate" or "Dans un mois" typed into a date picker is not a date, and the picker

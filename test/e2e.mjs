@@ -481,8 +481,8 @@ check(
 );
 await tz.close();
 
-// Taleez's <tz-select>: the list opens into an overlay at the end of <body>, and eight years
-// pick the "8 ans d'expérience" bracket. The domain question and the salary stay empty, and the
+// Taleez's <tz-select>: the list opens into an overlay at the end of <body>, eight years pick
+// the "8 ans d'expérience" bracket, and the master picks the bac +5 level. The domain question and the salary stay empty, and the
 // submit button the overlay renders is never pressed.
 const tzs = await fillPage('fillers/taleez-select/apply.html');
 await tzs.waitForTimeout(300);
@@ -494,6 +494,7 @@ const tzsResult = await tzs.evaluate(() => ({
 check(
   'a Taleez dropdown is opened and the bracket holding the total is chosen, nothing else',
   tzsResult.state?.xp === "8 ans d'expérience" &&
+    tzsResult.state?.edu === "Master, Diplôme d'ingénieur ou équivalent (bac +5)" &&
     !tzsResult.state?.xp_mgmt &&
     !tzsResult.state?.salary &&
     !tzsResult.overlayOpen &&

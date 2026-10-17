@@ -5,7 +5,7 @@
      renders the options into an overlay at the end of <body>, with a backdrop, the way Angular
      CDK does. Choosing an option shows it in the trigger and keeps it in window.__state.
 
-     The CV totals eight years. Traps: the same brackets about one domain ("en management"), a
+     The CV totals eight years, and its highest degree is a master (bac +5). Traps: the same brackets about one domain ("en management"), a
      salary asked as brackets (a free-text key that never goes into a list), and a submit button
      the overlay renders under the options. -->
 <meta charset="utf-8"><title>Postuler (tz-select)</title>
@@ -20,6 +20,11 @@
   <div class="field question"><label><span>Votre expérience</span></label>
     <tz-select data-state="xp" data-expect="years_experience"
       data-options="Aucune expérience|1 an d'expérience|2 ans d'expérience|5 ans d'expérience|8 ans d'expérience|9 ans d'expérience|+ de 10 ans d'expérience">
+      <tz-input><div class="trigger"><span class="value placeholder">Choisir...</span></div>
+      <input type="text" placeholder="Rechercher"></tz-input></tz-select></div>
+  <div class="field question"><label><span>Votre niveau d'étude</span></label>
+    <tz-select data-state="edu" data-expect="education_degree"
+      data-options="Aucun diplôme|Baccalauréat (bac +0)|DUT, BTS ou équivalent (bac +2)|Licence ou équivalent (bac +3)|Master 1 ou équivalent (bac +4)|Master, Diplôme d'ingénieur ou équivalent (bac +5)|Doctorat (> bac +5)">
       <tz-input><div class="trigger"><span class="value placeholder">Choisir...</span></div>
       <input type="text" placeholder="Rechercher"></tz-input></tz-select></div>
   <div class="field question"><label><span>Votre expérience en management</span></label>

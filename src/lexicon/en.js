@@ -362,7 +362,15 @@ export default {
       not: ['sponsor', 'sponsorship', 'visa', 'require', 'required to obtain', 'need', 'needs'],
     },
     education_degree: {
-      any: ['degree', 'highest degree', 'education level', 'qualification', 'field of study'],
+      any: [
+        'degree',
+        'highest degree',
+        'education level',
+        'level of education',
+        'highest level of education',
+        'qualification',
+        'field of study',
+      ],
       not: ['school', 'university', 'institution', 'year'],
     },
     education_institution: {

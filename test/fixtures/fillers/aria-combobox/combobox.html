@@ -4,7 +4,8 @@
      widget filler. Three shapes of the WAI-ARIA combobox pattern:
      - a <div role="combobox"> whose options are only rendered once it is opened (Country);
      - <div role="combobox"> rows whose options are already in the page (Languages, Degree);
-     - an <input role="combobox"> typeahead that filters as you type (City).
+     - an <input role="combobox"> typeahead that filters as you type (City), answering a second
+       late after first showing the previous query's list, the way a server-backed one does.
      Each is "controlled": the selection lives in window.__state, as a React component's would.
      Traps: a birth-country combobox (the country key refuses "birth"), and an "Apply now"
      submit button rendered inside the Country listbox, which a careless picker would press. -->
@@ -29,7 +30,7 @@
     <div class="row">
       <label for="city">City</label>
       <input id="city" role="combobox" aria-autocomplete="list" aria-controls="city-list" aria-expanded="false"
-             data-state="city" data-controlled data-expect="city" data-typeahead="Nanterre|Nantes|Nancy|Paris">
+             data-state="city" data-controlled data-expect="city" data-typeahead="Nanterre|Nantes|Nancy|Paris" data-delay="1000" data-stale="Paris|Lyon">
       <ul role="listbox" id="city-list" hidden></ul>
     </div>
   </section>
@@ -99,9 +100,16 @@ for (const box of document.querySelectorAll('[role="combobox"]')) {
   list.addEventListener('click', (e) => { const li = e.target.closest('[role="option"]'); if (li) select(li); });
   if (isInput) {
     const all = box.getAttribute('data-typeahead').split('|');
+    // Like a server-backed typeahead: the previous query's answers show at once, the real
+    // ones a second later. A filler that takes the first list it sees picks nothing.
+    const delay = Number(box.getAttribute('data-delay') || 0);
     box.addEventListener('input', () => {
       const q = box.value.toLowerCase();
-      render(all.filter((t) => t.toLowerCase().startsWith(q)));
+      const answer = () => render(all.filter((t) => t.toLowerCase().startsWith(q)));
+      if (delay) {
+        render((box.getAttribute('data-stale') || '').split('|').filter(Boolean));
+        setTimeout(answer, delay);
+      } else answer();
       setOpen(true);
     });
   } else {
