@@ -529,6 +529,8 @@ const combo = await fillPage('fillers/aria-combobox/combobox.html');
 const comboResult = await combo.evaluate(() => ({
   state: { ...window.__state },
   submitted: window.__submitted,
+  mailReported: document.getElementById('mail').hasAttribute('data-epimoni-filled'),
+  years: document.getElementById('yrs').value,
 }));
 check(
   'a custom dropdown is filled through the widget filler, in component state',
@@ -536,6 +538,16 @@ check(
     comboResult.state.city === 'Nantes' &&
     comboResult.state.lang_a === 'Français',
   JSON.stringify(comboResult.state),
+);
+check(
+  'an e-mail field that suggests domains gets the address, and the fill says so',
+  comboResult.state.mail === profile.email && comboResult.mailReported,
+  String(comboResult.state.mail),
+);
+check(
+  'a typeahead with nothing to pick is left as it was, not half-typed',
+  comboResult.years === '',
+  comboResult.years,
 );
 check('the birth-country dropdown is left alone', !comboResult.state.birth, String(comboResult.state.birth));
 check('the submit button inside a dropdown was never pressed', comboResult.submitted === false);

@@ -15,8 +15,8 @@
 //
 // Columns: decision, key, then what was written ("= …") or why nothing was ("(reason)"), then
 // the control and the text it was matched on. `--shots=<dir>` also saves a full-page
-// screenshot of each page after the fill. `--open=<text>` clicks the first button or link
-// whose text is exactly that ("Postuler", "Apply") before measuring, for an ATS that only
+// screenshot of each page after the fill. `--open=<text>[,<text>…]` clicks, in order, the first
+// button or link whose text is exactly each one ("Postuler", "Apply") before measuring, for an ATS that only
 // shows its form after it; the abort rule above is what keeps that click from sending anything.
 // `--time` prints how long the whole fill took on each page, widgets included.
 
@@ -98,16 +98,17 @@ for (const url of urls) {
     console.log(`  (page did not settle: ${e.message.split('\n')[0]}; measuring what loaded)`);
   }
   await page.waitForTimeout(2000);
-  if (open) {
+  // In order: "Continuer sans accepter,Postuler" clears a consent wall, then opens the form.
+  for (const text of open ? open.split(',') : []) {
     const opener = page
       .locator('button, a, [role="button"]')
-      .filter({ hasText: new RegExp(`^\\s*${open.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`, 'i') })
+      .filter({ hasText: new RegExp(`^\\s*${text.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`, 'i') })
       .first();
     try {
       await opener.click({ timeout: 5000 });
       await page.waitForTimeout(2500);
     } catch {
-      console.log(`  (no "${open}" to click; measuring the page as it is)`);
+      console.log(`  (no "${text.trim()}" to click; measuring the page as it is)`);
     }
   }
   for (const frame of page.frames()) {
