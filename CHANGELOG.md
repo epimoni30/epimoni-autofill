@@ -11,6 +11,10 @@ carries the same number, and the release workflow refuses a tag that does not ma
 
 ### Added
 
+- LinkedIn Easy Apply: the "Code pays" list is set from the code your phone number carries
+  ("France (+33)"), and the number beside it goes in without that code. A "+1" number is
+  matched to your country, or left for you when that doesn't say which.
+
 - Taleez forms: the phone, the CV and the three dropdowns (level of study, years of
   experience, expected salary) are filled. The dropdowns open into an overlay at the end of the
   page, and the extension may now click inside a list that its own click on the dropdown made
@@ -24,8 +28,31 @@ carries the same number, and the release workflow refuses a tag that does not ma
   only when exactly one option fits; a figure on the edge of two brackets is left for you.
 - A step of a form that was already in the page and is only shown later (a wizard switching
   steps) is filled as it appears.
+- SmartRecruiters forms: the CV is attached and the city filled. Their fields are web
+  components, and the extension now reads an upload's name and a list's options through the
+  shadow roots they sit in.
+- `npm run probe:console`: a read-only probe to paste into DevTools on a page you're signed in
+  to, for boards an automated browser can't reach. It reads and resolves every field and
+  writes nothing.
+- Workable's French "Résumé" box gets the CV summary. In French the word means a profile
+  summary; the English "Resume" box, which asks for the whole CV as text, is still left alone.
+
+### Changed
+
+- When a board already has one of your saved CVs ticked (LinkedIn's CV step), your CV is
+  offered instead of uploaded. Uploading would replace that choice and add a file to your
+  account on the board.
 
 ### Fixed
+
+- LinkedIn Easy Apply's "add an experience" form: the start month and year are filled from
+  the job, like its title and company. A month and year under their own "From" caption were
+  read as a separate group and left out of the job.
+- The "Remplir avec Epimoni" button no longer appears on an article whose comment or rating
+  form asks a name and an e-mail just because the article says "application", nor on a
+  checkout whose "Apply" is for a coupon. It now judges each form by its own headings, labels
+  and buttons. It also appears, as it should, on forms built from web components
+  (SmartRecruiters).
 
 - A row whose label the page doesn't link to its field is read by that label. On Taleez the
   phone and the CV were read as their widget's icon text and missed.

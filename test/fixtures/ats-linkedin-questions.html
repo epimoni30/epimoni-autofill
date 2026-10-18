@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="fr" data-must-fill>
+<!-- The shape of LinkedIn Easy Apply's screening step (measured 2026-10-18 on a consulting
+     firm's offer), rebuilt in our own words. The level of study is a list of "BAC + N", which
+     the CV's highest degree answers (its Master, not its DUT). Everything else is the
+     person's: whether they applied there before, where they would move (checkboxes, never
+     touched), and a right to work "in the region of the job", which names no country the
+     stored answer could be checked against. -->
+<meta charset="utf-8"><title>Postuler (forme LinkedIn Easy Apply, questions)</title>
+<body>
+<div role="dialog" aria-labelledby="li-h">
+  <h2 id="li-h">Postuler chez Exemple</h2>
+  <form onsubmit="window.__submitted = true; return false">
+    <h3>Questions supplémentaires</h3>
+    <div>
+      <label for="li-deg"><span aria-hidden="true">Veuillez indiquer votre niveau de diplôme</span><span>Veuillez indiquer votre niveau de diplôme</span></label>
+      <select id="li-deg" aria-required="true" data-expect="education_degree" data-expect-value="BAC + 5">
+        <option>Sélectionnez une option</option><option>BAC + 5</option><option>BAC + 4</option><option>BAC + 3</option><option>BAC + 2</option>
+      </select>
+    </div>
+      <fieldset>
+        <legend><span aria-hidden="true">Avez-vous déjà eu un process de recrutement chez Exemple auparavant ?</span><span>Avez-vous déjà eu un process de recrutement chez Exemple auparavant ?</span> Required</legend>
+        <div><input type="radio" id="li-before-y" name="li-before" value="Oui" data-expect="none"><label for="li-before-y">Oui</label></div>
+        <div><input type="radio" id="li-before-n" name="li-before" value="Non" data-expect="none"><label for="li-before-n">Non</label></div>
+      </fieldset>
+      <fieldset>
+        <legend>Quelles sont vos préférences de mobilités géographiques ? Required</legend>
+        <div><input type="checkbox" id="li-mob-0" data-expect="none"><label for="li-mob-0">All France</label></div>
+        <div><input type="checkbox" id="li-mob-1" data-expect="none"><label for="li-mob-1">FR - Île-de-France</label></div>
+        <div><input type="checkbox" id="li-mob-2" data-expect="none"><label for="li-mob-2">FR - West France</label></div>
+        <div><input type="checkbox" id="li-mob-3" data-expect="none"><label for="li-mob-3">All international</label></div>
+        <div><input type="checkbox" id="li-mob-4" data-expect="none"><label for="li-mob-4">Belgium</label></div>
+        <div><input type="checkbox" id="li-mob-5" data-expect="none"><label for="li-mob-5">Spain</label></div>
+        <div><input type="checkbox" id="li-mob-6" data-expect="none"><label for="li-mob-6">[Other] Europe</label></div>
+      </fieldset>
+      <fieldset>
+        <legend><span aria-hidden="true">Êtes-vous autorisé(e) à travailler dans la région dans laquelle se trouve le poste ?</span><span>Êtes-vous autorisé(e) à travailler dans la région dans laquelle se trouve le poste ?</span> Required</legend>
+        <div><input type="radio" id="li-auth-y" name="li-auth" value="Oui" data-expect="none"><label for="li-auth-y">Oui</label></div>
+        <div><input type="radio" id="li-auth-n" name="li-auth" value="Non" data-expect="none"><label for="li-auth-n">Non</label></div>
+      </fieldset>
+    <button type="submit">Suivant</button>
+  </form>
+</div>
+</body></html>

@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="fr" data-must-fill>
+<!-- The shape of LinkedIn's Easy Apply first step (measured in a signed-in Chrome on
+     2026-10-18), rebuilt in our own words. The country code is a <select> of "France (+33)"
+     in its own field, a form element away from the number, which only takes the national
+     part: the stored "+33 6 …" picks the code there and loses it here. "+1" is a dozen
+     countries; a second list of codes in the form would leave the pairing a guess. -->
+<meta charset="utf-8"><title>Postuler (forme LinkedIn Easy Apply)</title>
+<body>
+<div role="dialog" aria-labelledby="li-h">
+  <h2 id="li-h">Postuler chez Exemple</h2>
+  <form onsubmit="window.__submitted = true; return false">
+    <div><label for="li-gn">First name</label><input id="li-gn" type="text" required data-expect="given_name"></div>
+    <div><label for="li-fn">Last name</label><input id="li-fn" type="text" required data-expect="family_name"></div>
+    <div>
+      <label for="li-cc"><span aria-hidden="true">Code pays</span><span>Code pays</span></label>
+      <select id="li-cc" aria-required="true" data-expect="country" data-expect-value="France (+33)">
+        <option value="Sélectionnez une option">Sélectionnez une option</option>
+        <option value="Belgique (+32)">Belgique (+32)</option>
+        <option value="Canada (+1)">Canada (+1)</option>
+        <option value="États-Unis (+1)">États-Unis (+1)</option>
+        <option value="France (+33)">France (+33)</option>
+        <option value="Polynésie française (+689)">Polynésie française (+689)</option>
+        <option value="Suisse (+41)">Suisse (+41)</option>
+      </select>
+    </div>
+    <div><label for="li-ph">Mobile phone number</label>
+      <input id="li-ph" type="text" required data-controlled data-expect="phone" data-expect-value="6 12 34 56 78"></div>
+    <div><label for="li-city">Location (city)</label>
+      <input id="li-city" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" data-expect="city"></div>
+    <button type="submit">Suivant</button>
+  </form>
+</div>
+<script src="_react.js"></script><script>window.__controlAll()</script>
+</body></html>

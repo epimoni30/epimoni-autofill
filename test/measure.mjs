@@ -65,6 +65,8 @@ const engine = bundle();
 const totals = { hit: 0, wrong: 0, miss: 0, soft: 0, ok: 0, ai: 0, aiMiss: 0, nodata: 0, stateFail: 0 };
 const failures = [];
 const mustFillFailures = [];
+// A filler that throws is caught so the fill carries on, which is also why nobody saw it.
+const fillerErrors = [];
 
 for (const fixture of FIXTURES) {
   await page.goto(`${base}/${fixture}`, { waitUntil: 'load' });
@@ -75,6 +77,8 @@ for (const fixture of FIXTURES) {
         `(() => { ${engine} ${RUNNER(JSON.stringify(profile), JSON.stringify(entries))} })()`,
       )),
     );
+    for (const e of await frame.evaluate(() => window.__fillerErrors || []))
+      fillerErrors.push(`${fixture}: ${e}`);
   }
   // A fixture rebuilt from a miss on a live page says so with `data-must-fill`: there, a miss
   // is a regression and fails the run, like a wrong fill does everywhere.
@@ -135,4 +139,5 @@ await browser.close();
 server.close();
 if (mustFillFailures.length)
   console.log(`\nmissed on a data-must-fill fixture (a regression): ${mustFillFailures.join(', ')}`);
-process.exit(totals.wrong === 0 && !mustFillFailures.length ? 0 : 1);
+if (fillerErrors.length) console.log(`\nfiller errors:\n  ${fillerErrors.join('\n  ')}`);
+process.exit(totals.wrong === 0 && !mustFillFailures.length && !fillerErrors.length ? 0 : 1);
