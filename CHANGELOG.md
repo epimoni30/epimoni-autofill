@@ -27,6 +27,9 @@ carries the same number, and the release workflow refuses a tag that does not ma
 - SmartRecruiters forms: the CV is attached and the city filled. Their fields are web
   components, and the extension now reads an upload's name and a list's options through the
   shadow roots they sit in.
+- `npm run probe:console`: a read-only probe to paste into DevTools on a page you're signed in
+  to, for boards an automated browser can't reach. It reads and resolves every field and
+  writes nothing.
 - Workable's French "Résumé" box gets the CV summary. In French the word means a profile
   summary; the English "Resume" box, which asks for the whole CV as text, is still left alone.
 

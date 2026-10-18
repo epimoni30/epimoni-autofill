@@ -18,6 +18,7 @@ npm run icons   # re-render icons/*.png from the brand mark
 npm run store   # store screenshots + promo tile, rendered from the real extension (fr, en)
 npm run probe   # visit a real posting on each supported board, report what extraction gets
 npm run probe:ats -- <url>   # run the engine on a live apply page; nothing is sent
+npm run probe:console        # a read-only probe to paste into DevTools on a signed-in page
 npm run lint    # Biome format + lint check (CI runs `biome ci`)
 npm run format  # apply Biome formatting and safe fixes
 npm run check   # lint + test + measure + guard + build + e2e
