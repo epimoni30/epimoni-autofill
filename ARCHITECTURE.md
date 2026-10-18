@@ -443,9 +443,17 @@ for the site in that tab when closed, it gives way to the panel, and it is not s
 automatic filling is on. Without a CV it says so and opens the import.
 
 `offer.js` is separate from `content.js` on purpose: it may run on every page the user
-visits, so it carries no lexicon, decides from cheap evidence (three visible fields, one about
-identity, and a CV upload or the page talking about applying; never a page with a password
-field), and stops once it has decided. The filler is injected by the worker on the click.
+visits, so it carries no lexicon, decides from cheap evidence, and stops once it has decided.
+The filler is injected by the worker on the click.
+
+The evidence is read **per form**, never from the page as a whole: three visible fields of one
+form (or, outside a `<form>`, under the nearest element holding three), one of them about
+identity, and either a CV upload in that form, an application address (`/apply`,
+`/candidature`), or application words in the form's own headings, labels, buttons and field
+names. Never a page with a password field. Reading the page's text instead put the button on
+a VPN article: its comment form asks a name and an e-mail, and the article said "choose an
+application". "Apply" alone doesn't count either, since a checkout's coupon is applied too.
+Fields inside shadow roots (SmartRecruiters) are read through them.
 
 It ships on the declared job boards. On every other site it needs the browser's access to all
 sites, which is never asked at install: the user turns it on from the popup or the Sites page

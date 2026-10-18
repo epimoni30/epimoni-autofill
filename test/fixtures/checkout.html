@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<!-- A shop's checkout: a name, an e-mail and a phone, and an "Apply" button for a coupon code.
+     "Apply" alone is a coupon, a filter or a setting, not a job: the button must not appear.
+     Not in the measured list: the question is the button. -->
+<meta charset="utf-8"><title>Checkout</title>
+<body>
+<form id="checkout">
+  <h2>Delivery details</h2>
+  <label for="cn">Full name</label><input id="cn" name="name">
+  <label for="ce">Email</label><input id="ce" type="email" name="email">
+  <label for="cp">Phone</label><input id="cp" type="tel" name="phone">
+  <label for="cc">Coupon code</label><input id="cc" name="coupon"><button type="button">Apply</button>
+  <button type="submit">Pay now</button>
+</form>
+</body></html>

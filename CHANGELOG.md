@@ -35,6 +35,12 @@ carries the same number, and the release workflow refuses a tag that does not ma
 
 ### Fixed
 
+- The "Remplir avec Epimoni" button no longer appears on an article whose comment or rating
+  form asks a name and an e-mail just because the article says "application", nor on a
+  checkout whose "Apply" is for a coupon. It now judges each form by its own headings, labels
+  and buttons. It also appears, as it should, on forms built from web components
+  (SmartRecruiters).
+
 - A row whose label the page doesn't link to its field is read by that label. On Taleez the
   phone and the CV were read as their widget's icon text and missed.
 - A phone field showing its own "+33" gets the national number, and one pre-filled with only

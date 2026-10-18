@@ -1026,6 +1026,30 @@ await steps.close();
 // Offered on a page once it holds an application form, here only after "Postuler" renders it;
 // the page is filled on the button's click and not before. After that fill, the panel offers to
 // make the site fill on its own, which on a declared site takes one click.
+// Not on an article whose comment or rating form asks a name and an e-mail, however often the
+// article says "application" (a VPN blog showed it the button).
+const blogPage = await ctx.newPage();
+await blogPage.goto(`${base}/blog.html`, { waitUntil: 'load' });
+await blogPage.waitForTimeout(1500);
+const blogPill = await blogPage.evaluate(() => Boolean(document.getElementById('epimoni-offer')));
+check('no button on an article with a comment form that mentions "application"', blogPill === false);
+await blogPage.close();
+// But on an application form built from web components, fields inside shadow roots
+// (SmartRecruiters), it does.
+const srPage = await ctx.newPage();
+await srPage.goto(`${base}/fillers/smartrecruiters/apply.html`, { waitUntil: 'load' });
+await srPage.waitForSelector('#epimoni-offer', { state: 'attached', timeout: 4000 }).catch(() => {});
+const srPill = await srPage.evaluate(() => Boolean(document.getElementById('epimoni-offer')));
+check('the button appears on a form whose fields are in shadow roots', srPill === true);
+await srPage.close();
+// Nor on a checkout whose only "apply" is a coupon button.
+const shopPage = await ctx.newPage();
+await shopPage.goto(`${base}/checkout.html`, { waitUntil: 'load' });
+await shopPage.waitForTimeout(1500);
+const shopPill = await shopPage.evaluate(() => Boolean(document.getElementById('epimoni-offer')));
+check('no button on a checkout whose "Apply" is for a coupon', shopPill === false);
+await shopPage.close();
+
 const offerPage = await ctx.newPage();
 await offerPage.goto(`${base}/late.html`, { waitUntil: 'load' });
 await offerPage.waitForTimeout(1200);
