@@ -7,7 +7,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { pdfText } from '../src/shared/pdftext.js';
+import { pdfText, repairDetachedAccents } from '../src/shared/pdftext.js';
 import { md5 } from '../src/shared/pdfcrypt.js';
 import { renderCvPdf } from '../src/shared/pdf.js';
 import { toJsonResume } from '../src/shared/cvdoc.js';
@@ -67,4 +67,34 @@ test("our own CV PDF reads back, the writer's uncompressed Helvetica included", 
   assert.equal(problem, null);
   assert.match(text, /Camille Dupont-Mercier/);
   assert.match(text, /Gestion de projet/);
+});
+
+// LaTeX draws `\'e` as an acute glyph then an e, and a text layer keeps them apart. The
+// shapes below are the ones read off a real LaTeX CV (pdf.js and this parser), plus the
+// ASCII characters that must never be mistaken for an accent.
+test('accents a LaTeX PDF split off go back on their letter', () => {
+  const cases = [
+    ['Soci\u00b4et\u00b4e G\u00b4en\u00b4erale', 'Soci\u00e9t\u00e9 G\u00e9n\u00e9rale'],
+    ['Soci \u0301et \u0301e', 'Soci\u00e9t\u00e9'],
+    ['Sosth`ene', 'Sosth\u00e8ne'],
+    ['Ma^itre', 'Ma\u00eetre'],
+    ['na\u00a8ive', 'na\u00efve'],
+    ['Franc\u00b8ais', 'Fran\u00e7ais'],
+    ['Franc \u00b8ais', 'Fran\u00e7ais'],
+    ['travail `a Paris', 'travail \u00e0 Paris'],
+    ["l' \u00b4Ecole", "l' \u00c9cole"],
+  ];
+  for (const [input, want] of cases) assert.equal(repairDetachedAccents(input), want, input);
+});
+
+test('text that was never split is left alone', () => {
+  const untouched = [
+    'Fran\u00e7ais d\u00e9j\u00e0, cr\u00e9\u00e9e',
+    '~5 ans, x^2, `code`, it`s, C++ ~ Java',
+    'Ma^\u0131tre',
+    '',
+  ];
+  for (const text of untouched) assert.equal(repairDetachedAccents(text), text, text);
+  // A decomposed "\u00e9" (macOS) is composed in place, not moved onto the next letter.
+  assert.equal(repairDetachedAccents('cre\u0301e\u0301e'), 'cr\u00e9\u00e9e');
 });
