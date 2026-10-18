@@ -22,6 +22,7 @@ import {
   answerHolds,
   assignBlocks,
   clearValue,
+  documentChosen,
   fileInputs,
   fillableElements,
   hasUserValue,
@@ -279,7 +280,9 @@ export async function runFill({
     if (hasUserValue(el)) continue; // a file the user chose is theirs
     const file = await fileOf(d.key);
     if (!file) continue; // no document attached to this CV: recognised, nothing to put there
-    if (d.action === 'suggest') {
+    // The site already holds a CV and has one ticked (LinkedIn's saved resumes): uploading
+    // would replace that choice and add a file to the person's account there, so it is offered.
+    if (d.action === 'suggest' || documentChosen(el)) {
       suggestions.push({ el, key: d.key, value: file, owner: null });
       continue;
     }

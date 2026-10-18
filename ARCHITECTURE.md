@@ -309,7 +309,9 @@ section decides which keys a whole block may take, so a false one costs far more
 field match: the page title "Chef de projet – Expérience client" must not turn the contact
 form under it into a work history. The climb from a control up to its section also stops at
 any unnumbered heading that names something else ("Informations personnelles"), so a control
-belongs to its nearest group and not to whatever the page says further up.
+belongs to its nearest group and not to whatever the page says further up. One caption
+does not stop it: one over the halves of a single date ("From" above a month and a year
+dropdown, LinkedIn's) names that date, not a group, so the climb goes on through it.
 
 The index comes from two independent sources, and disagreement only suggests. The form's
 own ids (`experiences[1][company]`, Workday's `workExperience-2--jobTitle`, numbered from 1 or
@@ -372,6 +374,11 @@ rules out a PDF rules out the input. And the concealment rule still holds, moved
 to what stands in for it: upload inputs are almost always hidden behind a label or a drop zone,
 so what must be visible is that surface (`fileSurface`), and an input with no visible surface
 gets nothing.
+
+A board that keeps CVs for the person (LinkedIn lists the ones uploaded before, one ticked)
+has already answered the question the upload asks. Attaching there would replace that choice
+and leave a new file on the person's account, so when the form around an upload has a ticked
+option named after a file (`dom.documentChosen`), the CV is offered rather than attached.
 
 The bytes stay in the worker until a page asks. The profile a content script receives carries
 the file's name and size; the content script asks for the file (`cv-file`) only when the

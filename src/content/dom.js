@@ -653,6 +653,22 @@ function dialFromList(el, stored) {
   return i === null || i === -1 ? null : dialOf(texts[i]);
 }
 
+/**
+ * Whether the form around an upload already has a document chosen: a ticked option named
+ * after a file ("CV 2023.pdf"), the way boards offer the CVs they keep for the person.
+ */
+export function documentChosen(el) {
+  const root = el.form || el.closest('form, [role="dialog"]');
+  if (!root) return false;
+  // Element by element: a card's file name and the line under it run together in textContent
+  // ("CV 2023.pdfDernière utilisation").
+  const FILE = /\.(pdf|docx?|odt|rtf)$/i;
+  const named = (node) => [node, ...node.querySelectorAll('*')].some((n) => FILE.test(n.textContent.trim()));
+  return Array.from(root.querySelectorAll('input[type="radio"]:checked')).some(
+    (r) => [...(r.labels || [])].some(named) || FILE.test((r.getAttribute('aria-label') || '').trim()),
+  );
+}
+
 /** A text input that opens a calendar: Material's, or any component naming itself a date picker. */
 function datePicker(el) {
   return (
@@ -948,7 +964,9 @@ function structuralBlock(el, lex, ctx) {
       if (section && hit !== section) break;
       section = hit;
       root = node;
-    } else if (!caps.some((c) => /[0-9]/.test(c))) {
+    } else if (!caps.some((c) => /[0-9]/.test(c)) && !ctx.dateOnly(node)) {
+      // A caption over the halves of one date ("From": month, year) names the date, not a
+      // group: LinkedIn's "Dates of employment" sits inside the job like any field.
       break;
     }
   }
@@ -1027,7 +1045,13 @@ export function assignBlocks(els, lex, hints = []) {
     const first = sig(nodes[0]);
     return nodes.every((n) => sig(n) === first);
   };
-  const ctx = { count, sameShape };
+  const dateOnly = (node) => {
+    const inside = els.filter((e) => node.contains(e));
+    return (
+      inside.length > 0 && inside.every((e) => datePart(e, [{ text: normalize(forLabelText(e) || '') }]))
+    );
+  };
+  const ctx = { count, sameShape, dateOnly };
 
   const attrs = els.map((el) => attrEvidence(el, lex));
   // A form may number its rows from 1. Decided per section, from the whole page: a lone
