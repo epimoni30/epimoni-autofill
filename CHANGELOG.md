@@ -24,6 +24,11 @@ carries the same number, and the release workflow refuses a tag that does not ma
   only when exactly one option fits; a figure on the edge of two brackets is left for you.
 - A step of a form that was already in the page and is only shown later (a wizard switching
   steps) is filled as it appears.
+- SmartRecruiters forms: the CV is attached and the city filled. Their fields are web
+  components, and the extension now reads an upload's name and a list's options through the
+  shadow roots they sit in.
+- Workable's French "Résumé" box gets the CV summary. In French the word means a profile
+  summary; the English "Resume" box, which asks for the whole CV as text, is still left alone.
 
 ### Fixed
 
