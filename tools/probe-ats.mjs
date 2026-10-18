@@ -18,7 +18,8 @@
 // screenshot of each page after the fill. `--open=<text>[,<text>…]` clicks, in order, the first
 // button or link whose text is exactly each one ("Postuler", "Apply") before measuring, for an ATS that only
 // shows its form after it; the abort rule above is what keeps that click from sending anything.
-// `--time` prints how long the whole fill took on each page, widgets included.
+// `--time` prints how long the whole fill took on each page, widgets included. `--headed` opens
+// a visible window, for an ATS that shows a headless browser a captcha instead of its form.
 
 import { readFileSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
@@ -34,6 +35,8 @@ const args = process.argv.slice(2);
 const shots = args.find((a) => a.startsWith('--shots='))?.slice('--shots='.length);
 const open = args.find((a) => a.startsWith('--open='))?.slice('--open='.length);
 const timed = args.includes('--time');
+// Some ATS (SmartRecruiters) serve a captcha to a headless browser and the form to a visible one.
+const headed = args.includes('--headed');
 const urls = args.filter((a) => !a.startsWith('--'));
 if (!urls.length) {
   console.error('usage: npm run probe:ats -- <apply-url> [<apply-url> ...] [--shots=<dir>]');
@@ -79,7 +82,7 @@ const RUN = `
 const PROBE = `window.__epimoniProbe = async (profile, entries) => { ${engine} ${RUN} };`;
 
 const chromium = await loadChromium();
-const browser = await chromium.launch();
+const browser = await chromium.launch({ headless: !headed });
 if (shots) await mkdir(shots, { recursive: true });
 let n = 0;
 for (const url of urls) {
