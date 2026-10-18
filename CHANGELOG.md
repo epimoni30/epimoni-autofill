@@ -11,6 +11,9 @@ carries the same number, and the release workflow refuses a tag that does not ma
 
 ### Added
 
+- LinkedIn Easy Apply: the "Code pays" list is set from the code your phone number carries
+  ("France (+33)"), and the number beside it goes in without that code. A "+1" number is
+  matched to your country, or left for you when that doesn't say which.
 - Taleez forms: the phone, the CV and the three dropdowns (level of study, years of
   experience, expected salary) are filled. The dropdowns open into an overlay at the end of the
   page, and the extension may now click inside a list that its own click on the dropdown made

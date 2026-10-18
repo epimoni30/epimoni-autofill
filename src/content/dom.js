@@ -9,7 +9,7 @@
 import { MONTHS } from '../lexicon/index.js';
 import { workRightCovers } from '../schema/countries.js';
 import { pickByLevel } from '../schema/fluency.js';
-import { forDialCode } from '../schema/phone.js';
+import { dialOf, forDialCode, isDialList, pickDial } from '../schema/phone.js';
 import { pickYears, yearsRange } from '../schema/years.js';
 import { highestDegree, pickDegree } from '../schema/degrees.js';
 import { pickSalary } from '../schema/salary.js';
@@ -634,6 +634,25 @@ function dialCodeBeside(el) {
   return null;
 }
 
+/**
+ * The code a country-code list elsewhere in the same form gives this phone input: the one
+ * chosen there, or, while none is, the stored number's own, since the list is filled from it.
+ * Only when the form holds exactly one such list, or which number it belongs to is a guess.
+ */
+function dialFromList(el, stored) {
+  const root = el.form || el.closest('form, [role="dialog"]');
+  if (!root) return null;
+  const lists = Array.from(root.querySelectorAll('select')).filter((s) =>
+    isDialList(Array.from(s.options, (o) => o.textContent)),
+  );
+  if (lists.length !== 1) return null;
+  const chosen = dialOf(lists[0].selectedOptions[0]?.textContent);
+  if (chosen) return chosen;
+  const texts = Array.from(lists[0].options, (o) => o.textContent);
+  const i = pickDial(texts, stored);
+  return i === null || i === -1 ? null : dialOf(texts[i]);
+}
+
 /** A text input that opens a calendar: Material's, or any component naming itself a date picker. */
 function datePicker(el) {
   return (
@@ -691,13 +710,26 @@ export function valueFor(decision, el, bundle, profile, entries) {
       }
       if (degree && bundle.tag === 'select') return formatValue(el, bundle, degree);
     }
+    // "Code pays" as a list of "France (+33)": the code the stored number carries picks it.
+    if (key === 'country') {
+      const list = optionList(el, bundle);
+      if (list && isDialList(list.map((o) => o.text))) {
+        const i = pickDial(
+          list.map((o) => o.text),
+          profile?.phone,
+          (texts) => texts.findIndex((t) => matchOption([{ text: t, value: t }], profile?.country)),
+        );
+        if (i === -1) return null;
+        if (i !== null) return { value: list[i].value };
+      }
+    }
     const got = formatValue(el, bundle, profile?.[key]);
     // "Immédiate" or "Dans un mois" typed into a date picker is not a date, and the picker
     // either rejects it or keeps it as garbage. Offered instead, for the person to pick a day.
     if (got?.value && datePicker(el) && !/\d/.test(got.value)) return { suggest: got.value };
     // A phone field showing its own country code takes the national number (schema/phone.js).
     if (key === 'phone' && got?.value) {
-      const dial = dialCodeBeside(el);
+      const dial = dialCodeBeside(el) || dialFromList(el, got.value);
       if (dial) return forDialCode(got.value, dial, el.getAttribute('placeholder') || '');
     }
     return got;
