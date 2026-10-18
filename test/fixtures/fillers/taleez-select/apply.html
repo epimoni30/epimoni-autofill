@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="fr">
+<!-- Taleez's <tz-select>, rebuilt in our own words from a live application form. Each row is
+     <div class="field"><label>…</label><tz-select>…</tz-select></div>, and a click on the trigger
+     renders the options into an overlay at the end of <body>, with a backdrop, the way Angular
+     CDK does. Choosing an option shows it in the trigger and keeps it in window.__state.
+
+     The CV totals eight years, its highest degree is a master (bac +5), and the person typed
+     "42 000 €" as their salary. Traps: the same brackets about one domain ("en management") and
+     a submit button the overlay renders under the options. -->
+<meta charset="utf-8"><title>Postuler (tz-select)</title>
+<style>
+  .trigger { border: 1px solid #999; min-height: 20px; min-width: 200px; padding: 4px; }
+  .placeholder { color: #999; }
+  .cdk-overlay-backdrop { position: fixed; inset: 0; }
+  .cdk-overlay-pane { position: fixed; top: 40px; left: 40px; background: #fff; z-index: 2; }
+</style>
+<body>
+<form id="tz" onsubmit="window.__submitted = true; return false">
+  <div class="field question"><label><span>Votre expérience</span></label>
+    <tz-select data-state="xp" data-expect="years_experience"
+      data-options="Aucune expérience|1 an d'expérience|2 ans d'expérience|5 ans d'expérience|8 ans d'expérience|9 ans d'expérience|+ de 10 ans d'expérience">
+      <tz-input><div class="trigger"><span class="value placeholder">Choisir...</span></div>
+      <input type="text" placeholder="Rechercher"></tz-input></tz-select></div>
+  <div class="field question"><label><span>Votre niveau d'étude</span></label>
+    <tz-select data-state="edu" data-expect="education_degree"
+      data-options="Aucun diplôme|Baccalauréat (bac +0)|DUT, BTS ou équivalent (bac +2)|Licence ou équivalent (bac +3)|Master 1 ou équivalent (bac +4)|Master, Diplôme d'ingénieur ou équivalent (bac +5)|Doctorat (> bac +5)">
+      <tz-input><div class="trigger"><span class="value placeholder">Choisir...</span></div>
+      <input type="text" placeholder="Rechercher"></tz-input></tz-select></div>
+  <div class="field question"><label><span>Votre expérience en management</span></label>
+    <tz-select data-state="xp_mgmt" data-expect="none"
+      data-options="Moins d'1 an|1 à 3 ans|5 à 10 ans|Plus de 10 ans">
+      <tz-input><div class="trigger"><span class="value placeholder">Choisir...</span></div>
+      <input type="text" placeholder="Rechercher"></tz-input></tz-select></div>
+  <div class="field question"><label><span>Salaire souhaité (brut par an)</span></label>
+    <tz-select data-state="salary" data-expect="salary_expectation"
+      data-options="30 000 à 35 000 € brut annuel|35 000 à 40 000 € brut annuel|40 000 à 45 000 € brut annuel">
+      <tz-input><div class="trigger"><span class="value placeholder">Choisir...</span></div>
+      <input type="text" placeholder="Rechercher"></tz-input></tz-select></div>
+  <button type="submit">Envoyer ma candidature</button>
+</form>
+<div class="cdk-overlay-container"></div>
+<script>
+  window.__state = {};
+  const container = document.querySelector('.cdk-overlay-container');
+  const close = () => { container.textContent = ''; };
+  for (const sel of document.querySelectorAll('tz-select')) {
+    sel.querySelector('.trigger').addEventListener('click', () => {
+      close();
+      const backdrop = document.createElement('div');
+      backdrop.className = 'cdk-overlay-backdrop';
+      backdrop.addEventListener('click', close);
+      const pane = document.createElement('div');
+      pane.className = 'cdk-overlay-pane';
+      for (const text of sel.dataset.options.split('|')) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.setAttribute('tz-dropdown-item', '');
+        b.className = 'tz-dropdown-item';
+        b.innerHTML = '<span class="option-label"> ' + text + ' </span>';
+        b.addEventListener('click', () => {
+          const shown = sel.querySelector('.trigger .value');
+          shown.textContent = text;
+          shown.classList.remove('placeholder');
+          window.__state[sel.dataset.state] = text;
+          close();
+        });
+        pane.appendChild(b);
+      }
+      const trap = document.createElement('button');
+      trap.type = 'submit';
+      trap.setAttribute('form', 'tz');
+      trap.textContent = 'Envoyer';
+      pane.appendChild(trap);
+      container.append(backdrop, pane);
+    });
+  }
+</script>
+</body></html>

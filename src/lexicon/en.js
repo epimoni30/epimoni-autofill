@@ -208,8 +208,38 @@ export default {
       not: [],
     },
     city: {
-      any: ['city', 'town', 'locality', 'city of residence', 'current location'],
-      not: ['birth', 'company', 'school', 'university'],
+      any: [
+        'city',
+        'town',
+        'locality',
+        'city of residence',
+        'current location',
+        'location',
+        'your location',
+        'where are you based',
+        'currently based',
+        'where do you live',
+        'place of residence',
+      ],
+      // A bare "location" is the person's only when nothing says it is the job's: "which
+      // location are you applying for", "office location", "same location as the role".
+      not: [
+        'birth',
+        'company',
+        'school',
+        'university',
+        'applying',
+        'apply',
+        'preferred',
+        'desired',
+        'office',
+        'work location',
+        'job',
+        'role',
+        'position',
+        'relocate',
+        'relocation',
+      ],
     },
     country: {
       any: ['country'],
@@ -281,12 +311,29 @@ export default {
     salary_expectation: {
       any: [
         'salary expectation',
+        'salary expectations',
+        'salary requirement',
+        'salary requirements',
+        'compensation expectations',
+        'desired compensation',
         'expected salary',
         'desired salary',
         'compensation expectation',
         'expected compensation',
       ],
-      not: ['current', 'offered', 'range for this role'],
+      // Questions about the advertised figure ("are you comfortable with the range for this
+      // role?") are yes/no, and the person's own number would be the wrong answer.
+      not: [
+        'current',
+        'offered',
+        'comfortable',
+        'acceptable',
+        'align',
+        'aligned',
+        'agree',
+        'okay',
+        'ok with',
+      ],
     },
     notice_period: {
       any: ['notice period', 'notice'],
@@ -315,12 +362,21 @@ export default {
       not: ['sponsor', 'sponsorship', 'visa', 'require', 'required to obtain', 'need', 'needs'],
     },
     education_degree: {
-      any: ['degree', 'highest degree', 'education level', 'qualification', 'field of study'],
+      any: [
+        'degree',
+        'highest degree',
+        'education level',
+        'level of education',
+        'highest level of education',
+        'qualification',
+        'field of study',
+      ],
       not: ['school', 'university', 'institution', 'year'],
     },
     education_institution: {
       any: ['school', 'university', 'institution', 'college', 'school name'],
-      not: [],
+      // "Which school are you enrolled in?" asks about now; a CV only says where they studied.
+      not: ['enrolled', 'currently attending'],
     },
     skills: {
       any: ['skills', 'your skills', 'key skills'],
@@ -329,6 +385,37 @@ export default {
     languages: {
       any: ['languages', 'languages spoken', 'language level'],
       not: ['programming'],
+    },
+    // A yes/no question about one language, answered only with a yes the CV backs
+    // (src/schema/languages.js). "Which languages do you speak?" asks for a list: that is
+    // the key above.
+    // A dropdown of levels about one language the question names: the CV's level for that
+    // language, through src/schema/fluency.js.
+    language_level: {
+      any: [
+        'how well are your',
+        'language skills',
+        'language proficiency',
+        'proficiency in',
+        'how well do you speak',
+        'how fluent are you',
+      ],
+      not: [
+        'languages',
+        'langues',
+        'idiomas',
+        'jezyki',
+        'list',
+        'liste',
+        'lista',
+        'education',
+        'etude',
+        'etudes',
+      ],
+    },
+    speaks_language: {
+      any: ['do you speak', 'can you speak', 'are you fluent', 'fluent in', 'speak fluent'],
+      not: ['languages', 'langues', 'idiomas', 'jezyki', 'list', 'liste', 'lista'],
     },
     // A file input only. "Resume" here is the CV; the French summary sense cannot reach a
     // file picker, because the `file` shape admits no other key.
@@ -356,6 +443,12 @@ export default {
         'supporting',
         'reference',
         'references',
+        // A parse box ("Autofill from resume") reads the file back into the fields, over
+        // what was just filled; the application's CV is the upload beside it.
+        'autofill',
+        'auto fill',
+        'prefill',
+        'pre fill',
       ],
     },
     'work.position': {

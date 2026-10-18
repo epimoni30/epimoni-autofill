@@ -73,8 +73,8 @@ All requests go to Epimoni's own server (an AWS endpoint in the EU, Frankfurt re
 
 | When | What is sent | Why |
 |---|---|---|
-| You click "Analyse this offer" | your active CV, the text of the advert, a sign-in or session token | to compare the two and show a score |
-| You click "Write my letter with AI" | your active CV, the text of the advert, the form's character limit, a sign-in or session token | to write a cover letter, which is shown to you and goes into the form only if you click to insert it |
+| You click "Analyse this offer" | your active CV, the text of the advert, your Epimoni sign-in token | to compare the two and show a score |
+| You click "Write my letter with AI" | your active CV, the text of the advert, the form's character limit, your Epimoni sign-in token | to write a cover letter, which is shown to you and goes into the form only if you click to insert it |
 | You click "Tailor my CV with AI" | your CV, the text of the advert, a sign-in token | to propose changes to your CV for that job, which you review; only the ones you keep make a new CV, and your original is not changed |
 | You click "Create the CV with AI" on the extension's CV page | the text of your CV, read from your PDF on your computer or pasted, after you have seen it; a sign-in token | to sort it into the sections of a CV, copied as written. Nothing is stored on the server |
 | You open the extension's menu while connected | your sign-in token | to show your remaining allowance |
@@ -203,8 +203,8 @@ Francfort).
 
 | Quand | Quoi | Pourquoi |
 |---|---|---|
-| Vous cliquez « Analyser cette offre » | votre CV actif, le texte de l'annonce, un jeton de connexion ou de session | comparer les deux et afficher un score |
-| Vous cliquez « Rédiger ma lettre avec l'IA » | votre CV actif, le texte de l'annonce, la limite de caractères du formulaire, un jeton de connexion ou de session | rédiger une lettre de motivation, qui vous est montrée et n'entre dans le formulaire que si vous cliquez pour l'insérer |
+| Vous cliquez « Analyser cette offre » | votre CV actif, le texte de l'annonce, votre jeton de connexion Epimoni | comparer les deux et afficher un score |
+| Vous cliquez « Rédiger ma lettre avec l'IA » | votre CV actif, le texte de l'annonce, la limite de caractères du formulaire, votre jeton de connexion Epimoni | rédiger une lettre de motivation, qui vous est montrée et n'entre dans le formulaire que si vous cliquez pour l'insérer |
 | Vous cliquez « Adapter mon CV avec l'IA » | votre CV, le texte de l'annonce, un jeton de connexion | proposer des modifications de votre CV pour ce poste, que vous relisez ; seules celles que vous gardez forment un nouveau CV, et l'original n'est pas modifié |
 | Vous cliquez « Créer le CV avec l'IA » sur la page CV de l'extension | le texte de votre CV, lu dans votre PDF sur votre ordinateur ou collé, après que vous l'avez vu ; un jeton de connexion | le ranger dans les rubriques d'un CV, recopié tel quel. Rien n'est conservé sur le serveur |
 | Vous ouvrez le menu de l'extension en étant connecté | votre jeton de connexion | afficher le quota restant |

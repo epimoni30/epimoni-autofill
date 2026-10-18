@@ -201,6 +201,10 @@ export function createResolver({ lexicons, autocomplete = {} }) {
         const text = pad(src.text);
         const phrase = spec.any.find((p) => text.includes(pad(p)));
         if (!phrase) continue;
+        // A vague hint may not forbid the key for the whole control (see `guard` above), but
+        // it can't argue for it while naming one of its vetoes itself: "Upload your resume
+        // here to autofill the fields" is about a parse box, not the application's CV.
+        if (spec.not.some((x) => text.includes(pad(x)))) continue;
         // A longer phrase is a more specific read of the same label, worth a little over
         // a short one that happens to sit inside it.
         const specificity = Math.min(0.06, 0.02 * (phrase.split(' ').length - 1));
@@ -311,7 +315,7 @@ export function createResolver({ lexicons, autocomplete = {} }) {
     const decisions = bundles.map((b) => resolve(b));
     const taken = new Map();
     decisions.forEach((d, i) => {
-      if (d.action !== 'fill') return;
+      if (d.action !== 'fill' || fieldOf(d.key)?.perQuestion) return;
       const claim = d.index == null ? d.key : `${d.key}#${d.index}#${d.part || ''}`;
       const prev = taken.get(claim);
       if (prev === undefined) {

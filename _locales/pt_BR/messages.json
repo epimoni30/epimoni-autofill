@@ -3,7 +3,7 @@
     "message": "Epimoni: preencher candidaturas"
   },
   "ext_description": {
-    "message": "Preenche suas candidaturas e analisa as vagas no LinkedIn e em sites de vagas. Com ou sem conta Epimoni."
+    "message": "Preenche suas candidaturas, mesmo sem conta Epimoni, e analisa as vagas no LinkedIn e em sites de vagas."
   },
   "action_title": {
     "message": "Preencher esta candidatura"
@@ -85,6 +85,12 @@
   },
   "field_languages": {
     "message": "Idiomas"
+  },
+  "field_speaks_language": {
+    "message": "Idioma falado"
+  },
+  "field_language_level": {
+    "message": "Nível de idioma"
   },
   "field_cv_file": {
     "message": "Currículo (arquivo PDF)"
@@ -442,9 +448,6 @@
   "panel_tier_free": {
     "message": "1 análise por hora na conta gratuita."
   },
-  "panel_tier_anon": {
-    "message": "1 análise por hora, sem conta. Nenhum currículo fica guardado nos nossos servidores."
-  },
   "panel_tier_spent": {
     "message": "Análise já usada. A próxima em $MINUTES$ min.",
     "placeholders": {
@@ -485,9 +488,6 @@
   },
   "popup_tier_free": {
     "message": "1 análise por hora (conta gratuita)"
-  },
-  "popup_tier_anon": {
-    "message": "1 análise por hora, sem conta"
   },
   "popup_tier_spent": {
     "message": "Análise usada. A próxima em $MINUTES$ min.",
@@ -684,8 +684,8 @@
   "opt_tier_free": {
     "message": "1 análise de vaga por hora na conta gratuita."
   },
-  "opt_tier_anon": {
-    "message": "1 análise de vaga por hora, sem conta."
+  "opt_ai_needs_account": {
+    "message": "A análise de vagas e a carta de apresentação exigem uma conta Epimoni conectada."
   },
   "opt_tier_spent": {
     "message": "Análise usada. A próxima em $MINUTES$ min.",

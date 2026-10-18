@@ -4,7 +4,8 @@
      widget filler. Three shapes of the WAI-ARIA combobox pattern:
      - a <div role="combobox"> whose options are only rendered once it is opened (Country);
      - <div role="combobox"> rows whose options are already in the page (Languages, Degree);
-     - an <input role="combobox"> typeahead that filters as you type (City).
+     - an <input role="combobox"> typeahead that filters as you type (City), answering a second
+       late after first showing the previous query's list, the way a server-backed one does.
      Each is "controlled": the selection lives in window.__state, as a React component's would.
      Traps: a birth-country combobox (the country key refuses "birth"), and an "Apply now"
      submit button rendered inside the Country listbox, which a careless picker would press. -->
@@ -29,8 +30,28 @@
     <div class="row">
       <label for="city">City</label>
       <input id="city" role="combobox" aria-autocomplete="list" aria-controls="city-list" aria-expanded="false"
-             data-state="city" data-controlled data-expect="city" data-typeahead="Nanterre|Nantes|Nancy|Paris">
+             data-state="city" data-controlled data-expect="city" data-typeahead="Nanterre|Nantes|Nancy|Paris" data-delay="1000" data-stale="Paris|Lyon">
       <ul role="listbox" id="city-list" hidden></ul>
+    </div>
+  </section>
+
+  <section>
+    <h3>Contact</h3>
+    <!-- An e-mail field that suggests domains as you type ("@gmail.com"), marked up as a
+         combobox. Its suggestions help typing; the answer is whatever is typed. Seen on HelloWork. -->
+    <div class="row">
+      <label for="mail">Email</label>
+      <input id="mail" type="email" role="combobox" aria-autocomplete="list" aria-controls="mail-list" aria-expanded="false"
+             data-controlled data-expect="email" data-typeahead="@gmail.com|@outlook.fr|@yahoo.fr">
+      <ul role="listbox" id="mail-list" hidden></ul>
+    </div>
+    <!-- A typeahead with no option for the CV's eight years: it must end up as it started,
+         empty, not holding a half-typed query nobody picked. -->
+    <div class="row">
+      <label for="yrs">Years of experience</label>
+      <input id="yrs" role="combobox" aria-autocomplete="list" aria-controls="yrs-list" aria-expanded="false"
+             data-expect="none" data-typeahead="Less than 1 year|1-2 years|3-5 years">
+      <ul role="listbox" id="yrs-list" hidden></ul>
     </div>
   </section>
 
@@ -71,6 +92,8 @@ for (const box of document.querySelectorAll('[role="combobox"]')) {
   const list = document.getElementById(box.getAttribute('aria-controls'));
   const key = box.getAttribute('data-state');
   const isInput = box.tagName === 'INPUT';
+  // A free-text field keeps what is typed, as a controlled React input would.
+  if (box.type === 'email') box.addEventListener('input', () => { window.__state[box.id] = box.value; });
   const setOpen = (on) => { list.hidden = !on; box.setAttribute('aria-expanded', String(on)); };
   const select = (li) => {
     for (const o of list.querySelectorAll('[role="option"]')) o.setAttribute('aria-selected', String(o === li));
@@ -99,9 +122,16 @@ for (const box of document.querySelectorAll('[role="combobox"]')) {
   list.addEventListener('click', (e) => { const li = e.target.closest('[role="option"]'); if (li) select(li); });
   if (isInput) {
     const all = box.getAttribute('data-typeahead').split('|');
+    // Like a server-backed typeahead: the previous query's answers show at once, the real
+    // ones a second later. A filler that takes the first list it sees picks nothing.
+    const delay = Number(box.getAttribute('data-delay') || 0);
     box.addEventListener('input', () => {
       const q = box.value.toLowerCase();
-      render(all.filter((t) => t.toLowerCase().startsWith(q)));
+      const answer = () => render(all.filter((t) => t.toLowerCase().startsWith(q)));
+      if (delay) {
+        render((box.getAttribute('data-stale') || '').split('|').filter(Boolean));
+        setTimeout(answer, delay);
+      } else answer();
       setOpen(true);
     });
   } else {

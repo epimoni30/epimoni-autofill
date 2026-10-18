@@ -17,8 +17,14 @@ import { deepQueryAll, normalize } from '../../content/dom.js';
 const PROMPT = /^(select|choose|choisi|selectionn|seleccion|elige|pick|--|—|-)/;
 const isPrompt = (text) => !normalize(text) || PROMPT.test(normalize(text) || text.trim());
 
+// An e-mail, phone or web address field marked up as a combobox (it suggests "@gmail.com" as you
+// type) is not a list to pick from: its answer is what is typed. It stays the core's, which
+// writes it like any other input.
+const FREE_TEXT = 'input[type="email"], input[type="tel"], input[type="url"]';
+
 const isCombobox = (el) =>
   el.getAttribute('role') === 'combobox' &&
+  !el.matches(FREE_TEXT) &&
   Boolean(
     el.getAttribute('aria-controls') || el.getAttribute('aria-owns') || el.getAttribute('aria-haspopup'),
   );
@@ -75,23 +81,34 @@ export default {
 
   async write(el, value, api) {
     const expanded = () => el.getAttribute('aria-expanded') === 'true';
-    // A typeahead filters as you type; typing the value first keeps a long list short.
-    if (el.matches('input')) api.type(el, value);
-    if (!expanded() && !api.open(el)) return false;
-    const options = await api.waitFor(() => {
-      const found = renderedOptions(api);
-      return found.length ? found : null;
-    });
-    if (!options) return false;
-    const i = api.pick(
-      options.map((o) => o.textContent.trim()),
-      value,
-    );
-    if (i === -1) {
+    // A typeahead filters as you type; typing the value first keeps a long list short. What it
+    // held before is put back if nothing is picked: a miss leaves no half-typed query behind.
+    const before = el.matches('input') ? el.value : null;
+    const miss = () => {
+      if (before !== null && el.value !== before) api.type(el, before);
       if (expanded()) api.open(el); // close it again rather than leave it hanging open
       return false;
-    }
-    if (!api.choose(options[i])) return false;
+    };
+    if (el.matches('input')) api.type(el, value);
+    if (!expanded() && !api.open(el)) return miss();
+    const texts = (found) => found.map((o) => o.textContent.trim());
+    // A typeahead's answers come from a server: the first list shown can be the previous
+    // query's, or "No results" while the request is in flight. So it waits, up to the guard's
+    // cap, for a list holding a match; a list already in the page needs no such wait.
+    const typeahead = el.matches('input');
+    const options = await api.waitFor(
+      () => {
+        const found = renderedOptions(api);
+        if (!found.length) return null;
+        return !typeahead || api.pick(texts(found), value) !== -1 ? found : null;
+      },
+      typeahead ? 2000 : 800,
+    );
+    const shown = options || renderedOptions(api);
+    if (!shown.length) return miss();
+    const i = api.pick(texts(shown), value);
+    if (i === -1) return miss();
+    if (!api.choose(shown[i])) return false;
     return {
       ok: true,
       // Undo picks the prompt option back when the list has one. A combobox with no prompt

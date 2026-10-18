@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="fr" data-must-fill>
+<!-- The shape of a live Workable form in French, rebuilt in our own words. Workable's
+     "Summary" box is translated "Résumé": in French that word is a profile summary, while the
+     English "Resume" box asks for the whole CV pasted as text. A textarea can't take the CV
+     file either way, so the accented word, in the box's own label, is what tells them apart. -->
+<meta charset="utf-8"><title>Postuler (forme Workable)</title>
+<body>
+<form id="wk" onsubmit="window.__submitted = true; return false">
+  <label for="wf">Prénom</label><input id="wf" name="firstname" data-controlled data-expect="given_name">
+  <label for="ws">Résumé (facultatif)</label>
+  <textarea id="ws" name="summary" data-controlled data-expect="summary"></textarea>
+  <label for="we">Resume</label>
+  <textarea id="we" name="resume_text" data-expect="none"></textarea>
+  <button type="submit">Envoyer</button>
+</form>
+<script src="_react.js"></script><script>window.__controlAll()</script>
+</body></html>

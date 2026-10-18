@@ -13,6 +13,8 @@ export const SAMPLE_EXTRAS = {
   postal_code: '44000',
   street: '12 rue du Calvaire',
   country: 'France',
+  availability_date: 'Immédiate',
+  salary_expectation: '42 000 €',
   // Stored as the user typed it. A radio group offering "Oui"/"Non" still resolves, because
   // matching falls back from exact to prefix.
   work_authorization: 'Oui, ressortissant UE',
@@ -62,7 +64,7 @@ export const RUNNER_BODY = `
     // selects as "Langue maternelle".
     const isRadio = el.type === 'radio';
     const expectedState = isRadio || el.tagName === 'SELECT' ? el.value : o.wroteValue;
-    return { i, expect: el.getAttribute('data-expect'), ...o, controlled,
+    return { i, expect: el.getAttribute('data-expect'), expectValue: el.getAttribute('data-expect-value'), ...o, controlled,
              stateOk: !controlled || o.wroteValue === null ? null : state === expectedState,
              domValue: el.tagName === 'SELECT' ? el.value : String(el.value || '') };
   });
@@ -78,9 +80,13 @@ export function verdictOf(r) {
   if (r.expect === 'none') return r.wroteKey ? 'wrong' : 'ok';
   if (r.expect === 'ai-candidate')
     return r.wroteKey ? 'wrong' : r.action === 'ai-candidate' ? 'ai' : 'aiMiss';
-  if (r.wroteKey === r.expect) return r.stateOk === false ? 'wrong' : 'hit';
+  // `data-expect-value`: the right key is not enough when the value is chosen by a rule (a
+  // bracket, a level): the option the control ends up holding is checked too.
+  if (r.wroteKey === r.expect)
+    return r.stateOk === false || (r.expectValue !== null && r.domValue !== r.expectValue) ? 'wrong' : 'hit';
   if (r.wroteKey) return 'wrong';
-  if (r.action === 'fill' && r.key === r.expect) return 'nodata';
+  // A row that names the value it expects has the data: writing nothing there is a miss.
+  if (r.action === 'fill' && r.key === r.expect) return r.expectValue !== null ? 'miss' : 'nodata';
   return r.action === 'suggest' || r.action === 'ai-candidate' ? 'soft' : 'miss';
 }
 

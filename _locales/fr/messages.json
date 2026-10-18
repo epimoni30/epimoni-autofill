@@ -3,7 +3,7 @@
     "message": "Epimoni : candidatures pré-remplies"
   },
   "ext_description": {
-    "message": "Remplit vos candidatures et analyse les offres : France Travail, HelloWork, APEC, LinkedIn. Avec ou sans compte Epimoni."
+    "message": "Remplit vos candidatures, même sans compte Epimoni, et analyse les offres : France Travail, HelloWork, APEC, LinkedIn."
   },
   "action_title": {
     "message": "Remplir cette candidature"
@@ -85,6 +85,12 @@
   },
   "field_languages": {
     "message": "Langues"
+  },
+  "field_speaks_language": {
+    "message": "Langue parlée"
+  },
+  "field_language_level": {
+    "message": "Niveau de langue"
   },
   "field_cv_file": {
     "message": "CV (fichier PDF)"
@@ -442,9 +448,6 @@
   "panel_tier_free": {
     "message": "1 analyse par heure avec le compte gratuit."
   },
-  "panel_tier_anon": {
-    "message": "1 analyse par heure, sans compte. Aucun CV n'est conservé sur nos serveurs."
-  },
   "panel_tier_spent": {
     "message": "Analyse déjà utilisée. Prochaine dans $MINUTES$ min.",
     "placeholders": {
@@ -485,9 +488,6 @@
   },
   "popup_tier_free": {
     "message": "1 analyse par heure (compte gratuit)"
-  },
-  "popup_tier_anon": {
-    "message": "1 analyse par heure, sans compte"
   },
   "popup_tier_spent": {
     "message": "Analyse utilisée. Prochaine dans $MINUTES$ min.",
@@ -684,8 +684,8 @@
   "opt_tier_free": {
     "message": "1 analyse d'offre par heure avec le compte gratuit."
   },
-  "opt_tier_anon": {
-    "message": "1 analyse d'offre par heure, sans compte."
+  "opt_ai_needs_account": {
+    "message": "L'analyse d'offre et la lettre de motivation demandent un compte Epimoni connecté."
   },
   "opt_tier_spent": {
     "message": "Analyse utilisée. Prochaine dans $MINUTES$ min.",

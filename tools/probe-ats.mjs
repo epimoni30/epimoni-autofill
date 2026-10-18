@@ -15,7 +15,10 @@
 //
 // Columns: decision, key, then what was written ("= …") or why nothing was ("(reason)"), then
 // the control and the text it was matched on. `--shots=<dir>` also saves a full-page
-// screenshot of each page after the fill.
+// screenshot of each page after the fill. `--open=<text>[,<text>…]` clicks, in order, the first
+// button or link whose text is exactly each one ("Postuler", "Apply") before measuring, for an ATS that only
+// shows its form after it; the abort rule above is what keeps that click from sending anything.
+// `--time` prints how long the whole fill took on each page, widgets included.
 
 import { readFileSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
@@ -29,6 +32,8 @@ import { loadChromium } from './chromium.mjs';
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const args = process.argv.slice(2);
 const shots = args.find((a) => a.startsWith('--shots='))?.slice('--shots='.length);
+const open = args.find((a) => a.startsWith('--open='))?.slice('--open='.length);
+const timed = args.includes('--time');
 const urls = args.filter((a) => !a.startsWith('--'));
 if (!urls.length) {
   console.error('usage: npm run probe:ats -- <apply-url> [<apply-url> ...] [--shots=<dir>]');
@@ -49,8 +54,10 @@ const RUN = `
     (sources.find((s) => ['label', 'aria-label', 'aria-labelledby', 'legend'].includes(s.kind)) ||
       sources.find((s) => s.kind === 'nearby') || sources[0] || {}).text || '';
   const keyOf = (d) => (d.key ? (d.index != null ? d.key + '[' + d.index + ']' : d.key) : null);
+  const t0 = performance.now();
   return runFill({ root: document, url: location.href, profile, entries, files, resolver: __resolver, fillers: EPIMONI_FILLERS })
     .then((run) => ({
+      ms: Math.round(performance.now() - t0),
       errors: run.errors.map(String),
       rows: run.rows.map((r) => ({
         text: shown(r.bundle.sources),
@@ -91,6 +98,19 @@ for (const url of urls) {
     console.log(`  (page did not settle: ${e.message.split('\n')[0]}; measuring what loaded)`);
   }
   await page.waitForTimeout(2000);
+  // In order: "Continuer sans accepter,Postuler" clears a consent wall, then opens the form.
+  for (const text of open ? open.split(',') : []) {
+    const opener = page
+      .locator('button, a, [role="button"]')
+      .filter({ hasText: new RegExp(`^\\s*${text.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`, 'i') })
+      .first();
+    try {
+      await opener.click({ timeout: 5000 });
+      await page.waitForTimeout(2500);
+    } catch {
+      console.log(`  (no "${text.trim()}" to click; measuring the page as it is)`);
+    }
+  }
   for (const frame of page.frames()) {
     let got;
     try {
@@ -104,6 +124,7 @@ for (const url of urls) {
     }
     if (!got.rows.length && !got.radios.length) continue;
     if (frame !== page.mainFrame()) console.log(`  in frame ${frame.url().slice(0, 80)}`);
+    if (timed) console.log(`  ${got.rows.length + got.radios.length} controls, ${got.ms} ms`);
     if (got.errors.length) console.log('  filler errors:', got.errors.join('; '));
     for (const r of got.rows)
       console.log(

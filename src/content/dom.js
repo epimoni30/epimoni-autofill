@@ -8,6 +8,12 @@
 
 import { MONTHS } from '../lexicon/index.js';
 import { workRightCovers } from '../schema/countries.js';
+import { pickByLevel } from '../schema/fluency.js';
+import { forDialCode } from '../schema/phone.js';
+import { pickYears, yearsRange } from '../schema/years.js';
+import { highestDegree, pickDegree } from '../schema/degrees.js';
+import { pickSalary } from '../schema/salary.js';
+import { languagesNamed, speaksAnswer, yesIndex, yesWord } from '../schema/languages.js';
 
 /**
  * Lowercase, strip diacritics, reduce to words. `Prénom` and `PRENOM_1` both become `prenom 1`.
@@ -260,6 +266,34 @@ function forLabelText(el) {
 }
 
 /**
+ * The `<label>` of the row a control sits in, when the markup doesn't link the two.
+ *
+ * Component libraries draw a row as `<div><label>Téléphone</label><widget>…<input></widget></div>`:
+ * a real label, with no `for` and not wrapping the input. The text nearest the input is then the
+ * widget's own (an icon, a drop zone's hint), so `nearbyText` stops on that. This climbs to the
+ * first ancestor holding a label that belongs to no other control, and trusts it only when that
+ * ancestor holds exactly one label and exactly one control: two of either and the row can't be
+ * told apart from its neighbour. Before or after the input both count, since a floating label
+ * comes after it in the markup.
+ */
+function fieldLabelText(el) {
+  let node = el.parentElement;
+  for (let hops = 0; node && hops < 5; hops += 1, node = node.parentElement) {
+    const labels = Array.from(node.querySelectorAll('label')).filter(
+      (l) => !l.querySelector(CONTROL) && (!l.htmlFor || l.htmlFor === el.id),
+    );
+    if (!labels.length) continue;
+    const controls = Array.from(node.querySelectorAll(CONTROL)).filter((c) => c.type !== 'hidden');
+    return labels.length === 1 && controls.length === 1 ? labelWords(labels[0]) : '';
+  }
+  return '';
+}
+
+// Icon fonts draw a glyph from a word: <span class="material-icons">keyboard_arrow_down</span>.
+// The word is not text anyone reads.
+const ICON_FONT = '.material-icons, [class*="material-icons-"], [class*="material-symbols"]';
+
+/**
  * Text around the control, for forms that label by position only, which is most French
  * job boards.
  *
@@ -273,6 +307,13 @@ function forLabelText(el) {
  *
  * Bounded to three hops for the same reason.
  */
+function withoutIcons(node) {
+  if (!node.querySelector(ICON_FONT)) return node.textContent || '';
+  const copy = node.cloneNode(true);
+  for (const icon of copy.querySelectorAll(ICON_FONT)) icon.remove();
+  return copy.textContent || '';
+}
+
 function nearbyText(el) {
   let node = el,
     hops = 0,
@@ -285,9 +326,12 @@ function nearbyText(el) {
       .filter(
         (n) =>
           n.nodeType === Node.TEXT_NODE ||
-          (n.nodeType === Node.ELEMENT_NODE && !n.matches?.(CONTROL) && !n.querySelector?.(CONTROL)),
+          (n.nodeType === Node.ELEMENT_NODE &&
+            !n.matches?.(CONTROL) &&
+            !n.querySelector?.(CONTROL) &&
+            !n.matches?.(ICON_FONT)),
       )
-      .map((n) => n.textContent || '')
+      .map((n) => (n.nodeType === Node.ELEMENT_NODE ? withoutIcons(n) : n.textContent || ''))
       .join(' ')
       .replace(/\s+/g, ' ')
       .trim();
@@ -301,6 +345,52 @@ function nearbyText(el) {
     hops += 1;
   }
   return { text: best.slice(0, 160), precise };
+}
+
+// "Résumé" is a profile summary in French and a CV in English ("Resume", pasted as text).
+// A text box can't take the CV file in either sense, and the accent, in the box's own label,
+// is what says which language the word is in. Read on the raw label: normalising drops it.
+function asksSummaryInFrench(el) {
+  if (el.tagName !== 'TEXTAREA') return false;
+  const own = forLabelText(el) || fieldLabelText(el) || el.getAttribute('aria-label') || '';
+  return /^\s*r[ée]sum[ée]\s*(\([^)]*\))?\s*\*?\s*$/i.test(own) && /é/i.test(own);
+}
+
+// "Votre expérience" alone asks for prose in a textarea and for a number of years in a list of
+// brackets. The lexicon can't tell the two apart, the options can: a closed list whose label is
+// only this, and whose answers are year brackets, is the years question.
+const BARE_EXPERIENCE = new Set([
+  'experience',
+  'votre experience',
+  'experience professionnelle',
+  'niveau d experience',
+  'your experience',
+  'work experience',
+  'professional experience',
+  'experiencia',
+  'su experiencia',
+  'tu experiencia',
+  'experiencia profesional',
+  'sua experiencia',
+  'experiencia profissional',
+  'doswiadczenie',
+  'twoje doswiadczenie',
+  'doswiadczenie zawodowe',
+]);
+
+function asksYearsByBrackets(el, described, options) {
+  const label = described.filter((s) => s.weight >= 0.9);
+  if (!label.length || !label.every((s) => BARE_EXPERIENCE.has(s.text))) return false;
+  // A list whose answers only appear once opened can't be checked here. It is still a list,
+  // not prose, and the pick (matcherFor) writes nothing unless its options are year brackets
+  // and exactly one holds the total, so the bare label is enough to try.
+  if (options === true) return true;
+  const texts = Array.isArray(options)
+    ? options
+    : el.tagName === 'SELECT'
+      ? Array.from(el.options).map((o) => o.textContent)
+      : null;
+  return Boolean(texts) && texts.filter((t) => yearsRange(t)).length >= 3;
 }
 
 /** How much a filler's description of a control is trusted: above a `name`, below a label. */
@@ -319,6 +409,7 @@ export function labelBundle(el, extra = {}) {
   const near = nearbyText(el);
   const sources = [
     ['label', forLabelText(el), 0.95],
+    ['field-label', fieldLabelText(el), 0.92],
     ['aria-label', el.getAttribute('aria-label'), 0.95],
     ['aria-labelledby', labelledByText(el), 0.95],
     ['placeholder', el.getAttribute('placeholder'), 0.8],
@@ -332,6 +423,11 @@ export function labelBundle(el, extra = {}) {
   const described = sources
     .map(([kind, raw, weight]) => ({ kind, text: normalize(raw), weight }))
     .filter((s) => s.text.length > 1);
+  if (asksSummaryInFrench(el))
+    described.push({ kind: 'language', text: 'professional summary', weight: 0.9 });
+  if (asksYearsByBrackets(el, described, extra.options)) {
+    described.push({ kind: 'options', text: 'years of experience', weight: 0.9 });
+  }
   // `true` is a closed list whose answers are not on the page until it is opened: shaped as a
   // dropdown for the resolver, matched by the filler at write time with the same rule.
   const closed = extra.options === true;
@@ -360,6 +456,27 @@ function optionList(el, bundle) {
   if (el.tagName === 'SELECT')
     return Array.from(el.options).map((o) => ({ text: o.textContent, value: o.value }));
   return null;
+}
+
+/**
+ * `matchOption` for one key: the literal match first, then the rule that key's answers follow
+ * when the form words them its own way (years as brackets, a language level as words). Used
+ * where the options only exist once a widget is opened, so `valueFor` could not apply it.
+ */
+export function matcherFor(key) {
+  const field = key?.includes('.') ? key.slice(key.indexOf('.') + 1) : key;
+  return (list, value) => {
+    const hit = matchOption(list, value);
+    if (hit) return hit;
+    const texts = list.map((o) => o.text);
+    let i = -1;
+    if (key === 'years_experience') i = pickYears(texts, String(value ?? ''));
+    else if (key === 'education_degree') i = pickDegree(texts, String(value ?? ''));
+    else if (key === 'salary_expectation') i = pickSalary(texts, String(value ?? ''));
+    else if (field === 'fluency' || key === 'language_level')
+      i = pickByLevel(texts.map(normalize), normalize(value));
+    return i === -1 ? null : list[i];
+  };
 }
 
 /**
@@ -476,6 +593,34 @@ export function formatValue(el, bundle, v) {
 }
 
 /**
+ * The dialling code a phone widget shows beside its input ("+33 ▾"), as digits, or null.
+ * Read only inside the input's own row: a wrapper holding a second control is another field.
+ */
+function dialCodeBeside(el) {
+  let node = el.parentElement;
+  for (let hops = 0; node && hops < 3; hops += 1, node = node.parentElement) {
+    if (Array.from(node.querySelectorAll(CONTROL)).filter((c) => c.type !== 'hidden').length > 1) return null;
+    for (const e of node.querySelectorAll('button, span, div, strong, b')) {
+      if (e.contains(el) || (e.children.length && !e.matches('button'))) continue;
+      const m = withoutIcons(e)
+        .trim()
+        .match(/^\+\s?(\d{1,4})$/);
+      if (m) return m[1];
+    }
+  }
+  return null;
+}
+
+/** A text input that opens a calendar: Material's, or any component naming itself a date picker. */
+function datePicker(el) {
+  return (
+    el.hasAttribute('data-mat-calendar') ||
+    /datepicker|date-picker/i.test(el.className || '') ||
+    Boolean(el.closest('[class*="datepicker" i], [class*="date-picker" i], mat-datepicker, tz-datepicker'))
+  );
+}
+
+/**
  * The value a decision stands for: the flat profile for an unscoped key, the right entry of
  * the right section for a scoped one. `entries` comes from `toEntries` in shared/cvdoc.js.
  */
@@ -492,11 +637,153 @@ export function answerHolds(key, bundle, profile) {
 
 export function valueFor(decision, el, bundle, profile, entries) {
   const { key, index } = decision;
-  if (index === undefined || index === null)
-    return answerHolds(key, bundle, profile) ? formatValue(el, bundle, profile?.[key]) : null;
+  if (key === 'speaks_language') return speaksValue(el, bundle, entries);
+  if (key === 'language_level') {
+    const level = levelAsked(bundle, entries);
+    if (!level) return null;
+    const list = optionList(el, bundle);
+    if (list) {
+      const hit = matcherFor(key)(list, level);
+      return hit ? { value: hit.value } : null;
+    }
+    // A list whose options appear once opened: the filler picks through matcherFor.
+    return bundle.tag === 'select' ? { value: level } : null;
+  }
+  if (index === undefined || index === null) {
+    if (!answerHolds(key, bundle, profile)) return null;
+    if (key === 'years_experience' || key === 'salary_expectation') {
+      const bracket = bracketOption(key, el, bundle, profile?.[key]);
+      if (bracket) return bracket;
+    }
+    if (key === 'education_degree') {
+      // A level question wants the highest degree, which is not always the latest one.
+      const degree = highestDegree((entries?.education || []).map((r) => r.degree)) || profile?.[key];
+      const list = optionList(el, bundle);
+      if (list && degree && !matchOption(list, degree)) {
+        const i = pickDegree(
+          list.map((o) => o.text),
+          degree,
+        );
+        if (i !== -1) return { value: list[i].value };
+      }
+      if (degree && bundle.tag === 'select') return formatValue(el, bundle, degree);
+    }
+    const got = formatValue(el, bundle, profile?.[key]);
+    // "Immédiate" or "Dans un mois" typed into a date picker is not a date, and the picker
+    // either rejects it or keeps it as garbage. Offered instead, for the person to pick a day.
+    if (got?.value && datePicker(el) && !/\d/.test(got.value)) return { suggest: got.value };
+    // A phone field showing its own country code takes the national number (schema/phone.js).
+    if (key === 'phone' && got?.value) {
+      const dial = dialCodeBeside(el);
+      if (dial) return forDialCode(got.value, dial, el.getAttribute('placeholder') || '');
+    }
+    return got;
+  }
   const dot = key.indexOf('.');
   const row = entries?.[key.slice(0, dot)]?.[index];
-  return formatValue(el, bundle, row?.[key.slice(dot + 1)]);
+  const field = key.slice(dot + 1);
+  if (field === 'fluency') {
+    const level = levelOption(el, bundle, row?.[field]);
+    if (level) return level;
+  }
+  return formatValue(el, bundle, row?.[field]);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// "Do you speak fluent French?": a yes the CV backs, or nothing (src/schema/languages.js).
+
+/** The question, read from the sources that describe this control, not the text around it. */
+const questionOf = (bundle) =>
+  bundle.sources
+    .filter((s) => s.weight >= 0.65)
+    .map((s) => s.text)
+    .join(' ');
+
+const languageRows = (entries) =>
+  (entries?.languages || []).map((r) => ({ language: normalize(r.language), fluency: normalize(r.fluency) }));
+
+function speaksValue(el, bundle, entries) {
+  const question = questionOf(bundle);
+  const list = optionList(el, bundle);
+  if (list) {
+    if (speaksAnswer(question, languageRows(entries)) !== true) return null;
+    const i = yesIndex(list.map((o) => normalize(o.text)));
+    return i === -1 ? null : { value: list[i].value };
+  }
+  // A dropdown whose answers only exist once opened (`tag` is select with no list): the
+  // filler matches the yes word when it opens it.
+  if (bundle.tag !== 'select') return null;
+  if (speaksAnswer(question, languageRows(entries), { fluentOnly: true }) !== true) return null;
+  const word = yesWord(question);
+  return word ? { value: word } : null;
+}
+
+/** The CV's fluency for the one language a level question names ("Niveau d'anglais"), or null. */
+function levelAsked(bundle, entries) {
+  const asked = languagesNamed(questionOf(bundle));
+  if (asked.length !== 1) return null;
+  const row = (entries?.languages || []).find((r) => languagesNamed(normalize(r.language))[0] === asked[0]);
+  return row && String(row.fluency || '').trim() ? String(row.fluency) : null;
+}
+
+/**
+ * What a radio group gets for a key: a yes the CV backs, a level for the language asked, a
+ * bracket or a level chosen by the key's rule, or the stored answer as written (which
+ * `setRadio` then matches). Null leaves the group alone.
+ */
+export function radioValueFor(key, group, bundle, profile, entries) {
+  if (key === 'speaks_language') return speaksRadioValue(group, bundle, entries);
+  if (key === 'language_level') return radioChoice(key, group, levelAsked(bundle, entries));
+  return radioChoice(key, group, profile?.[key]) ?? profile?.[key] ?? null;
+}
+
+/** The label of the yes option in a radio group, when the CV backs a yes; else null. */
+export function speaksRadioValue(group, bundle, entries) {
+  if (speaksAnswer(questionOf(bundle), languageRows(entries)) !== true) return null;
+  const labels = group.inputs.map(radioLabel);
+  const i = yesIndex(labels);
+  return i === -1 ? null : labels[i];
+}
+
+/**
+ * A figure against the form's brackets ("5 à 10 ans", "40 000 à 45 000 €"), when nothing
+ * matches as written and exactly one bracket holds it (src/schema/years.js, salary.js).
+ */
+function bracketOption(key, el, bundle, v) {
+  const list = optionList(el, bundle);
+  if (!list || v === undefined || v === null || matchOption(list, String(v))) return null;
+  const hit = matcherFor(key)(list, String(v));
+  return hit ? { value: hit.value } : null;
+}
+
+/**
+ * The label of the radio a stored answer picks, by the key's own rule when the options word
+ * it differently (brackets, levels), or null to let `setRadio` match it as written.
+ */
+export function radioChoice(key, group, value) {
+  if (value === undefined || value === null) return null;
+  // Raw labels: normalising drops the "-" and "+" a bracket is written with.
+  const list = group.inputs.map((r) => {
+    const raw = String(forLabelText(r) || r.getAttribute('aria-label') || r.value || '').trim();
+    return { text: raw, value: raw };
+  });
+  return matcherFor(key)(list, String(value))?.value ?? null;
+}
+
+/**
+ * A language level the option list words differently: "C1" in the CV, "Courant" on the
+ * form. Only when nothing matches as written, and only when exactly one option fits the
+ * level (src/schema/fluency.js says why).
+ */
+function levelOption(el, bundle, v) {
+  if (typeof v !== 'string' || !v.trim()) return null;
+  const list = optionList(el, bundle);
+  if (!list || matchOption(list, v)) return null;
+  const i = pickByLevel(
+    list.map((o) => normalize(o.text)),
+    normalize(v),
+  );
+  return i === -1 ? null : { value: list[i].value };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -961,5 +1248,8 @@ export function clearValue(el) {
 export function hasUserValue(el) {
   if (el.getAttribute('data-epimoni-filled')) return false;
   if (el.tagName === 'SELECT') return el.selectedIndex > 0 && !!el.value;
-  return String(el.value || '').trim().length > 0;
+  const v = String(el.value || '').trim();
+  // A phone widget that pre-fills its dialling code ("+33") has not been answered: nobody types
+  // a code alone as their number.
+  return v.length > 0 && !/^\+\s?\d{1,4}$/.test(v);
 }

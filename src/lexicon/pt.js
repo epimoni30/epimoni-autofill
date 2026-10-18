@@ -246,6 +246,31 @@ export default {
       any: ['idiomas', 'idiomas falados', 'nivel de idioma'],
       not: ['programacao'],
     },
+    language_level: {
+      any: [
+        'nivel de ingles',
+        'nivel de frances',
+        'nivel de espanhol',
+        'nivel de alemao',
+        'nivel de italiano',
+      ],
+      not: [
+        'languages',
+        'langues',
+        'idiomas',
+        'jezyki',
+        'list',
+        'liste',
+        'lista',
+        'education',
+        'etude',
+        'etudes',
+      ],
+    },
+    speaks_language: {
+      any: ['voce fala', 'fala fluentemente', 'voce domina'],
+      not: ['languages', 'langues', 'idiomas', 'jezyki', 'list', 'liste', 'lista'],
+    },
     // A file input only. The letter, a photo, a transcript or "outros documentos" each rule it out.
     cv_file: {
       any: [

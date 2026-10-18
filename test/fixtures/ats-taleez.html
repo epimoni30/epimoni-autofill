@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="fr" data-must-fill>
+<!-- The field shape of a live Taleez application form, rebuilt in our own words.
+
+     Every row is <div class="field"><label>…</label><widget>…<input></widget></div>: a real
+     <label>, but neither pointing at the control with `for` nor wrapping it. The nearest text to
+     the control is the widget's own: an icon font's ligature ("keyboard_arrow_down",
+     "calendar_today") or a drop zone's hint ("Déposer ou choisir un fichier"). Reading that as
+     the label missed the phone, the CV and the date. The label of the row is what names it.
+
+     Trap: two rows sharing one wrapper, where a label can't be told to belong to either input.
+     The date picker stays empty: free text typed there is not a date. -->
+<meta charset="utf-8"><title>Postuler (forme Taleez)</title>
+<style>.material-symbols-rounded { font-family: sans-serif; font-size: 12px; }</style>
+<body>
+<form id="taleez" novalidate onsubmit="window.__submitted = true; return false">
+  <div class="field"><label class="required">Prénom</label>
+    <tz-input><input type="text" name="fname" maxlength="160" data-controlled data-expect="given_name"></tz-input></div>
+  <div class="field"><label class="required">Nom</label>
+    <tz-input><input type="text" name="lname" maxlength="160" data-controlled data-expect="family_name"></tz-input></div>
+  <div class="field"><label class="required">Téléphone</label>
+    <tz-input-phone>
+      <button type="button" class="btn-country"><span>+33</span><span class="material-symbols-rounded">keyboard_arrow_down</span></button>
+      <input type="text" class="tz-input" placeholder="06 12 34 56 78" id="tz-phone" data-controlled data-expect="phone">
+    </tz-input-phone></div>
+  <div class="field question"><label class="required"><span>CV</span></label>
+    <tz-drag-file><div class="drop-container">
+      <div class="text"><span>Déposer ou </span><span class="tz-link">choisir un fichier</span></div>
+      <input type="file" data-expect="cv_file">
+    </div><div class="caption">Taille fichier 5 Mo max</div></tz-drag-file></div>
+  <div class="field question"><label><span>Votre disponibilité</span></label>
+    <tz-datepicker><input class="mat-datepicker-input tz-input" aria-haspopup="dialog" data-expect="none">
+      <span class="material-symbols-rounded">calendar_today</span></tz-datepicker></div>
+
+  <div class="field pair">
+    <label>Ville</label><label>Code postal</label>
+    <input type="text" name="q_pair_a" data-expect="none"><input type="text" name="q_pair_b" data-expect="none">
+  </div>
+  <button type="submit">Envoyer ma candidature</button>
+</form>
+<script src="_react.js"></script><script>window.__controlAll()</script>
+</body></html>

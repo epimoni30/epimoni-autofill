@@ -31,11 +31,12 @@ const extensionIdFor = (absPath) =>
     .map((c) => 'abcdefghijklmnop'[parseInt(c, 16)])
     .join('');
 
-// A stuck browser should fail the run, not hold the terminal.
+// A stuck browser should fail the run, not hold the terminal. Twice the suite's own length on
+// a laptop, because CI runners are slower: this is for a hang, not a budget.
 const watchdog = setTimeout(() => {
-  console.log('\nFAILED: timed out after 90s');
+  console.log('\nFAILED: timed out after 180s');
   process.exit(1);
-}, 90000);
+}, 180000);
 watchdog.unref?.();
 
 const HERE = fileURLToPath(new URL('.', import.meta.url));
@@ -45,7 +46,7 @@ const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; cha
 const server = createServer(async (req, res) => {
   try {
     const body = await readFile(join(HERE, 'fixtures', req.url.split('?')[0].replace(/^\//, '')));
-    res.writeHead(200, { 'content-type': MIME[extname(req.url)] || 'text/plain' });
+    res.writeHead(200, { 'content-type': MIME[extname(req.url.split('?')[0])] || 'text/plain' });
     res.end(body);
   } catch {
     res.writeHead(404);
@@ -423,6 +424,16 @@ check(
 );
 check('a field outside every block takes no entry', blockResult.wanted === '', blockResult.wanted);
 check('nothing was submitted on the block form', blockResult.submitted === false);
+// The CV says "langue maternelle" and "C1"; the form offers words. The first matches as
+// written, the second only through the language-level scale (src/schema/fluency.js).
+const levels = await parcours.evaluate(() =>
+  ['lang_a_niveau', 'lang_b_niveau'].map((n) => document.querySelector(`[name="${n}"]`).value),
+);
+check(
+  'a CEFR level picks the one option it fits on a form that words its levels',
+  levels[0] === 'Langue maternelle' && levels[1] === 'Courant',
+  levels.join(' / '),
+);
 const blockSay = await sw.evaluate(() => ({
   current: chrome.i18n.getMessage('panel_tick_current'),
   eduLeft: chrome.i18n.getMessage('panel_leftover', ['1', chrome.i18n.getMessage('cvsection_education')]),
@@ -434,6 +445,64 @@ check(
   blockResult.panelText.includes(blockSay.eduLeft),
   blockResult.panelText.slice(0, 120),
 );
+
+// "Do you speak…?" with the full CV stored (French first language, English C1): a yes where
+// the CV backs one, nothing anywhere else, and never a no.
+// Its own hash: the first radios.html tab is still open, and a tab is found by URL.
+const speakPage = await fillPage('radios.html#cv-full');
+const spoken = await speakPage.evaluate(() => ({
+  frYes: document.getElementById('lf1').checked,
+  frNo: document.getElementById('lf2').checked,
+  es: document.getElementById('le1').checked || document.getElementById('le2').checked,
+  en: document.getElementById('sp-en').value,
+  it: document.getElementById('sp-it').value,
+  xp: document.getElementById('xp').value,
+}));
+check(
+  'a language question gets a yes the CV backs, and no answer it does not',
+  spoken.frYes && !spoken.frNo && !spoken.es && spoken.en === '1' && spoken.it === '',
+  JSON.stringify(spoken),
+);
+check('eight years pick the "5 à 10 ans" bracket', spoken.xp === 'd', spoken.xp);
+await speakPage.close();
+
+// A Taleez-shaped row: labels the markup doesn't link, an icon font beside the phone, a drop
+// zone around the file input. The phone field shows "+33" itself, so it takes the national
+// number, in the shape its placeholder shows.
+const tz = await fillPage('ats-taleez.html');
+const tzResult = await tz.evaluate(() => ({
+  phone: document.getElementById('tz-phone').value,
+  file: document.querySelector('input[type="file"]').files.length,
+  date: document.querySelector('.mat-datepicker-input').value,
+}));
+check(
+  'an unlinked row label names the field, and a phone beside its own +33 gets the national number',
+  tzResult.phone === '06 12 34 56 78' && tzResult.file === 1 && tzResult.date === '',
+  JSON.stringify(tzResult),
+);
+await tz.close();
+
+// Taleez's <tz-select>: the list opens into an overlay at the end of <body>, eight years pick
+// the "8 ans d'expérience" bracket, and the master picks the bac +5 level. The domain question and the salary stay empty, and the
+// submit button the overlay renders is never pressed.
+const tzs = await fillPage('fillers/taleez-select/apply.html');
+await tzs.waitForTimeout(300);
+const tzsResult = await tzs.evaluate(() => ({
+  state: window.__state,
+  overlayOpen: document.querySelector('.cdk-overlay-container').children.length > 0,
+  submitted: window.__submitted === true,
+}));
+check(
+  'a Taleez dropdown is opened and the bracket holding the total is chosen, nothing else',
+  tzsResult.state?.xp === "8 ans d'expérience" &&
+    tzsResult.state?.edu === "Master, Diplôme d'ingénieur ou équivalent (bac +5)" &&
+    !tzsResult.state?.xp_mgmt &&
+    !tzsResult.state?.salary &&
+    !tzsResult.overlayOpen &&
+    !tzsResult.submitted,
+  JSON.stringify(tzsResult),
+);
+await tzs.close();
 
 const indexed = await fillPage('fillers/workday/my-experience.html');
 const indexedResult = await indexed.evaluate(() => ({
@@ -460,6 +529,8 @@ const combo = await fillPage('fillers/aria-combobox/combobox.html');
 const comboResult = await combo.evaluate(() => ({
   state: { ...window.__state },
   submitted: window.__submitted,
+  mailReported: document.getElementById('mail').hasAttribute('data-epimoni-filled'),
+  years: document.getElementById('yrs').value,
 }));
 check(
   'a custom dropdown is filled through the widget filler, in component state',
@@ -467,6 +538,16 @@ check(
     comboResult.state.city === 'Nantes' &&
     comboResult.state.lang_a === 'Français',
   JSON.stringify(comboResult.state),
+);
+check(
+  'an e-mail field that suggests domains gets the address, and the fill says so',
+  comboResult.state.mail === profile.email && comboResult.mailReported,
+  String(comboResult.state.mail),
+);
+check(
+  'a typeahead with nothing to pick is left as it was, not half-typed',
+  comboResult.years === '',
+  comboResult.years,
 );
 check('the birth-country dropdown is left alone', !comboResult.state.birth, String(comboResult.state.birth));
 check('the submit button inside a dropdown was never pressed', comboResult.submitted === false);
@@ -782,6 +863,38 @@ check('a field the user emptied is not filled again', grown.email === '', grown.
 const fiveFilled = await sw.evaluate(() => chrome.i18n.getMessage('panel_filled_many', ['5']));
 check('the panel counts the new fields', grown.panel.includes(fiveFilled), fiveFilled);
 check('nothing was submitted on the growing form', grown.submitted === false);
+
+// The same, when every step is already in the page and only shown later: by `display`, then
+// by a class. No node is added, so this is the observer watching attributes.
+const hiddenSteps = await fillPage('wizard-hidden.html');
+const step1 = await hiddenSteps.evaluate(() => ({
+  email: document.getElementById('he').value,
+  tel: document.getElementById('ht').value,
+}));
+check(
+  'a hidden step is not filled before it is shown',
+  step1.email === profile.email && step1.tel === '',
+  JSON.stringify(step1),
+);
+await hiddenSteps.click('#to2');
+await hiddenSteps
+  .waitForFunction(() => document.getElementById('ht').value, { timeout: 3000 })
+  .catch(() => {});
+await hiddenSteps.click('#to3');
+await hiddenSteps
+  .waitForFunction(() => document.getElementById('hv').value, { timeout: 3000 })
+  .catch(() => {});
+const revealed = await hiddenSteps.evaluate(() => ({
+  tel: document.getElementById('ht').value,
+  ville: document.getElementById('hv').value,
+  submitted: window.__submitted === true,
+}));
+check(
+  'a step shown by its style or its class is filled with no second click',
+  revealed.tel === profile.phone && revealed.ville === 'Nantes' && !revealed.submitted,
+  JSON.stringify(revealed),
+);
+await hiddenSteps.close();
 
 // ── The application tracker ──────────────────────────────────────────────────────────────
 //
@@ -1661,10 +1774,10 @@ await importer.close();
 
 // ── No account at all ────────────────────────────────────────────────────────────────────
 //
-// The extension has to work for somebody who has never signed in: the CV lives here, the
-// worker opens its own anonymous session, and the backend meters it at one call an hour on
-// the same window as the website. This is that path end to end, in a real browser, with the
-// pairing removed rather than simulated.
+// The extension has to work for somebody who has never signed in: the CV lives here and the
+// forms fill, while the AI stays off and no session is opened on their behalf. The stubbed
+// `anonymous-login` below is a tripwire: the call count must stay at zero. This is that path
+// end to end, in a real browser, with the pairing removed rather than simulated.
 await sw.evaluate(async () => {
   globalThis.__calls = [];
   await chrome.storage.session.clear();
@@ -1820,6 +1933,28 @@ check(
   opt.unresolved.join(', ') || `${opt.tagged} keys`,
 );
 check('the CV editor leaks no raw message keys', opt.raw.length === 0, opt.raw.join(', '));
+
+// This install is not paired, so there is no allowance to describe. The page used to say
+// "1 analysis per hour, no account", left over from the anonymous tier, which the panel then
+// refused. The tier line is asynchronous, so wait for it rather than read too early.
+const aiLine = await options
+  .waitForFunction(
+    () => {
+      const want = chrome.i18n.getMessage('opt_ai_needs_account');
+      const text = document.getElementById('status').innerText;
+      return text.includes(want) ? text : null;
+    },
+    null,
+    { timeout: 3000 },
+  )
+  .then((h) => h.jsonValue())
+  .catch(() => options.evaluate(() => document.getElementById('status').innerText));
+check(
+  'the CV page tells an unpaired install the AI needs an account, and promises no allowance',
+  aiLine.includes(await options.evaluate(() => chrome.i18n.getMessage('opt_ai_needs_account'))) &&
+    !aiLine.includes(await options.evaluate(() => chrome.i18n.getMessage('opt_tier_free'))),
+  aiLine.replace(/\s+/g, ' ').slice(-120),
+);
 check(
   'the CV editor loads the stored document',
   opt.name === 'Alex Martin' && opt.email === 'alex@example.org',
@@ -1866,6 +2001,26 @@ check(
 check(
   'the editor reports the CV as analysable once it holds a role and skills',
   saved.state?.cv_analysable === true,
+);
+
+// A pairing can store a profile that says more than the document (the site sends its own).
+// The CV page used to count the status line from that profile and the library row from the
+// document, so the same CV read "19 details" and "17 details" one card apart.
+await sw.evaluate(async () => {
+  const { epimoni: bag } = await chrome.storage.local.get('epimoni');
+  const entry = bag.cvs.find((c) => c.id === bag.active_cv_id);
+  entry.profile = { ...(entry.profile || {}), postal_code: '44000' };
+  await chrome.storage.local.set({ epimoni: bag });
+});
+const counted = await options.evaluate(async () => {
+  const ask = (msg) => new Promise((r) => chrome.runtime.sendMessage(msg, r));
+  const [state, list] = await Promise.all([ask({ type: 'state' }), ask({ type: 'cv:list' })]);
+  return { state: state.fields, row: list.cvs.find((c) => c.active)?.summary?.fields };
+});
+check(
+  'the CV page counts the active CV once, the same in the status and in the library',
+  counted.state === counted.row,
+  JSON.stringify(counted),
 );
 
 // ── The CV library ───────────────────────────────────────────────────────────────────────

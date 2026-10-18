@@ -44,3 +44,28 @@ test('ordinary words are not countries', () => {
   assert.deepEqual(countriesIn(normalize('Can you tell us if you are authorised to work?')), []);
   assert.deepEqual(countriesIn(normalize('Eu sou desenvolvedor')), []);
 });
+
+// Found 2026-10-17: a place the table doesn't list made the question read as naming none, so
+// it was answered through the country the person lives in. "Do you have the right to work in
+// Hong Kong?" got "Oui" from a French citizen. A question that says where, and names nothing
+// we know, is now left alone; one that says nowhere is still answered.
+test('a place the table does not know is still a place', () => {
+  const eu = 'Oui, ressortissant UE';
+  for (const q of [
+    'Do you have the right to work in Hong Kong?',
+    'Are you legally authorized to work in Kazakhstan?',
+    'Are you legally authorized to work in the country where this job is located?',
+    'Êtes-vous autorisé(e) à travailler au Kazakhstan ?',
+    '¿Tiene permiso para trabajar en Hong Kong?',
+    'Você tem autorização para trabalhar em Hong Kong?',
+    'Czy masz prawo do pracy w Hongkongu?',
+  ])
+    assert.ok(!covers(q, eu, 'France'), q);
+  for (const q of [
+    'Are you legally authorized to work?',
+    'Do you have a valid work permit?',
+    'Êtes-vous autorisé(e) à travailler ?',
+    'Avez-vous un permis de travail valide ?',
+  ])
+    assert.ok(covers(q, eu, 'France'), q);
+});

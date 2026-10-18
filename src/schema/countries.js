@@ -132,6 +132,11 @@ const EU_WORDS = [
 ];
 
 /** A question about a place it does not name: the answer can't be checked against it. */
+// "To work in <somewhere>", in the five interface languages. Read only when no country was
+// recognised, so it never vetoes "work in France".
+const SAYS_WHERE =
+  / (work|working|employed|live|living|reside|residing|based) (in|within) | travailler (en|au|aux|a|dans) | resider (en|au|aux|a) | trabajar (en) | trabalhar (em|no|na|nos|nas) | (pracy|pracowac) (w|we|na) /;
+
 const UNNAMED_PLACE = [
   'country listed',
   'the country of this',
@@ -168,7 +173,10 @@ export function workRightCovers(question, answer, residence = '') {
   const asked = countriesIn(q);
   // "…to work in the European Union?" names a region, not a country.
   const askedEu = EU_WORDS.some((w) => has(q, w));
-  if (!asked.length && !askedEu) return true;
+  // Naming no country we know is not the same as naming none. "…to work in Hong Kong?" says
+  // where, and the table doesn't hold it: answering through the person's own country would
+  // claim a right they may not have. Only a question that says nowhere is answered.
+  if (!asked.length && !askedEu) return !SAYS_WHERE.test(` ${q} `);
   const a = normaliseLoose(answer);
   let covered = countriesIn(a);
   let euToo = EU_WORDS.some((w) => has(a, w)) || covered.some((c) => c.eu);

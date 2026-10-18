@@ -23,6 +23,9 @@
 // a closed list are different questions, and guessing an option is how a wrong answer is
 // submitted. Every date is select-capable.
 //
+// `perQuestion` marks a field a form asks once per subject ("Do you speak French?", "…English?"):
+// two controls claiming it are two questions, so the duplicate-key rule leaves them both.
+//
 // `personal` (default true) marks a field that describes the user, and so must never answer
 // a question about someone else: an emergency contact, a referee. See `thirdParty` in the
 // language packs. It is a list of exceptions rather than of members so that a new field is
@@ -71,7 +74,8 @@ const FLAT = [
   { key: 'summary', shape: 'long', oneLine: true, source: 'cv' },
   { key: 'cover_letter', shape: 'long', source: 'none' },
   { key: 'years_experience', shape: 'any', select: true, source: 'cv' },
-  { key: 'salary_expectation', shape: 'any', source: 'extras' },
+  // Into a list only as a bracket that holds the whole figure (src/schema/salary.js).
+  { key: 'salary_expectation', shape: 'any', select: true, source: 'extras' },
   { key: 'notice_period', shape: 'any', select: true, source: 'extras' },
   { key: 'availability_date', shape: 'any', select: true, source: 'extras' },
   { key: 'work_authorization', shape: 'any', select: true, personal: false, source: 'extras' },
@@ -79,6 +83,15 @@ const FLAT = [
   { key: 'education_institution', shape: 'any', source: 'cv' },
   { key: 'skills', shape: 'any', source: 'cv' },
   { key: 'languages', shape: 'any', select: true, source: 'cv' },
+  // "Do you speak fluent French?": computed from the question and the CV's languages, and only
+  // ever a yes (src/schema/languages.js). Closed lists only: a yes typed into a text box is not
+  // an answer anyone asked for.
+  // `perQuestion`: a form asks it once per language, so two controls claiming it are two
+  // questions, not a duplicate.
+  { key: 'speaks_language', shape: 'any', select: true, perQuestion: true, source: 'cv' },
+  // "How well are your French language skills?", "Niveau d'anglais": the CV's level for the one
+  // language the question names, picked by the fluency scale. Closed lists only.
+  { key: 'language_level', shape: 'any', select: true, perQuestion: true, source: 'cv' },
   // The CV itself, as the PDF the user attached to this library entry. A cover letter, a
   // diploma or a photo upload is a different question with a different file, and is left alone.
   { key: 'cv_file', shape: 'file', source: 'library' },
