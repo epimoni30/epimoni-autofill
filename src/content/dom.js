@@ -51,6 +51,29 @@ export function deepQueryAll(root, selector) {
   return out;
 }
 
+/**
+ * An element by id: in the node's own root, then the document, then any open shadow root. A
+ * design system can render a combobox's list in another component's shadow root, where the id
+ * its `aria-controls` names is invisible to both of the usual lookups.
+ */
+export function byIdAnywhere(node, id) {
+  if (!id) return null;
+  const doc = node.ownerDocument || node;
+  const near = node.getRootNode?.().getElementById?.(id) || doc.getElementById(id);
+  if (near) return near;
+  return deepQueryAll(doc, `[id="${CSS.escape(id)}"]`)[0] || null;
+}
+
+/** Is `target` inside `outer`, climbing out of each shadow root to the element that hosts it? */
+export function holds(outer, target) {
+  for (let n = target; n; ) {
+    if (n === outer) return true;
+    const root = n.getRootNode?.();
+    n = n.parentElement || (root && root !== n ? root.host : null) || null;
+  }
+  return false;
+}
+
 const CONTROL = 'input, textarea, select';
 const SKIP_TYPES = new Set([
   'hidden',
