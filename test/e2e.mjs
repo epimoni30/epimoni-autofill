@@ -1970,6 +1970,9 @@ check(
   needs.shown && needs.link.includes('extension-chrome'),
   JSON.stringify(needs),
 );
+// Counts read as words: "1 experience", "3 skills", never "experience(s)".
+const countText = await options.evaluate(() => document.body.innerText.match(/\S*\((s|es|a)\)\S*/g) || []);
+check('the CV page writes its counts with real plurals', countText.length === 0, countText.join(' '));
 
 // This install is not paired, so there is no allowance to describe. The page used to say
 // "1 analysis per hour, no account", left over from the anonymous tier, which the panel then

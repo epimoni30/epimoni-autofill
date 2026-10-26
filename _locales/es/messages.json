@@ -293,8 +293,11 @@
       }
     }
   },
+  "panel_open_questions_one": {
+    "message": "1 pregunta abierta"
+  },
   "panel_open_questions": {
-    "message": "$COUNT$ pregunta(s) abierta(s)",
+    "message": "$COUNT$ preguntas abiertas",
     "placeholders": {
       "count": {
         "content": "$1"
@@ -658,17 +661,55 @@
   "opt_source_none": {
     "message": "No hay CV guardado: el rellenado no hará nada."
   },
-  "opt_counts": {
-    "message": "$FIELDS$ datos · $WORK$ experiencia(s) · $SKILLS$ competencia(s)",
+  "opt_plural_locale": {
+    "message": "es",
+    "description": "The BCP 47 tag of this file's language, for Intl.PluralRules: picks the _one or _many form of a count."
+  },
+  "opt_count_fields_one": {
+    "message": "$COUNT$ dato",
     "placeholders": {
-      "fields": {
+      "count": {
         "content": "$1"
-      },
-      "work": {
-        "content": "$2"
-      },
-      "skills": {
-        "content": "$3"
+      }
+    }
+  },
+  "opt_count_fields_many": {
+    "message": "$COUNT$ datos",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_count_work_one": {
+    "message": "$COUNT$ experiencia",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_count_work_many": {
+    "message": "$COUNT$ experiencias",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_count_skills_one": {
+    "message": "$COUNT$ competencia",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_count_skills_many": {
+    "message": "$COUNT$ competencias",
+    "placeholders": {
+      "count": {
+        "content": "$1"
       }
     }
   },

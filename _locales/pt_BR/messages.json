@@ -293,8 +293,11 @@
       }
     }
   },
+  "panel_open_questions_one": {
+    "message": "1 pergunta aberta"
+  },
   "panel_open_questions": {
-    "message": "$COUNT$ pergunta(s) aberta(s)",
+    "message": "$COUNT$ perguntas abertas",
     "placeholders": {
       "count": {
         "content": "$1"
@@ -658,17 +661,55 @@
   "opt_source_none": {
     "message": "Nenhum currículo salvo: o preenchimento não vai fazer nada."
   },
-  "opt_counts": {
-    "message": "$FIELDS$ dados · $WORK$ experiência(s) · $SKILLS$ habilidade(s)",
+  "opt_plural_locale": {
+    "message": "pt-BR",
+    "description": "The BCP 47 tag of this file's language, for Intl.PluralRules: picks the _one or _many form of a count."
+  },
+  "opt_count_fields_one": {
+    "message": "$COUNT$ dado",
     "placeholders": {
-      "fields": {
+      "count": {
         "content": "$1"
-      },
-      "work": {
-        "content": "$2"
-      },
-      "skills": {
-        "content": "$3"
+      }
+    }
+  },
+  "opt_count_fields_many": {
+    "message": "$COUNT$ dados",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_count_work_one": {
+    "message": "$COUNT$ experiência",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_count_work_many": {
+    "message": "$COUNT$ experiências",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_count_skills_one": {
+    "message": "$COUNT$ habilidade",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_count_skills_many": {
+    "message": "$COUNT$ habilidades",
+    "placeholders": {
+      "count": {
+        "content": "$1"
       }
     }
   },

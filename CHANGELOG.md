@@ -51,6 +51,8 @@ carries the same number, and the release workflow refuses a tag that does not ma
   filler comes with your click.
 - Without a connected account, the "Import my existing CV" card says up front that sorting
   the text into sections needs one. It used to say so only after you had picked a PDF.
+- Counts are written with real plurals: "1 expérience, 3 compétences" rather than
+  "expérience(s)", in the CV page and in the panel's open questions.
 - Indeed Apply (`smartapply.indeed.com`), where Indeed's own application forms live, is now a
   supported board: the button shows there and automatic filling works, like on Indeed itself.
 

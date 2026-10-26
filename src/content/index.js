@@ -649,7 +649,16 @@
         const line = 'margin-top:8px;color:#3f3f46';
         summary.replaceChildren(
           h('b', null, headline),
-          ...(c.ai ? [h('br'), h('span', 'color:#71717a', t('panel_open_questions', [String(c.ai)]))] : []),
+          ...(c.ai
+            ? [
+                h('br'),
+                h(
+                  'span',
+                  'color:#71717a',
+                  c.ai === 1 ? t('panel_open_questions_one') : t('panel_open_questions', [String(c.ai)]),
+                ),
+              ]
+            : []),
           h(
             'ul',
             'margin:8px 0 0;padding-left:18px;color:#3f3f46',
