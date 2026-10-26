@@ -73,7 +73,7 @@ formule).
 VIE PRIVÉE
 Votre CV reste dans votre navigateur. Le remplissage n'envoie ni votre CV ni le contenu des
 formulaires : avec un compte connecté, seuls des compteurs remontent (combien de champs remplis,
-sur quel site). Seules les fonctions IA, lancées par vous, transmettent le CV et l'annonce aux
+de quel type, sur quel site). Seules les fonctions IA, lancées par vous, transmettent le CV et l'annonce aux
 serveurs d'Epimoni.
 
 Code source ouvert, sous licence Apache 2.0.
@@ -105,8 +105,8 @@ CAREFUL FILLING
   made from your CV.
 
 WHERE IT WORKS
-France Travail, HelloWork, APEC, Welcome to the Jungle, Indeed and LinkedIn. On any other
-careers site (Workday, Taleez, in-house forms), just click the toolbar icon, or turn on
+LinkedIn and Indeed, plus the main French job boards (France Travail, HelloWork, APEC,
+Welcome to the Jungle). On any other careers site (Workday, Taleez, in-house forms), just click the toolbar icon, or turn on
 automatic filling for that site.
 
 YOUR APPLICATIONS AT A GLANCE
@@ -122,7 +122,8 @@ to the extension (free: one an hour; unlimited with a plan).
 
 PRIVACY
 Your CV stays in your browser. Filling sends neither your CV nor what the form holds: with an
-account connected, only counts are reported (how many fields were filled, on which site). Only
+account connected, only counts are reported (how many fields were filled,
+of which kind, on which site). Only
 the AI features, started by you, send your CV and the ad to Epimoni's servers.
 
 Open source, Apache 2.0 licence.
@@ -159,8 +160,8 @@ OSTROŻNE WYPEŁNIANIE
   płatności ruszane. W razie wątpliwości pole zostaje puste.
 
 GDZIE TO DZIAŁA
-France Travail, HelloWork, APEC, Welcome to the Jungle, Indeed i LinkedIn. Na każdej innej
-stronie kariery (Workday, Pracuj.pl, formularze firmowe) wystarczy kliknąć ikonę na pasku albo
+LinkedIn i Indeed, a także główne francuskie portale z ofertami (France Travail, HelloWork,
+APEC, Welcome to the Jungle). Na każdej innej stronie kariery (Workday, Pracuj.pl, formularze firmowe) wystarczy kliknąć ikonę na pasku albo
 włączyć automatyczne wypełnianie dla tej strony.
 
 TWOJE APLIKACJE W JEDNYM MIEJSCU
@@ -177,7 +178,8 @@ połączonego z rozszerzeniem (za darmo: jedna na godzinę; bez limitu w planie)
 
 PRYWATNOŚĆ
 Twoje CV zostaje w przeglądarce. Wypełnianie nie wysyła ani CV, ani treści formularzy: przy
-połączonym koncie przesyłane są tylko liczniki (ile pól wypełniono, na jakiej stronie). Tylko
+połączonym koncie przesyłane są tylko liczniki (ile pól wypełniono, jakiego
+rodzaju, na jakiej stronie). Tylko
 funkcje AI, uruchamiane przez ciebie, przesyłają CV i ofertę na serwery Epimoni.
 
 Otwarte źródło, licencja Apache 2.0.
@@ -210,8 +212,8 @@ UN RELLENO PRUDENTE
   partir de su CV.
 
 DÓNDE FUNCIONA
-France Travail, HelloWork, APEC, Welcome to the Jungle, Indeed y LinkedIn. En cualquier otra
-web de empleo (Workday, Taleez, formularios propios), haga clic en el icono de la extensión o
+LinkedIn e Indeed, además de los principales portales franceses (France Travail, HelloWork,
+APEC, Welcome to the Jungle). En cualquier otra web de empleo (Workday, Taleez, formularios propios), haga clic en el icono de la extensión o
 active el relleno automático para esa web.
 
 SUS CANDIDATURAS DE UN VISTAZO
@@ -229,8 +231,8 @@ plan).
 
 PRIVACIDAD
 Su CV se queda en su navegador. El relleno no envía ni su CV ni el contenido de los
-formularios: con una cuenta conectada, solo se envían contadores (cuántos campos se rellenaron
-y en qué web). Solo las funciones de IA, que usted lanza, envían el CV y el anuncio a los
+formularios: con una cuenta conectada, solo se envían contadores (cuántos campos se rellenaron,
+de qué tipo y en qué web). Solo las funciones de IA, que usted lanza, envían el CV y el anuncio a los
 servidores de Epimoni.
 
 Código abierto, licencia Apache 2.0.
@@ -263,8 +265,8 @@ UM PREENCHIMENTO CUIDADOSO
   ou um criado a partir do seu currículo.
 
 ONDE FUNCIONA
-France Travail, HelloWork, APEC, Welcome to the Jungle, Indeed e LinkedIn. Em qualquer outro
-site de carreiras (Workday, Gupy, formulários próprios), clique no ícone da extensão ou ative o
+LinkedIn e Indeed, além dos principais sites de vagas franceses (France Travail, HelloWork,
+APEC, Welcome to the Jungle). Em qualquer outro site de carreiras (Workday, Gupy, formulários próprios), clique no ícone da extensão ou ative o
 preenchimento automático para aquele site.
 
 SUAS CANDIDATURAS EM UM SÓ LUGAR
@@ -283,7 +285,7 @@ plano).
 PRIVACIDADE
 Seu currículo fica no seu navegador. O preenchimento não envia nem o currículo nem o conteúdo
 dos formulários: com uma conta conectada, só são enviados contadores (quantos campos foram
-preenchidos e em qual site). Só as funções de IA, iniciadas por você, enviam o currículo e o
+preenchidos, de que tipo e em qual site). Só as funções de IA, iniciadas por você, enviam o currículo e o
 anúncio aos servidores da Epimoni.
 
 Código aberto, licença Apache 2.0.
@@ -315,8 +317,8 @@ UNA COMPILAZIONE PRUDENTE
   uno creato dal tuo CV.
 
 DOVE FUNZIONA
-France Travail, HelloWork, APEC, Welcome to the Jungle, Indeed e LinkedIn. Su qualsiasi altro
-sito di carriera (Workday, InfoJobs, moduli aziendali) clicca sull'icona dell'estensione,
+LinkedIn e Indeed, oltre ai principali siti di annunci francesi (France Travail, HelloWork,
+APEC, Welcome to the Jungle). Su qualsiasi altro sito di carriera (Workday, InfoJobs, moduli aziendali) clicca sull'icona dell'estensione,
 oppure attiva la compilazione automatica per quel sito.
 
 LE TUE CANDIDATURE A COLPO D'OCCHIO
@@ -334,8 +336,8 @@ piano).
 
 PRIVACY
 Il tuo CV resta nel browser. La compilazione non invia né il CV né il contenuto dei moduli: con
-un account collegato vengono inviati solo dei contatori (quanti campi compilati, su quale
-sito). Solo le funzioni di IA, avviate da te, inviano il CV e l'annuncio ai server di Epimoni.
+un account collegato vengono inviati solo dei contatori (quanti campi compilati, di che
+tipo, su quale sito). Solo le funzioni di IA, avviate da te, inviano il CV e l'annuncio ai server di Epimoni.
 
 Codice aperto, licenza Apache 2.0.
 ```
@@ -371,9 +373,10 @@ Tick:
 - Authentication information: the Epimoni sign-in token, when the user connects an account.
 - Website content: the job advert text, sent only when the user requests an analysis, a cover
   letter or a tailored CV.
-- User activity: per-site counts of fields filled, accepted and dismissed. No keystrokes,
-  values or page content, but they are counts of clicks, and declaring more than the strict
-  reading requires is the side to err on.
+- User activity: per-site counts of fields filled, accepted and dismissed, and which kinds of
+  field were filled ("email", "phone"), sent only once an Epimoni account is connected. No
+  keystrokes, values, labels or page content, but they are counts of clicks, and declaring more
+  than the strict reading requires is the side to err on.
 
 Leave unticked: health, financial and payment, personal communications, location (the CV's city
 is part of the PII above, not device location), web history.

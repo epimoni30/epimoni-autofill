@@ -1,6 +1,6 @@
 # Epimoni Autofill privacy policy
 
-*Last updated: 2 October 2026. [Version française plus bas.](#fr)*
+*Last updated: 27 October 2026. [Version française plus bas.](#fr)*
 
 Epimoni Autofill is a browser extension that fills job application forms from a CV you keep in
 the extension. This page says what it stores, what it sends, and to whom. It describes the
@@ -78,14 +78,13 @@ All requests go to Epimoni's own server (an AWS endpoint in the EU, Frankfurt re
 | You click "Tailor my CV with AI" | your CV, the text of the advert, a sign-in token | to propose changes to your CV for that job, which you review; only the ones you keep make a new CV, and your original is not changed |
 | You click "Create the CV with AI" on the extension's CV page | the text of your CV, read from your PDF on your computer or pasted, after you have seen it; a sign-in token | to sort it into the sections of a CV, copied as written. Nothing is stored on the server |
 | You open the extension's menu while connected | your sign-in token | to show your remaining allowance |
-| If you are connected or have run an analysis: when a supported job board shows an application form, after a fill, and when you leave that page | the site's host name; how many form fields the page has and how many were filled, accepted or dismissed; which *kinds* of field were filled (for example "email", "phone") | to find the sites where filling fails |
+| If you have connected an Epimoni account: when a page where the extension runs (a supported job board, a site you turned the button or automatic filling on for, or a page you filled from the toolbar icon) shows an application form, after a fill, and when you leave that page | the site's host name; how many form fields the page has and how many were filled, accepted or dismissed; which *kinds* of field were filled (for example "email", "phone") | to find the sites where filling fails |
 
 Reading a PDF to import it, saving a cover letter as a PDF, and the application board all happen
 on your computer and send nothing.
 
 The usage statistics in the last row never contain what you typed, what was filled, field labels
-or page content. Nothing is sent by an install that has never run an analysis or been connected
-to an account.
+or page content. Nothing is sent by an install that has never been connected to an account.
 
 To produce an analysis, Epimoni's server sends the CV and the advert to an AI model provider
 (OpenAI) acting as a processor. They are not used to train models. Analyses run while connected
@@ -125,7 +124,7 @@ the extension's changelog.
 
 # Politique de confidentialité d'Epimoni Autofill
 
-*Mise à jour : 2 octobre 2026.*
+*Mise à jour : 27 octobre 2026.*
 
 Epimoni Autofill est une extension de navigateur qui remplit les formulaires de candidature à
 partir d'un CV conservé dans l'extension. Cette page dit ce qu'elle enregistre, ce qu'elle envoie
@@ -208,14 +207,13 @@ Francfort).
 | Vous cliquez « Adapter mon CV avec l'IA » | votre CV, le texte de l'annonce, un jeton de connexion | proposer des modifications de votre CV pour ce poste, que vous relisez ; seules celles que vous gardez forment un nouveau CV, et l'original n'est pas modifié |
 | Vous cliquez « Créer le CV avec l'IA » sur la page CV de l'extension | le texte de votre CV, lu dans votre PDF sur votre ordinateur ou collé, après que vous l'avez vu ; un jeton de connexion | le ranger dans les rubriques d'un CV, recopié tel quel. Rien n'est conservé sur le serveur |
 | Vous ouvrez le menu de l'extension en étant connecté | votre jeton de connexion | afficher le quota restant |
-| Si vous êtes connecté ou avez lancé une analyse : quand un site d'emploi pris en charge affiche un formulaire de candidature, après un remplissage, et quand vous quittez cette page | le nom du site ; le nombre de champs du formulaire, et combien ont été remplis, acceptés ou écartés ; les *types* de champs remplis (par exemple « e-mail », « téléphone ») | repérer les sites où le remplissage échoue |
+| Si vous avez connecté un compte Epimoni : quand une page où l'extension fonctionne (un site d'emploi pris en charge, un site où vous avez activé le bouton ou le remplissage automatique, ou une page remplie depuis l'icône de la barre d'outils) affiche un formulaire de candidature, après un remplissage, et quand vous quittez cette page | le nom du site ; le nombre de champs du formulaire, et combien ont été remplis, acceptés ou écartés ; les *types* de champs remplis (par exemple « e-mail », « téléphone ») | repérer les sites où le remplissage échoue |
 
 La lecture d'un PDF à importer, l'enregistrement d'une lettre en PDF et le tableau des
 candidatures se font sur votre ordinateur et n'envoient rien.
 
 Ces statistiques ne contiennent jamais ce que vous avez saisi, ce qui a été rempli, les libellés
-ni le contenu des pages. Une installation qui n'a jamais lancé d'analyse ni été connectée à un
-compte n'envoie rien.
+ni le contenu des pages. Une installation qui n'a jamais été connectée à un compte n'envoie rien.
 
 Pour produire une analyse, le serveur d'Epimoni transmet le CV et l'annonce à un fournisseur de
 modèles d'IA (OpenAI), en qualité de sous-traitant. Ils ne servent pas à entraîner de modèles.

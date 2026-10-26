@@ -54,6 +54,9 @@ carries the same number, and the release workflow refuses a tag that does not ma
 
 ### Fixed
 
+- The extension's store description says the analysis and the letter need an Epimoni account;
+  it read as if they worked without one. The English pages say "CV" throughout, and the
+  Spanish consent messages use "usted" like the rest.
 - French diploma fields that name a CAP ("Spécialité du CAP", "Nom du CAP") are no longer
   taken for a postcode or a surname.
 - "First name (as on file)" and other English first-name labels with "file" or "social" in

@@ -3,7 +3,7 @@
     "message": "Epimoni: automatyczne wypełnianie aplikacji"
   },
   "ext_description": {
-    "message": "Wypełnia formularze aplikacyjne, także bez konta Epimoni, i analizuje oferty pracy na LinkedIn i portalach z ogłoszeniami."
+    "message": "Wypełnia formularze aplikacyjne z twojego CV, bez konta. Z kontem Epimoni: analiza ofert i list motywacyjny. LinkedIn i portale."
   },
   "action_title": {
     "message": "Wypełnij tę aplikację"

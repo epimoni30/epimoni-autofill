@@ -3,7 +3,7 @@
     "message": "Epimoni: rellenar candidaturas"
   },
   "ext_description": {
-    "message": "Rellena sus candidaturas, incluso sin cuenta Epimoni, y analiza las ofertas: France Travail, HelloWork, APEC, LinkedIn."
+    "message": "Rellena sus candidaturas desde su CV, sin cuenta. Con una cuenta Epimoni: análisis de ofertas y carta. LinkedIn y más portales."
   },
   "action_title": {
     "message": "Rellenar esta candidatura"
@@ -272,7 +272,7 @@
     }
   },
   "panel_tick_current": {
-    "message": "Puesto actual: la fecha de fin se deja vacía. Marca tú «trabajo aquí actualmente» si el formulario lo pide."
+    "message": "Puesto actual: la fecha de fin se deja vacía. Marque usted «trabajo aquí actualmente» si el formulario lo pide."
   },
   "panel_filled_one": {
     "message": "1 campo rellenado"
@@ -1203,7 +1203,7 @@
     "message": "Permitir el envío para el análisis y la carta"
   },
   "consent_body": {
-    "message": "Para analizar una oferta o escribir una carta, Epimoni envía tu CV y el texto del anuncio a su servidor, en el momento en que lo pides. Firefox te pide tu consentimiento antes."
+    "message": "Para analizar una oferta o escribir una carta, Epimoni envía su CV y el texto del anuncio a su servidor, en el momento en que usted lo pide. Firefox le pide su consentimiento antes."
   },
   "consent_core": {
     "message": "Rellenar formularios no envía nada y funciona sin este consentimiento."
@@ -1212,16 +1212,16 @@
     "message": "Permitir"
   },
   "consent_done": {
-    "message": "Permitido. Puedes cerrar esta pestaña."
+    "message": "Permitido. Puede cerrar esta pestaña."
   },
   "consent_refused": {
     "message": "No se ha permitido nada. El relleno sigue funcionando; el análisis y la carta siguen desactivados."
   },
   "consent_pair_note": {
-    "message": "Firefox también te pedirá permiso para enviar tu CV y el anuncio cuando uses el análisis o la carta."
+    "message": "Firefox también le pedirá permiso para enviar su CV y el anuncio cuando use el análisis o la carta."
   },
   "ai_consent_note": {
-    "message": "Firefox pide tu consentimiento antes de que tu CV y el anuncio se envíen a Epimoni."
+    "message": "Firefox pide su consentimiento antes de que su CV y el anuncio se envíen a Epimoni."
   },
   "ai_consent_cta": {
     "message": "Permitir el envío"
