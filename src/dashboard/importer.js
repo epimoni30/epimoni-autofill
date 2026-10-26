@@ -31,14 +31,20 @@ export async function initImporter(reload) {
   const state = await send({ type: 'state' });
   if (!state.ai) {
     go.disabled = true;
-    note.textContent = t('opt_pdf_import_needs_account');
-    note.append(' ');
-    const a = document.createElement('a');
-    a.href = SITE;
-    a.target = '_blank';
-    a.rel = 'noopener';
-    a.textContent = t('popup_ai_connect');
-    note.appendChild(a);
+    // Said on the card itself, before a file is chosen, and again beside the disabled button:
+    // reading a whole PDF only to learn then that the next step is closed wastes the person's
+    // time.
+    for (const box of [el('pdf-import-needs'), note]) {
+      box.textContent = t('opt_pdf_import_needs_account');
+      box.append(' ');
+      const a = document.createElement('a');
+      a.href = SITE;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = t('popup_ai_connect');
+      box.appendChild(a);
+      box.hidden = false;
+    }
   }
 
   const showReview = () => {

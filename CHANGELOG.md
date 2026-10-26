@@ -49,6 +49,8 @@ carries the same number, and the release workflow refuses a tag that does not ma
   a search or a message. LinkedIn opens a job without loading a new page, so a script that ran
   only on its Jobs pages never arrived. Only the button runs on the rest of LinkedIn; the
   filler comes with your click.
+- Without a connected account, the "Import my existing CV" card says up front that sorting
+  the text into sections needs one. It used to say so only after you had picked a PDF.
 - Indeed Apply (`smartapply.indeed.com`), where Indeed's own application forms live, is now a
   supported board: the button shows there and automatic filling works, like on Indeed itself.
 

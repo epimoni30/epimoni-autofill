@@ -1957,6 +1957,19 @@ check(
   opt.unresolved.join(', ') || `${opt.tagged} keys`,
 );
 check('the CV editor leaks no raw message keys', opt.raw.length === 0, opt.raw.join(', '));
+// Said before a PDF is chosen, not only after reading it: the sorting needs an account.
+const needs = await options.evaluate(() => {
+  const box = document.getElementById('pdf-import-needs');
+  return {
+    shown: Boolean(box && !box.hidden && box.offsetHeight > 0),
+    link: box?.querySelector('a')?.href || '',
+  };
+});
+check(
+  'without an account, the PDF import card says up front that sorting needs one',
+  needs.shown && needs.link.includes('extension-chrome'),
+  JSON.stringify(needs),
+);
 
 // This install is not paired, so there is no allowance to describe. The page used to say
 // "1 analysis per hour, no account", left over from the anonymous tier, which the panel then
