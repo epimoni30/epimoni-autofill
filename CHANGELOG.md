@@ -45,6 +45,13 @@ carries the same number, and the release workflow refuses a tag that does not ma
 
 ### Fixed
 
+- The "Remplir avec Epimoni" button now shows on LinkedIn when you reach a job from the feed,
+  a search or a message. LinkedIn opens a job without loading a new page, so a script that ran
+  only on its Jobs pages never arrived. Only the button runs on the rest of LinkedIn; the
+  filler comes with your click.
+- Indeed Apply (`smartapply.indeed.com`), where Indeed's own application forms live, is now a
+  supported board: the button shows there and automatic filling works, like on Indeed itself.
+
 - LinkedIn Easy Apply's "add an experience" form: the start month and year are filled from
   the job, like its title and company. A month and year under their own "From" caption were
   read as a separate group and left out of the job.

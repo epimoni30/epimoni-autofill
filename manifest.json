@@ -51,7 +51,8 @@
         "https://*.apec.fr/*",
         "https://*.welcometothejungle.com/*",
         "https://*.indeed.fr/*",
-        "https://fr.indeed.com/*"
+        "https://fr.indeed.com/*",
+        "https://smartapply.indeed.com/*"
       ]
     },
     {
@@ -59,6 +60,12 @@
       "all_frames": true,
       "run_at": "document_idle",
       "matches": ["https://www.linkedin.com/jobs/*"]
+    },
+    {
+      "js": ["offer.js"],
+      "run_at": "document_idle",
+      "matches": ["https://www.linkedin.com/*"],
+      "exclude_matches": ["https://www.linkedin.com/jobs/*"]
     },
     {
       "js": ["src/epimoni/bridge.js"],

@@ -243,10 +243,16 @@
     clearTimeout(timer);
   };
 
-  send({ type: 'offer:state' }).then((state) => {
-    // A site that fills on its own needs no button; one that was already filled needs none
-    // either (the panel is there).
-    if (!state.ok || state.auto) return;
+  send({ type: 'offer:state' }).then(async (state) => {
+    if (!state.ok) return;
+    // A site that fills on its own needs no button, as long as the filler is on this page to
+    // do it. It is not when a single-page site moved here from an address it does not run on
+    // (LinkedIn's feed, then a job): then the button is the only way to fill. Scripts injected
+    // separately do not arrive in a set order, so the filler gets a moment to show up.
+    if (state.auto) {
+      if (!window.__epimoniLoaded) await new Promise((r) => setTimeout(r, 1500));
+      if (window.__epimoniLoaded) return;
+    }
     const check = () => {
       // Filled from the toolbar meanwhile: the panel takes the corner, the button goes.
       if (document.getElementById('epimoni-panel')) {

@@ -120,3 +120,19 @@ test('an all-sites grant covers every listed site, and turns the button on every
     'withdrawn, unregistered',
   );
 });
+
+test('the shipped manifest: Indeed Apply is a board, and LinkedIn gets the button on every page', async () => {
+  const { readFileSync } = await import('node:fs');
+  const real = JSON.parse(readFileSync(new URL('../manifest.json', import.meta.url), 'utf8'));
+  assert.equal(sites.declaredFor('smartapply.indeed.com', real), true);
+  assert.equal(sites.declaredFor('www.linkedin.com', real), true);
+  // The button, not the filler, runs on all of LinkedIn: a person who opens the feed and then
+  // a job never loads a new page, so a script limited to /jobs/ would never arrive.
+  const button = real.content_scripts.filter((cs) => cs.matches.includes('https://www.linkedin.com/*'));
+  assert.equal(button.length, 1);
+  assert.deepEqual(button[0].js, ['offer.js']);
+  granted = ['https://*/*'];
+  await sites.syncOfferScript(real);
+  const offer = registered.find((r) => r.id === 'epimoni-offer');
+  assert.ok(offer.excludeMatches.includes('https://www.linkedin.com/*'), 'not twice on LinkedIn');
+});
