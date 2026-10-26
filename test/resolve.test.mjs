@@ -554,9 +554,10 @@ test('an expected salary range is asked of the person; agreeing with the adverti
 
 // ── Italian ──────────────────────────────────────────────────────────────────────────────
 //
-// Bare "Nome" is a first name in Italian and the whole name in Brazilian Portuguese, so it is
-// offered rather than written. "Nome e cognome" and "Cognome" are not in doubt. Italian forms
-// also ask for a certified e-mail (PEC) and a birthplace, neither of which is in a CV.
+// Bare "Nome" is a first name in Italian and the whole name in Brazilian Portuguese, so without
+// a page language it is offered rather than written. "Nome e cognome" and "Cognome" are not in
+// doubt. Italian forms also ask for a certified e-mail (PEC) and a birthplace, neither of which
+// is in a CV.
 
 const it = (label, opts) => key(normalize(label), opts);
 const itBlock = (label, at, opts) => blockKey(normalize(label), at, opts);
@@ -589,6 +590,41 @@ test('an Italian form asks for things that are not the candidate', () => {
   assert.equal(it('Anni di esperienza nella vendita'), 'skip:no-match');
   assert.notEqual(it('Hai bisogno di uno sponsor per il permesso di lavoro?'), 'work_authorization');
   assert.notEqual(it('Lettera di presentazione', { type: 'file' }), 'cv_file');
+});
+
+// The Italian pack is merged into every page, so its words must not change what other
+// languages' labels mean. Each case below did, before its veto.
+test('the Italian pack leaves French, English and Portuguese labels as they were', () => {
+  // In French a CAP is a diploma, not a postcode.
+  assert.equal(it('Spécialité du CAP'), 'skip:no-match');
+  assert.equal(it('Intitulé du CAP ou BEP'), 'skip:no-match');
+  assert.equal(it('Diplôme (CAP, BEP, Bac)'), 'education_degree');
+  assert.equal(it('Nom du CAP'), 'skip:no-match');
+  assert.equal(it('C.A.P.'), 'postal_code');
+  // "file" and "social" are English words, so the vetoes are phrases.
+  assert.equal(it('First name (as on file)'), 'given_name');
+  assert.equal(it('Legal first name (as it appears on your social insurance number)'), 'given_name');
+  assert.equal(it('Nome social'), 'skip:no-match');
+  assert.equal(it('Nome do projeto'), 'skip:no-match');
+  assert.equal(it('Esperienza totale'), 'years_experience');
+});
+
+// What the page says its language is breaks a tie its own pack names, and nothing else.
+test('bare "Nome" follows the page language, and stays a suggestion without one', () => {
+  const on = (lang) => {
+    const r = createResolver({ lexicons: PACKS, autocomplete: AUTOCOMPLETE, lang });
+    return (label) => {
+      const d = r.resolve(el(normalize(label)));
+      return d.action === 'fill' ? d.key : `${d.action}:${d.reason}`;
+    };
+  };
+  assert.equal(on('pt-BR')('Nome'), 'full_name');
+  assert.equal(on('pt-BR')('Seu nome'), 'full_name');
+  assert.equal(on('it')('Nome'), 'given_name');
+  // A Portuguese phrase on an Italian page is not the tied word.
+  assert.equal(on('it')('Seu nome'), 'suggest:ambiguous');
+  for (const lang of ['', 'fr', 'en'])
+    assert.equal(on(lang)('Nome'), 'suggest:ambiguous', `lang=${lang || '(none)'}`);
 });
 
 test('Italian blocks: "corso di laurea" is the field of study, the title is the degree', () => {

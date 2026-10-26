@@ -14,7 +14,11 @@
   const DEV = typeof EPIMONI_DEV !== 'undefined' && EPIMONI_DEV;
   if (DEV) console.log('[epimoni] content script active on', location.href);
 
-  const resolver = createResolver({ lexicons: EPIMONI_PACKS, autocomplete: EPIMONI_AUTOCOMPLETE });
+  const resolver = createResolver({
+    lexicons: EPIMONI_PACKS,
+    autocomplete: EPIMONI_AUTOCOMPLETE,
+    lang: document.documentElement.lang,
+  });
   const send = (msg) => new Promise((r) => chrome.runtime.sendMessage(msg, (x) => r(x || {})));
   // Never show a canonical key to a user: they are internal names, and an English one on a
   // French form reads as a bug. A missing translation falls back to the key with underscores

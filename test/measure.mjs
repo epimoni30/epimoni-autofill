@@ -32,7 +32,7 @@ const HERE = fileURLToPath(new URL('.', import.meta.url));
  */
 function bundle() {
   return `${bundleContent(join(HERE, '..'))}
-    const __resolver = createResolver({ lexicons: EPIMONI_PACKS, autocomplete: EPIMONI_AUTOCOMPLETE });`;
+    const __resolver = createResolver({ lexicons: EPIMONI_PACKS, autocomplete: EPIMONI_AUTOCOMPLETE, lang: document.documentElement.lang });`;
 }
 
 const RUNNER = (profileJson, entriesJson) =>

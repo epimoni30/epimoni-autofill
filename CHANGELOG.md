@@ -45,12 +45,19 @@ carries the same number, and the release workflow refuses a tag that does not ma
 
 ### Changed
 
+- A page that says it is in Portuguese fills a bare "Nome" or "Seu nome" with your full name,
+  and one in Italian fills "Nome" with your first name. Without a page language the field is
+  offered for you to confirm, since the two languages read the word differently.
 - When a board already has one of your saved CVs ticked (LinkedIn's CV step), your CV is
   offered instead of uploaded. Uploading would replace that choice and add a file to your
   account on the board.
 
 ### Fixed
 
+- French diploma fields that name a CAP ("Spécialité du CAP", "Nom du CAP") are no longer
+  taken for a postcode or a surname.
+- "First name (as on file)" and other English first-name labels with "file" or "social" in
+  them are filled again, and a project's name ("Nome do projeto") is no longer taken for yours.
 - The "Remplir avec Epimoni" button now shows on LinkedIn when you reach a job from the feed,
   a search or a message. LinkedIn opens a job without loading a new page, so a script that ran
   only on its Jobs pages never arrived. Only the button runs on the rest of LinkedIn, and it

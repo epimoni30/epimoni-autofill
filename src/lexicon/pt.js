@@ -84,6 +84,9 @@ export default {
       any: ['projetos'],
     },
   },
+  // On a page that says it is in Portuguese, bare "nome" is the whole name (Italian reads it as
+  // a first name; see `ties` in src/content/resolve.js).
+  ties: { nome: 'full_name', 'seu nome': 'full_name' },
   keys: {
     given_name: {
       any: ['primeiro nome', 'nome proprio'],
@@ -110,6 +113,7 @@ export default {
         'faculdade',
         'instituicao',
         'curso',
+        'projeto',
         'referencia',
         'contato',
         'mae',

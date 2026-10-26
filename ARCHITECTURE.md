@@ -799,7 +799,10 @@ such as "Immédiate": that is offered too.
 - Language packs are merged, never chosen by the page's language, so cross-language collisions are real and
   must be handled in the `not` lists: `nombre` is a name in Spanish and a count in French;
   `resume` is a CV in English and a summary in French (which is why the summary key does not
-  list the bare word at all).
+  list the bare word at all). The one place the page's language counts is a tie: a pack's
+  `ties` name what a word means in that language ("nome" is a first name in Italian, the whole
+  name in Portuguese), and only a page whose `lang` is that language turns that word's
+  suggestion into a fill, between the two keys it was contested by.
 - `thirdParty` (in each language pack) disqualifies every personal key at once when the
   label mentions an emergency contact, a recruiter, a referrer or a family member. Add to that
   list, not to twenty individual `not` lists. Which keys are personal is the registry's

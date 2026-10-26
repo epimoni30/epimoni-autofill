@@ -22,7 +22,7 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const OUT = join(ROOT, 'dist', 'probe-console.js');
 
 const RUN = `
-  const resolver = createResolver({ lexicons: EPIMONI_PACKS, autocomplete: EPIMONI_AUTOCOMPLETE });
+  const resolver = createResolver({ lexicons: EPIMONI_PACKS, autocomplete: EPIMONI_AUTOCOMPLETE, lang: document.documentElement.lang });
   const active = activeFillers(EPIMONI_FILLERS, document, location.href);
   const evidence = (el) =>
     active.flatMap((f) => {

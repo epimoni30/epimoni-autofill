@@ -47,7 +47,7 @@ const cv = JSON.parse(readFileSync(join(ROOT, 'test/cv.fixture.json'), 'utf8'));
 const profile = toProfile(cv, SAMPLE_EXTRAS);
 const entries = toEntries(cv);
 const engine = `${bundleContent(ROOT)}
-  const __resolver = createResolver({ lexicons: EPIMONI_PACKS, autocomplete: EPIMONI_AUTOCOMPLETE });`;
+  const __resolver = createResolver({ lexicons: EPIMONI_PACKS, autocomplete: EPIMONI_AUTOCOMPLETE, lang: document.documentElement.lang });`;
 
 // Runs in the page. The text shown for a control is the strongest one the engine had: a real
 // label first, then the text around it, then whatever came first.

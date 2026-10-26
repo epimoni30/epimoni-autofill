@@ -97,6 +97,9 @@ export default {
       any: ['progetti'],
     },
   },
+  // On a page that says it is in Italian, bare "nome" is the first name (Portuguese reads it
+  // as the whole name; see `ties` in src/content/resolve.js).
+  ties: { nome: 'given_name' },
   keys: {
     given_name: {
       any: ['nome', 'nome proprio'],
@@ -107,7 +110,8 @@ export default {
         'azienda',
         'societa',
         'utente',
-        'file',
+        'nome file',
+        'nome del file',
         'scuola',
         'universita',
         'istituto',
@@ -118,8 +122,8 @@ export default {
         'referenza',
         // Bare "nome" is a Portuguese word too, so the Portuguese pack's vetoes for its own
         // "nome" apply here as well: "nome social", "nome da empresa" are not a first name.
-        'social',
-        'fantasia',
+        'nome social',
+        'nome fantasia',
         'empresa',
         'usuario',
         'arquivo',
@@ -130,6 +134,7 @@ export default {
         'faculdade',
         'instituicao',
         'curso',
+        'projeto',
         'referencia',
         'contato',
         'anos',
@@ -145,7 +150,8 @@ export default {
         'azienda',
         'societa',
         'utente',
-        'file',
+        'nome file',
+        'nome del file',
         'scuola',
         'universita',
         'istituto',
@@ -176,8 +182,24 @@ export default {
       not: ['email', 'e mail', 'pec', 'web', 'url', 'sito', 'linkedin', 'ip', 'domicilio fiscale'],
     },
     postal_code: {
-      any: ['cap', 'codice postale', 'codice di avviamento postale'],
-      not: [],
+      any: ['cap', 'c a p', 'codice postale', 'codice di avviamento postale'],
+      // In French a CAP is a diploma: "Spécialité du CAP", "Intitulé du CAP ou BEP".
+      not: [
+        'bep',
+        'bac',
+        'diplome',
+        'specialite',
+        'intitule',
+        'titulaire',
+        'niveau',
+        'formation',
+        'certificat',
+        'metier',
+        'option',
+        'obtenu',
+        'du cap',
+        'de cap',
+      ],
     },
     city: {
       any: ['citta', 'comune', 'citta di residenza', 'comune di residenza', 'localita'],
@@ -223,9 +245,14 @@ export default {
       not: ['file', 'allegato', 'allega', 'carica', 'caricare', 'curriculum', 'cv'],
     },
     years_experience: {
-      any: ['anni di esperienza', 'quanti anni di esperienza', 'esperienza totale in anni'],
+      any: [
+        'anni di esperienza',
+        'quanti anni di esperienza',
+        'anni di esperienza totali',
+        'esperienza totale',
+      ],
       // "Anni di esperienza in vendita" asks about one domain, not the career total.
-      not: ['in', 'nel', 'nella', 'con', 'come', 'nell'],
+      not: ['esperienza in', 'nel', 'nella', 'con', 'come', 'nell'],
     },
     salary_expectation: {
       any: [
