@@ -293,8 +293,11 @@
       }
     }
   },
+  "panel_open_questions_one": {
+    "message": "1 domanda aperta"
+  },
   "panel_open_questions": {
-    "message": "Domande aperte: $COUNT$",
+    "message": "$COUNT$ domande aperte",
     "placeholders": {
       "count": {
         "content": "$1"
@@ -658,17 +661,55 @@
   "opt_source_none": {
     "message": "Nessun CV salvato: la compilazione non farà nulla."
   },
-  "opt_counts": {
-    "message": "Informazioni: $FIELDS$ · Esperienze: $WORK$ · Competenze: $SKILLS$",
+  "opt_plural_locale": {
+    "message": "it",
+    "description": "The BCP 47 tag of this file's language, for Intl.PluralRules: picks the _one or _many form of a count."
+  },
+  "opt_count_fields_one": {
+    "message": "$COUNT$ informazione",
     "placeholders": {
-      "fields": {
+      "count": {
         "content": "$1"
-      },
-      "work": {
-        "content": "$2"
-      },
-      "skills": {
-        "content": "$3"
+      }
+    }
+  },
+  "opt_count_fields_many": {
+    "message": "$COUNT$ informazioni",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_count_work_one": {
+    "message": "$COUNT$ esperienza",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_count_work_many": {
+    "message": "$COUNT$ esperienze",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_count_skills_one": {
+    "message": "$COUNT$ competenza",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_count_skills_many": {
+    "message": "$COUNT$ competenze",
+    "placeholders": {
+      "count": {
+        "content": "$1"
       }
     }
   },

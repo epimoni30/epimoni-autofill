@@ -291,10 +291,6 @@ Código aberto, licença Apache 2.0.
 
 ### Detailed description (italiano)
 
-The extension's own interface has no Italian translation yet, so an Italian Chrome shows it in
-French (the default locale) until `_locales/it` exists. Publish this listing together with that
-locale, not before.
-
 ```
 Compila le candidature con un clic, partendo da un CV inserito una volta sola.
 
