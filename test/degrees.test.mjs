@@ -60,3 +60,18 @@ test('no level, no scale, or no option at that level: nothing', () => {
   assert.equal(pick(['Oui', 'Non'], 'Master'), null);
   assert.equal(pick(['Junior', 'Senior', 'Master'], 'Master'), null, 'one level name is not a scale');
 });
+
+test('Italian degrees: the named tiers of the laurea, never a bare "laurea"', () => {
+  assert.equal(degreeLevel('Laurea triennale in Economia'), 3);
+  assert.equal(degreeLevel('Laurea magistrale in Ingegneria'), 5);
+  assert.equal(degreeLevel('Dottorato di ricerca'), 8);
+  assert.equal(degreeLevel('Diploma di maturità'), 0);
+  assert.equal(degreeLevel('Laurea in Lettere'), null);
+  assert.equal(
+    pickDegree(
+      ['Diploma di maturità', 'Laurea triennale', 'Laurea magistrale', 'Dottorato'],
+      'Laurea magistrale',
+    ),
+    2,
+  );
+});

@@ -11,6 +11,12 @@ carries the same number, and the release workflow refuses a tag that does not ma
 
 ### Added
 
+- Italian: the extension's interface, and Italian application forms. "Nome e cognome",
+  "Cognome", the CAP, the RAL desiderata and the laurea triennale or magistrale are read; a
+  certified e-mail (PEC), a codice fiscale and a birthplace are left alone. A bare "Nome" is
+  offered rather than filled, because a Brazilian form uses the same word for the whole name.
+  Questions in Italian about the right to work in a country are checked against that country.
+
 - LinkedIn Easy Apply: the "Code pays" list is set from the code your phone number carries
   ("France (+33)"), and the number beside it goes in without that code. A "+1" number is
   matched to your country, or left for you when that doesn't say which.

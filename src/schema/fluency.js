@@ -28,6 +28,7 @@ const WORDS = [
   ['lengua materna', 7, 7],
   ['lingua materna', 7, 7],
   ['lingua nativa', 7, 7],
+  ['madrelingua', 7, 7],
   ['jezyk ojczysty', 7, 7],
   ['maternelle', 7, 7],
   ['natif', 7, 7],
@@ -53,6 +54,7 @@ const WORDS = [
   ['avanzado', 4, 5],
   ['avancado', 4, 5],
   ['zaawansowany', 4, 5],
+  ['avanzato', 4, 5],
   ['professionnel', 4, 5],
   ['professional', 4, 5],
   ['profesional', 4, 5],
@@ -81,6 +83,8 @@ const WORDS = [
   ['iniciante', 1, 2],
   ['podstawowy', 1, 2],
   ['poczatkujacy', 1, 2],
+  ['elementare', 1, 2],
+  ['scolastico', 1, 2],
 ];
 
 const CEFR = /(?:^| )([abc]) ?([12])(?= |$)/g;

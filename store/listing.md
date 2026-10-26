@@ -20,7 +20,7 @@ extension, in French and English.
 ## Store listing
 
 - Category: Productivity, then Workflow & Planning
-- Language: French (default), with English, Spanish and Polish listings
+- Language: French (default), with English, Spanish, Polish and Italian listings
 - Homepage: https://www.epimoni30.com/extension-chrome
 - Support: https://github.com/epimoni30/epimoni-autofill/issues
 - Privacy policy URL: https://github.com/epimoni30/epimoni-autofill/blob/main/PRIVACY.md (the

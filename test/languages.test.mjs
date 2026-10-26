@@ -97,3 +97,15 @@ test('a level question about one named language is recognised', () => {
   assert.notEqual(keyOf("Niveau d'étude", 'select'), 'language_level');
   assert.notEqual(keyOf('Level of education', 'select'), 'language_level');
 });
+
+test('Italian: language names, "madrelingua", and the yes of a question asked in Italian', () => {
+  assert.deepEqual(languagesNamed(normalize('Parli inglese e francese?')), ['en', 'fr']);
+  assert.equal(
+    speaksAnswer(normalize('Parli fluentemente il tedesco?'), [
+      { language: 'tedesco', fluency: 'madrelingua' },
+    ]),
+    true,
+  );
+  assert.equal(speaksAnswer(normalize('Parli spagnolo?'), [{ language: 'inglese', fluency: 'C2' }]), null);
+  assert.equal(yesWord(normalize('Parli inglese?')), 'si');
+});

@@ -17,7 +17,8 @@ const fold = (text) =>
     .replace(/[^a-z0-9+<>-]+/g, ' ')
     .trim();
 
-const MONTHLY = /\b(mois|mensuel|mensuelle|month|monthly|mes|mensual|mensal|miesiecznie|miesiac)\b/;
+const MONTHLY =
+  /\b(mois|mensuel|mensuelle|month|monthly|mes|mensual|mensal|miesiecznie|miesiac|mese|mensile|mensili)\b/;
 
 const num = (digits, k) => Number(digits) * (k ? 1000 : 1);
 
@@ -25,9 +26,11 @@ const num = (digits, k) => Number(digits) * (k ? 1000 : 1);
 export function amountRange(text) {
   const t = ` ${fold(text)} `;
   if (!/\d/.test(t)) return null;
-  let m = t.match(/(?:\bmoins de|\bless than|\bunder|\bmenos de|\bponizej|<)\s*(\d+)\s*(k)?/);
+  let m = t.match(/(?:\bmoins de|\bless than|\bunder|\bmenos de|\bponizej|\bmeno di|<)\s*(\d+)\s*(k)?/);
   if (m) return [0, num(m[1], m[2]) - 0.5];
-  m = t.match(/(?:\bplus de|\bmore than|\bover|\bmas de|\bmais de|\bpowyzej|>)\s*(\d+)\s*(k)?/);
+  m = t.match(
+    /(?:\bplus de|\bmore than|\bover|\bmas de|\bmais de|\bpowyzej|\bpiu di|\boltre|>)\s*(\d+)\s*(k)?/,
+  );
   if (m) return [num(m[1], m[2]) + 0.5, Infinity];
   m = t.match(/\b(\d+)\s*(k)?\s*(?:-|a|to|y|e|et|do)\s*(\d+)\s*(k)?\b/);
   if (m) {

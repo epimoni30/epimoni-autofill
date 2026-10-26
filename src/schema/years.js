@@ -10,13 +10,14 @@
 // Texts arrive raw: the usual normalisation drops the "+" and "-" that brackets are made of
 // ("10+ years", "1-2 ans"), so this module folds case and accents itself and keeps them.
 
-const UNIT = '(?:ans?|annees?|years?|yrs?|anos?|lat|lata|rok|roku)';
+const UNIT = '(?:ans?|annees?|years?|yrs?|anos?|lat|lata|rok|roku|anni|anno)';
 const NONE =
-  /\b(aucune experience|pas d experience|no experience|sin experiencia|sem experiencia|brak doswiadczenia|debutant accepte)\b/;
-const BELOW = /(?:\bmoins d(?:e)?|\bless than|\bunder|\bmenos de|\bponizej|\bmniej niz|<)\s*(\d+)/;
-const ABOVE = /(?:\bplus d(?:e)?|\bmore than|\bover|\bmas de|\bmais de|\bpowyzej|\bponad|\+\s*de|>)\s*(\d+)/;
+  /\b(aucune experience|pas d experience|no experience|sin experiencia|sem experiencia|brak doswiadczenia|nessuna esperienza|senza esperienza|debutant accepte)\b/;
+const BELOW = /(?:\bmoins d(?:e)?|\bless than|\bunder|\bmenos de|\bponizej|\bmniej niz|\bmeno di|<)\s*(\d+)/;
+const ABOVE =
+  /(?:\bplus d(?:e)?|\bmore than|\bover|\bmas de|\bmais de|\bpowyzej|\bponad|\bpiu di|\boltre|\+\s*de|>)\s*(\d+)/;
 const AT_LEAST = new RegExp(
-  `\\b(\\d+)\\s*(?:\\+|${UNIT}\\s*(?:et plus|and more|and above|or more|o mas|ou mais|i wiecej|\\+))`,
+  `\\b(\\d+)\\s*(?:\\+|${UNIT}\\s*(?:et plus|and more|and above|or more|o mas|ou mais|i wiecej|e oltre|o piu|\\+))`,
 );
 const BETWEEN = /\b(\d+)\s*(?:-|a|to|y|e|et|do|and)\s*(\d+)\b/;
 const SINGLE = /\b(\d+)\b/;

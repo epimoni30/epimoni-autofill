@@ -54,3 +54,11 @@ test('a total on a shared edge, a gap, or a list that is not brackets: nothing, 
   assert.equal(pick(FR, ''), null);
   assert.equal(pick(FR, 'huit'), null);
 });
+
+test('Italian brackets', () => {
+  assert.deepEqual(yearsRange('Meno di 1 anno'), [0, 0.5]);
+  assert.deepEqual(yearsRange('Da 3 a 5 anni'), [3, 5]);
+  assert.deepEqual(yearsRange('Più di 10 anni'), [10.5, Infinity]);
+  assert.deepEqual(yearsRange('Nessuna esperienza'), [0, 0]);
+  assert.equal(pickYears(['Meno di 1 anno', 'Da 1 a 3 anni', 'Da 4 a 7 anni', 'Oltre 10 anni'], '6'), 2);
+});
