@@ -20,7 +20,8 @@ extension, in French and English.
 ## Store listing
 
 - Category: Productivity, then Workflow & Planning
-- Language: French (default), with English, Spanish, Polish and Italian listings
+- Language: French (default), with English, Spanish, Portuguese (Brazil), Polish and Italian
+  listings
 - Homepage: https://www.epimoni30.com/extension-chrome
 - Support: https://github.com/epimoni30/epimoni-autofill/issues
 - Privacy policy URL: https://github.com/epimoni30/epimoni-autofill/blob/main/PRIVACY.md (the
@@ -36,17 +37,20 @@ téléphone, poste actuel, expériences, formations, langues, etc.) et les rempl
 Vous relisez, vous corrigez, vous envoyez : l'extension ne soumet jamais rien à votre place.
 
 VOTRE CV, UNE FOIS
-• Saisissez-le dans l'extension, importez votre CV en PDF (lu sur votre ordinateur), un fichier
-  JSON Résumé, ou récupérez celui de votre compte Epimoni.
+• Saisissez-le dans l'extension, importez un fichier JSON Résumé, ou récupérez celui de votre
+  compte Epimoni. Avec un compte connecté, importez aussi votre CV en PDF : son texte est lu sur
+  votre ordinateur, puis rangé en rubriques par l'IA d'Epimoni.
 • Gardez plusieurs versions (CV court, CV détaillé) et choisissez celle qui remplit.
 • Exportez-le à tout moment au format JSON Résumé, lisible par d'autres outils.
 
 UN REMPLISSAGE PRUDENT
-• Sur une page de candidature, un bouton « Remplir avec Epimoni » apparaît : un clic suffit.
+• Sur les sites d'emploi reconnus, un bouton « Remplir avec Epimoni » apparaît : un clic suffit.
 • Chaque champ rempli est listé dans un panneau, avec « Tout annuler ».
 • Expériences et formations remplies bloc par bloc, dates adaptées au formulaire.
 • Aucune case cochée, aucun bouton « Ajouter » pressé, aucun mot de passe ni moyen de paiement
   touché. Dans le doute, le champ est laissé vide.
+• Quand le formulaire demande votre CV en fichier, l'extension joint le PDF que vous lui avez
+  confié, ou un PDF créé à partir de votre CV.
 
 OÙ ÇA MARCHE
 France Travail, HelloWork, APEC, Welcome to the Jungle, Indeed et LinkedIn. Sur n'importe quel
@@ -67,8 +71,10 @@ demandent un compte Epimoni connecté à l'extension (gratuit : une par heure ; 
 formule).
 
 VIE PRIVÉE
-Votre CV reste dans votre navigateur. Le remplissage n'envoie rien. Seules les fonctions IA,
-lancées par vous, transmettent le CV et l'annonce aux serveurs d'Epimoni.
+Votre CV reste dans votre navigateur. Le remplissage n'envoie ni votre CV ni le contenu des
+formulaires : avec un compte connecté, seuls des compteurs remontent (combien de champs remplis,
+sur quel site). Seules les fonctions IA, lancées par vous, transmettent le CV et l'annonce aux
+serveurs d'Epimoni.
 
 Code source ouvert, sous licence Apache 2.0.
 ```
@@ -83,17 +89,20 @@ current role, work history, education, languages and so on) and fills them from 
 correct and send: the extension never submits anything for you.
 
 YOUR CV, ONCE
-• Type it into the extension, import your CV as a PDF (read on your computer), a JSON Résumé
-  file, or bring the one from your Epimoni account.
+• Type it into the extension, import a JSON Résumé file, or bring the one from your Epimoni
+  account. With an account connected, you can also import your CV as a PDF: its text is read on
+  your computer, then sorted into sections by Epimoni's AI.
 • Keep several versions (short CV, detailed CV) and choose which one fills.
 • Export it any time as JSON Résumé, readable by other tools.
 
 CAREFUL FILLING
-• On an application page, a "Fill with Epimoni" button shows up: one click is enough.
+• On the job boards it knows, a "Fill with Epimoni" button shows up: one click is enough.
 • Every field filled is listed in a panel, with "Undo all".
 • Work history and education filled block by block, dates fitted to the form.
 • No box ticked, no "Add" button pressed, no password or payment field touched. When in doubt,
   a field is left empty.
+• When the form asks for your CV as a file, the extension attaches the PDF you gave it, or one
+  made from your CV.
 
 WHERE IT WORKS
 France Travail, HelloWork, APEC, Welcome to the Jungle, Indeed and LinkedIn. On any other
@@ -112,8 +121,9 @@ tailored CV fills the form with its own PDF. These AI features need an Epimoni a
 to the extension (free: one an hour; unlimited with a plan).
 
 PRIVACY
-Your CV stays in your browser. Filling sends nothing. Only the AI features, started by you,
-send your CV and the ad to Epimoni's servers.
+Your CV stays in your browser. Filling sends neither your CV nor what the form holds: with an
+account connected, only counts are reported (how many fields were filled, on which site). Only
+the AI features, started by you, send your CV and the ad to Epimoni's servers.
 
 Open source, Apache 2.0 licence.
 ```
@@ -132,13 +142,15 @@ stanowisko, doświadczenie, wykształcenie, języki i tak dalej) i wypełnia je 
 Ty sprawdzasz, poprawiasz i wysyłasz: rozszerzenie nigdy niczego nie wysyła za ciebie.
 
 TWOJE CV, RAZ
-• Wpisz je w rozszerzeniu, zaimportuj swoje CV w PDF (odczytywane na twoim komputerze), plik
-  JSON Resume albo pobierz to z konta Epimoni.
+• Wpisz je w rozszerzeniu, zaimportuj plik JSON Resume albo pobierz to z konta Epimoni. Z
+  połączonym kontem możesz też zaimportować CV w PDF: tekst jest odczytywany na twoim
+  komputerze, a potem AI Epimoni dzieli go na sekcje.
 • Trzymaj kilka wersji (krótkie CV, szczegółowe CV) i wybierz, która wypełnia formularze.
 • Eksportuj je w każdej chwili jako JSON Resume, czytelny dla innych narzędzi.
 
 OSTROŻNE WYPEŁNIANIE
-• Na stronie z aplikacją pojawia się przycisk „Wypełnij z Epimoni”: wystarczy jedno kliknięcie.
+• Na znanych portalach z ofertami pojawia się przycisk „Wypełnij z Epimoni”: wystarczy jedno
+  kliknięcie.
 • Każde wypełnione pole jest widoczne w panelu, z opcją „Cofnij wszystko”.
 • Doświadczenie i wykształcenie wypełniane blok po bloku, daty dopasowane do formularza.
 • Żadne pole wyboru nie jest zaznaczane, żaden przycisk „Dodaj” klikany, żadne pole hasła ani
@@ -162,10 +174,172 @@ prawdziwe, a dopasowane CV wypełnia formularz własnym PDF. Te funkcje AI wymag
 połączonego z rozszerzeniem (za darmo: jedna na godzinę; bez limitu w planie).
 
 PRYWATNOŚĆ
-Twoje CV zostaje w przeglądarce. Wypełnianie niczego nie wysyła. Tylko funkcje AI, uruchamiane
-przez ciebie, przesyłają CV i ofertę na serwery Epimoni.
+Twoje CV zostaje w przeglądarce. Wypełnianie nie wysyła ani CV, ani treści formularzy: przy
+połączonym koncie przesyłane są tylko liczniki (ile pól wypełniono, na jakiej stronie). Tylko
+funkcje AI, uruchamiane przez ciebie, przesyłają CV i ofertę na serwery Epimoni.
 
 Otwarte źródło, licencja Apache 2.0.
+```
+
+### Detailed description (español)
+
+```
+Rellene sus candidaturas con un clic, a partir de un CV que introduce una sola vez.
+
+Epimoni Autofill reconoce los campos de un formulario de candidatura (nombre, correo,
+teléfono, puesto actual, experiencia, formación, idiomas, etc.) y los rellena con su CV. Usted
+revisa, corrige y envía: la extensión nunca envía nada en su lugar.
+
+SU CV, UNA SOLA VEZ
+• Escríbalo en la extensión, importe un archivo JSON Résumé o traiga el de su cuenta Epimoni.
+  Con una cuenta conectada, también puede importar su CV en PDF: el texto se lee en su
+  ordenador y la IA de Epimoni lo ordena por secciones.
+• Guarde varias versiones (CV corto, CV detallado) y elija cuál rellena.
+• Expórtelo cuando quiera en formato JSON Résumé, legible por otras herramientas.
+
+UN RELLENO PRUDENTE
+• En los portales de empleo que conoce aparece un botón «Rellenar con Epimoni»: basta un clic.
+• Cada campo rellenado aparece en un panel, con «Deshacer todo».
+• Experiencia y formación rellenadas bloque a bloque, con las fechas en el formato del
+  formulario.
+• No marca ninguna casilla, no pulsa ningún botón «Añadir», no toca contraseñas ni medios de
+  pago. Ante la duda, el campo se queda vacío.
+• Cuando el formulario pide el CV como archivo, adjunta el PDF que usted le dio, o uno creado a
+  partir de su CV.
+
+DÓNDE FUNCIONA
+France Travail, HelloWork, APEC, Welcome to the Jungle, Indeed y LinkedIn. En cualquier otra
+web de empleo (Workday, Taleez, formularios propios), haga clic en el icono de la extensión o
+active el relleno automático para esa web.
+
+SUS CANDIDATURAS DE UN VISTAZO
+Cada formulario rellenado se suma a un tablero con una columna por estado (rellenada, enviada,
+entrevista, oferta, rechazada). Arrastre una tarjeta cuando algo avance, añada una candidatura
+hecha en otro sitio y exporte a CSV.
+
+IA PARA CADA OFERTA
+En un anuncio, «Analizar esta oferta» compara su CV con lo que pide el puesto y da una
+puntuación con sus puntos débiles. La carta de presentación se redacta dentro del límite del
+formulario y se guarda en PDF. Su CV puede adaptarse a la oferta: usted conserva los cambios
+que son ciertos y el CV adaptado rellena el formulario con su propio PDF. Estas funciones de IA
+requieren una cuenta Epimoni conectada a la extensión (gratis: una por hora; ilimitadas con un
+plan).
+
+PRIVACIDAD
+Su CV se queda en su navegador. El relleno no envía ni su CV ni el contenido de los
+formularios: con una cuenta conectada, solo se envían contadores (cuántos campos se rellenaron
+y en qué web). Solo las funciones de IA, que usted lanza, envían el CV y el anuncio a los
+servidores de Epimoni.
+
+Código abierto, licencia Apache 2.0.
+```
+
+### Detailed description (português, Brasil)
+
+```
+Preencha suas candidaturas com um clique, a partir de um currículo digitado uma única vez.
+
+O Epimoni Autofill reconhece os campos de um formulário de candidatura (nome, e-mail,
+telefone, cargo atual, experiências, formação, idiomas etc.) e os preenche com o seu currículo.
+Você revisa, corrige e envia: a extensão nunca envia nada no seu lugar.
+
+SEU CURRÍCULO, UMA VEZ
+• Digite na extensão, importe um arquivo JSON Résumé ou traga o da sua conta Epimoni. Com uma
+  conta conectada, você também pode importar o currículo em PDF: o texto é lido no seu
+  computador e a IA da Epimoni o organiza em seções.
+• Guarde várias versões (currículo curto, currículo completo) e escolha qual preenche.
+• Exporte quando quiser em JSON Résumé, legível por outras ferramentas.
+
+UM PREENCHIMENTO CUIDADOSO
+• Nos sites de vagas que ela conhece, aparece um botão "Preencher com Epimoni": basta um
+  clique.
+• Cada campo preenchido aparece em um painel, com "Desfazer tudo".
+• Experiências e formação preenchidas bloco a bloco, com as datas no formato do formulário.
+• Nenhuma caixa marcada, nenhum botão "Adicionar" clicado, nenhum campo de senha ou pagamento
+  tocado. Na dúvida, o campo fica vazio.
+• Quando o formulário pede o currículo em arquivo, a extensão anexa o PDF que você enviou a ela,
+  ou um criado a partir do seu currículo.
+
+ONDE FUNCIONA
+France Travail, HelloWork, APEC, Welcome to the Jungle, Indeed e LinkedIn. Em qualquer outro
+site de carreiras (Workday, Gupy, formulários próprios), clique no ícone da extensão ou ative o
+preenchimento automático para aquele site.
+
+SUAS CANDIDATURAS EM UM SÓ LUGAR
+Cada formulário preenchido entra em um quadro com uma coluna por etapa (preenchida, enviada,
+entrevista, proposta, recusada). Arraste um cartão quando algo avançar, adicione uma
+candidatura feita em outro lugar e exporte para CSV.
+
+IA PARA CADA VAGA
+Em um anúncio, "Analisar esta vaga" compara seu currículo com o que a vaga pede e dá uma nota
+com seus pontos fracos. A carta de apresentação é escrita dentro do limite do formulário e pode
+ser salva em PDF. Seu currículo pode ser adaptado à vaga: você mantém as mudanças que são
+verdadeiras, e o currículo adaptado preenche o formulário com o próprio PDF. Essas funções de
+IA exigem uma conta Epimoni conectada à extensão (grátis: uma por hora; ilimitadas com um
+plano).
+
+PRIVACIDADE
+Seu currículo fica no seu navegador. O preenchimento não envia nem o currículo nem o conteúdo
+dos formulários: com uma conta conectada, só são enviados contadores (quantos campos foram
+preenchidos e em qual site). Só as funções de IA, iniciadas por você, enviam o currículo e o
+anúncio aos servidores da Epimoni.
+
+Código aberto, licença Apache 2.0.
+```
+
+### Detailed description (italiano)
+
+The extension's own interface has no Italian translation yet, so an Italian Chrome shows it in
+French (the default locale) until `_locales/it` exists. Publish this listing together with that
+locale, not before.
+
+```
+Compila le candidature con un clic, partendo da un CV inserito una volta sola.
+
+Epimoni Autofill riconosce i campi di un modulo di candidatura (nome, e-mail, telefono, ruolo
+attuale, esperienze, formazione, lingue e così via) e li compila dal tuo CV. Tu rileggi,
+correggi e invii: l'estensione non invia mai nulla al posto tuo.
+
+IL TUO CV, UNA VOLTA
+• Scrivilo nell'estensione, importa un file JSON Résumé o recupera quello del tuo account
+  Epimoni. Con un account collegato puoi anche importare il CV in PDF: il testo viene letto sul
+  tuo computer e l'IA di Epimoni lo divide in sezioni.
+• Tieni più versioni (CV breve, CV dettagliato) e scegli quale usare per compilare.
+• Esportalo quando vuoi in formato JSON Résumé, leggibile da altri strumenti.
+
+UNA COMPILAZIONE PRUDENTE
+• Sui siti di annunci che conosce compare un pulsante "Compila con Epimoni": basta un clic.
+• Ogni campo compilato è elencato in un pannello, con "Annulla tutto".
+• Esperienze e formazione compilate blocco per blocco, con le date nel formato del modulo.
+• Nessuna casella spuntata, nessun pulsante "Aggiungi" premuto, nessun campo di password o di
+  pagamento toccato. Nel dubbio, il campo resta vuoto.
+• Quando il modulo chiede il CV come file, l'estensione allega il PDF che le hai dato, oppure
+  uno creato dal tuo CV.
+
+DOVE FUNZIONA
+France Travail, HelloWork, APEC, Welcome to the Jungle, Indeed e LinkedIn. Su qualsiasi altro
+sito di carriera (Workday, InfoJobs, moduli aziendali) clicca sull'icona dell'estensione,
+oppure attiva la compilazione automatica per quel sito.
+
+LE TUE CANDIDATURE A COLPO D'OCCHIO
+Ogni modulo compilato entra in una bacheca con una colonna per stato (compilata, inviata,
+colloquio, offerta, rifiutata). Sposta una scheda quando qualcosa avanza, aggiungi una
+candidatura fatta altrove ed esporta in CSV.
+
+L'IA PER OGNI ANNUNCIO
+Su un annuncio, "Analizza questa offerta" confronta il tuo CV con ciò che chiede il ruolo e dà
+un punteggio con i tuoi punti deboli. La lettera di presentazione viene scritta entro il limite
+del modulo e si salva in PDF. Il tuo CV può essere adattato all'annuncio: tieni le modifiche
+vere per te, e il CV adattato compila il modulo con il proprio PDF. Queste funzioni di IA
+richiedono un account Epimoni collegato all'estensione (gratis: una all'ora; illimitate con un
+piano).
+
+PRIVACY
+Il tuo CV resta nel browser. La compilazione non invia né il CV né il contenuto dei moduli: con
+un account collegato vengono inviati solo dei contatori (quanti campi compilati, su quale
+sito). Solo le funzioni di IA, avviate da te, inviano il CV e l'annuncio ai server di Epimoni.
+
+Codice aperto, licenza Apache 2.0.
 ```
 
 ## Privacy practices tab
