@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="fr">
+<!-- The shape of a live SmartRecruiters application form, rebuilt in our own words. Its fields
+     are web components, and the CV upload is an <input type=file> inside the shadow root of a
+     drop zone: the text beside it is the drop zone's own ("Choisissez un fichier ou déposez-le
+     ici"), and the "CV" heading that names it sits outside, past two shadow boundaries. The
+     same drop zone appears at the top, inside the "apply with your resume" box that reads the
+     file back into the fields: that one must stay empty.
+
+     The city is a design-system autocomplete: the input in one shadow root, its list
+     (`aria-controls`) in another component's, and each option three shadow roots below the
+     list with its label slotted in from outside. Answers come a moment after typing. -->
+<meta charset="utf-8"><title>Postuler (forme SmartRecruiters)</title>
+<body>
+<oc-oneclick-form>
+  <oc-apply-with-resume><spl-form-field><spl-dropzone data-trap></spl-dropzone></spl-form-field></oc-apply-with-resume>
+  <oc-personal-information>
+    <label for="fn">Prénom</label><input id="fn" data-expect="given_name">
+  </oc-personal-information>
+  <oc-location-autocomplete data-expect-host></oc-location-autocomplete>
+  <oc-resume-upload><div><h3>CV</h3><spl-form-field><spl-dropzone data-cv></spl-dropzone></spl-form-field></div></oc-resume-upload>
+</oc-oneclick-form>
+<script>
+  window.__state = {};
+  // The autocomplete: <spl-autocomplete> holds the input and a <spl-dropdown> whose shadow root
+  // holds the menu; options are <spl-select-option> > (shadow) <spl-dropdown-item> > (shadow)
+  // <div role=option><slot></slot></div>, so the option element's own text is empty.
+  customElements.define('spl-dropdown-item', class extends HTMLElement {
+    connectedCallback() {
+      if (this.shadowRoot) return;
+      this.attachShadow({ mode: 'open' }).innerHTML = '<div role="option" aria-selected="false"><slot></slot></div>';
+    }
+  });
+  customElements.define('spl-select-option', class extends HTMLElement {
+    connectedCallback() {
+      if (this.shadowRoot) return;
+      const item = document.createElement('spl-dropdown-item');
+      item.textContent = this.getAttribute('label');
+      this.attachShadow({ mode: 'open' }).appendChild(item);
+    }
+  });
+  const loc = document.querySelector('oc-location-autocomplete');
+  const outer = loc.attachShadow({ mode: 'open' });
+  outer.innerHTML =
+    '<label for="city-in">Ville</label>' +
+    '<input id="city-in" role="combobox" aria-autocomplete="list" aria-controls="menu-city" aria-expanded="false" data-expect="city" data-expect-value="Nantes, Pays de la Loire, France">' +
+    '<spl-dropdown></spl-dropdown>';
+  const input = outer.getElementById('city-in');
+  const menu = document.createElement('div');
+  menu.id = 'menu-city';
+  outer.querySelector('spl-dropdown').attachShadow({ mode: 'open' }).appendChild(menu);
+  input.addEventListener('input', () => {
+    const q = input.value.toLowerCase();
+    menu.replaceChildren();
+    input.setAttribute('aria-expanded', 'true');
+    setTimeout(() => {
+      for (const label of ['Nanterre, Île-de-France, France', 'Nantes, Pays de la Loire, France', 'Paris, Île-de-France, France']) {
+        if (!label.toLowerCase().startsWith(q.slice(0, 3))) continue;
+        const opt = document.createElement('spl-select-option');
+        opt.setAttribute('label', label);
+        opt.addEventListener('click', () => {
+          Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, label);
+          window.__state.city = label;
+          menu.replaceChildren();
+          input.setAttribute('aria-expanded', 'false');
+        });
+        menu.appendChild(opt);
+      }
+    }, 400);
+  });
+  for (const zone of document.querySelectorAll('spl-dropzone')) {
+    const root = zone.attachShadow({ mode: 'open' });
+    root.innerHTML =
+      '<div>Choisissez un fichier ou déposez-le ici <small>10MB taille maximale</small>' +
+      '<input type="file" data-expect="' + (zone.hasAttribute('data-cv') ? 'cv_file' : 'none') + '"></div>';
+  }
+</script>
+</body></html>

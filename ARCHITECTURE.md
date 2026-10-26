@@ -18,6 +18,7 @@ npm run icons   # re-render icons/*.png from the brand mark
 npm run store   # store screenshots + promo tile, rendered from the real extension (fr, en)
 npm run probe   # visit a real posting on each supported board, report what extraction gets
 npm run probe:ats -- <url>   # run the engine on a live apply page; nothing is sent
+npm run probe:console        # a read-only probe to paste into DevTools on a signed-in page
 npm run lint    # Biome format + lint check (CI runs `biome ci`)
 npm run format  # apply Biome formatting and safe fixes
 npm run check   # lint + test + measure + guard + build + e2e
@@ -308,7 +309,9 @@ section decides which keys a whole block may take, so a false one costs far more
 field match: the page title "Chef de projet – Expérience client" must not turn the contact
 form under it into a work history. The climb from a control up to its section also stops at
 any unnumbered heading that names something else ("Informations personnelles"), so a control
-belongs to its nearest group and not to whatever the page says further up.
+belongs to its nearest group and not to whatever the page says further up. One caption
+does not stop it: one over the halves of a single date ("From" above a month and a year
+dropdown, LinkedIn's) names that date, not a group, so the climb goes on through it.
 
 The index comes from two independent sources, and disagreement only suggests. The form's
 own ids (`experiences[1][company]`, Workday's `workExperience-2--jobTitle`, numbered from 1 or
@@ -371,6 +374,11 @@ rules out a PDF rules out the input. And the concealment rule still holds, moved
 to what stands in for it: upload inputs are almost always hidden behind a label or a drop zone,
 so what must be visible is that surface (`fileSurface`), and an input with no visible surface
 gets nothing.
+
+A board that keeps CVs for the person (LinkedIn lists the ones uploaded before, one ticked)
+has already answered the question the upload asks. Attaching there would replace that choice
+and leave a new file on the person's account, so when the form around an upload has a ticked
+option named after a file (`dom.documentChosen`), the CV is offered rather than attached.
 
 The bytes stay in the worker until a page asks. The profile a content script receives carries
 the file's name and size; the content script asks for the file (`cv-file`) only when the
@@ -442,9 +450,17 @@ for the site in that tab when closed, it gives way to the panel, and it is not s
 automatic filling is on. Without a CV it says so and opens the import.
 
 `offer.js` is separate from `content.js` on purpose: it may run on every page the user
-visits, so it carries no lexicon, decides from cheap evidence (three visible fields, one about
-identity, and a CV upload or the page talking about applying; never a page with a password
-field), and stops once it has decided. The filler is injected by the worker on the click.
+visits, so it carries no lexicon, decides from cheap evidence, and stops once it has decided.
+The filler is injected by the worker on the click.
+
+The evidence is read **per form**, never from the page as a whole: three visible fields of one
+form (or, outside a `<form>`, under the nearest element holding three), one of them about
+identity, and either a CV upload in that form, an application address (`/apply`,
+`/candidature`), or application words in the form's own headings, labels, buttons and field
+names. Never a page with a password field. Reading the page's text instead put the button on
+a VPN article: its comment form asks a name and an e-mail, and the article said "choose an
+application". "Apply" alone doesn't count either, since a checkout's coupon is applied too.
+Fields inside shadow roots (SmartRecruiters) are read through them.
 
 It ships on the declared job boards. On every other site it needs the browser's access to all
 sites, which is never asked at install: the user turns it on from the popup or the Sites page
@@ -783,7 +799,10 @@ such as "Immédiate": that is offered too.
 - Language packs are merged, never chosen by the page's language, so cross-language collisions are real and
   must be handled in the `not` lists: `nombre` is a name in Spanish and a count in French;
   `resume` is a CV in English and a summary in French (which is why the summary key does not
-  list the bare word at all).
+  list the bare word at all). The one place the page's language counts is a tie: a pack's
+  `ties` name what a word means in that language ("nome" is a first name in Italian, the whole
+  name in Portuguese), and only a page whose `lang` is that language turns that word's
+  suggestion into a fill, between the two keys it was contested by.
 - `thirdParty` (in each language pack) disqualifies every personal key at once when the
   label mentions an emergency contact, a recruiter, a referrer or a family member. Add to that
   list, not to twenty individual `not` lists. Which keys are personal is the registry's

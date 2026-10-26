@@ -8,23 +8,23 @@
 // `false`: a missed question costs one click, a wrong "no" can end an application.
 //
 // Texts arrive normalised (lowercase, no accents, no punctuation), the form the language
-// packs use. Each language lists its names in the five interface languages, plus the Polish
+// packs use. Each language lists its names in the six interface languages, plus the Polish
 // "po angielsku" forms, separated by `|`. Adding a language is one line.
 
 import { fluencyLevel } from './fluency.js';
 
 const LANGUAGES = [
-  ['fr', 'francais|french|frances|francesa|franca|francuski|francusku|francuskim'],
-  ['en', 'anglais|english|ingles|inglesa|angielski|angielsku|angielskim'],
-  ['es', 'espagnol|spanish|espanol|castellano|espanhol|hiszpanski|hiszpansku|hiszpanskim'],
-  ['de', 'allemand|german|aleman|alemao|deutsch|niemiecki|niemiecku|niemieckim'],
+  ['fr', 'francais|french|frances|francesa|franca|francuski|francusku|francuskim|francese'],
+  ['en', 'anglais|english|ingles|inglesa|angielski|angielsku|angielskim|inglese'],
+  ['es', 'espagnol|spanish|espanol|castellano|espanhol|hiszpanski|hiszpansku|hiszpanskim|spagnolo'],
+  ['de', 'allemand|german|aleman|alemao|deutsch|niemiecki|niemiecku|niemieckim|tedesco'],
   ['it', 'italien|italian|italiano|wloski|wlosku|wloskim'],
-  ['pt', 'portugais|portuguese|portugues|portugalski|portugalsku|portugalskim'],
-  ['nl', 'neerlandais|dutch|neerlandes|holandes|nederlands|niderlandzki|niderlandzku'],
-  ['pl', 'polonais|polish|polaco|polones|polski|polsku|polskim'],
-  ['ar', 'arabe|arabic|arabski|arabsku'],
-  ['zh', 'chinois|chinese|mandarin|chino|chines|chinski|chinsku'],
-  ['ja', 'japonais|japanese|japones|japonski|japonsku'],
+  ['pt', 'portugais|portuguese|portugues|portugalski|portugalsku|portugalskim|portoghese'],
+  ['nl', 'neerlandais|dutch|neerlandes|holandes|nederlands|niderlandzki|niderlandzku|olandese'],
+  ['pl', 'polonais|polish|polaco|polones|polski|polsku|polskim|polacco'],
+  ['ar', 'arabe|arabic|arabski|arabsku|arabo'],
+  ['zh', 'chinois|chinese|mandarin|chino|chines|chinski|chinsku|cinese'],
+  ['ja', 'japonais|japanese|japones|japonski|japonsku|giapponese'],
   ['ru', 'russe|russian|ruso|russo|rosyjski|rosyjsku'],
 ].map(([code, names]) => [code, names.split('|')]);
 
@@ -50,6 +50,7 @@ const FLUENT = [
   'biegle',
   'biegly',
   'plynnie',
+  'madrelingua',
 ];
 const NEED_FLUENT = 5;
 const NEED_SPOKEN = 3;
@@ -106,7 +107,7 @@ export function yesIndex(texts) {
 const ASKED_IN = [
   ['yes', ['do you', 'are you', 'can you', 'you speak']],
   ['oui', ['vous', 'parles tu', 'es tu']],
-  ['si', ['habla', 'hablas', 'usted']],
+  ['si', ['habla', 'hablas', 'usted', 'parli', 'conosci']],
   ['sim', ['voce', 'fala']],
   ['tak', ['czy', 'mowisz', 'mowi']],
 ];

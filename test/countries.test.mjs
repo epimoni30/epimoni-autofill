@@ -69,3 +69,21 @@ test('a place the table does not know is still a place', () => {
   ])
     assert.ok(covers(q, eu, 'France'), q);
 });
+
+test('Italian: a country named in Italian is checked, and an unknown one is not answered', () => {
+  const q = (text) => normalize(text);
+  assert.equal(workRightCovers(q('Sei autorizzato a lavorare in Italia?'), 'Sì, cittadino UE'), true);
+  assert.equal(workRightCovers(q('Sei autorizzato a lavorare in Germania?'), 'Sì, cittadino italiano'), true);
+  assert.equal(
+    workRightCovers(q('Sei autorizzato a lavorare negli Stati Uniti?'), 'Sì, cittadino italiano'),
+    false,
+  );
+  assert.equal(workRightCovers(q('Sei autorizzato a lavorare in Svizzera?'), 'Sì, Unione europea'), true);
+  // Hong Kong is not in the table: the question says where, so it is not answered.
+  assert.equal(workRightCovers(q('Sei autorizzato a lavorare a Hong Kong?'), 'Sì', 'Italia'), false);
+  assert.equal(workRightCovers(q('Sei autorizzato a lavorare in questo paese?'), 'Sì', 'Italia'), false);
+  assert.deepEqual(
+    countriesIn(q('Regno Unito, Giappone, Brasile')).map((c) => c.code),
+    ['GB', 'BR', 'JP'],
+  );
+});

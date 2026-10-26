@@ -61,3 +61,10 @@ test('a list that is not a level scale is never read as one', () => {
   assert.equal(pick(FR, ''), null);
   assert.equal(pick(FR, 'Très bon niveau'), null);
 });
+
+test('Italian level words land on the same scale', () => {
+  assert.deepEqual(fluencyLevel(normalize('Madrelingua')), [7, 7]);
+  assert.deepEqual(fluencyLevel(normalize('Avanzato')), [4, 5]);
+  assert.deepEqual(fluencyLevel(normalize('Intermedio')), [3, 4]);
+  assert.deepEqual(fluencyLevel(normalize('Scolastico')), [1, 2]);
+});

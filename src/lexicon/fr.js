@@ -134,6 +134,9 @@ export default {
         'etablissement',
         'universite',
         'diplome',
+        // "Nom du CAP", "Nom du BEP": the diploma's name, not the person's.
+        'cap',
+        'bep',
         'utilisateur',
         'domaine',
         'rue',

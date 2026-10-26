@@ -47,8 +47,26 @@
   ]);
   const IDENTITY =
     /e-?mail|courriel|t[ée]l[ée]?phone|phone|mobile|portable|pr[ée]nom|first.?name|last.?name|given.?name|family.?name|\bnom\b|surname|nombre|apellido/i;
+  // Words a form uses about applying for a job. "Apply" alone is left out: a coupon, a filter
+  // or a setting is applied too, and a checkout asks a name, an e-mail and a phone.
   const APPLICATION =
-    /postuler|candidat|apply|application|curriculum|\bcv\b|r[ée]sum[ée]|lettre de motivation|cover letter|solicitud|postular/i;
+    /postuler|candidat|apply (now|for|to|online|here)|easy apply|\bapplication\b|curriculum|\bcv\b|r[ée]sum[ée]|lettre de motivation|cover letter|solicitud|postular|aplicar|candidatura|aplikuj/i;
+  // An address that says it is an application page: /apply, /applications/new, /candidature.
+  const APPLY_PATH =
+    /\/(apply|application|applications|candidature|candidatures|postuler|postular)(\/|$|\?)/i;
+
+  // Web components keep their fields in shadow roots (SmartRecruiters does), out of reach of
+  // querySelectorAll. These read through them, and climb from a shadow root to its host.
+  const deep = (root, selector, out = []) => {
+    out.push(...root.querySelectorAll(selector));
+    for (const el of root.querySelectorAll('*')) if (el.shadowRoot) deep(el.shadowRoot, selector, out);
+    return out;
+  };
+  const up = (n) => n.parentElement || n.getRootNode?.().host || null;
+  const inside = (box, n) => {
+    for (let x = n; x; x = up(x)) if (x === box) return true;
+    return false;
+  };
 
   const visible = (el) => {
     const r = el.getBoundingClientRect();
@@ -68,23 +86,65 @@
       .filter(Boolean)
       .join(' ');
 
+  // What a form says about itself: its headings, labels, legends, buttons and field names, never
+  // the prose around it. An article that says "choose an application" next to its comment box is
+  // not an application form, and the page's text used to be enough to say it was.
+  const CUES =
+    'h1, h2, h3, h4, h5, h6, legend, label, button, [role="button"], input[type="submit"], input[type="button"]';
+  const cues = (box, els) =>
+    [
+      document.title,
+      location.search,
+      ...deep(box, CUES).map((el) => el.value || el.textContent || ''),
+      ...els.map(described),
+    ]
+      .join(' ')
+      .slice(0, 8000);
+
   /**
-   * An application form, by cheap evidence only: three visible fields, one of them asking who
-   * you are, and either a CV upload or the page talking about applying. A login box (a
-   * password field) is never one, and neither is a search bar or a newsletter box.
+   * The fields that belong together: a form's own, and for fields outside any form, those under
+   * the nearest element that holds three of them, so a comment box and a newsletter box at two
+   * ends of a page stay two groups.
+   */
+  function groups(fields) {
+    const boxes = new Set();
+    for (const el of fields) {
+      let box = el.closest('form');
+      if (!box) {
+        box = up(el);
+        while (box && box !== document.body && fields.filter((f) => inside(box, f)).length < 3) box = up(box);
+      }
+      boxes.add(box || document.body);
+    }
+    // Each group is every field inside its box, so fields that stopped climbing at different
+    // depths of one form are still counted together.
+    return [...boxes].map((box) => [box, fields.filter((f) => inside(box, f))]);
+  }
+
+  /**
+   * An application form, by cheap evidence only: three visible fields of one form, one of them
+   * asking who you are, and either a CV upload in that form or the form saying it is for
+   * applying. A login box (a password field) is never one, and neither is a search bar, a
+   * newsletter box or a comment form.
    */
   function looksLikeApplication() {
-    if ([...document.querySelectorAll('input[type="password"]')].some(visible)) return false;
-    const fields = [...document.querySelectorAll('input, textarea, select')].filter(
+    if (deep(document, 'input[type="password"]').some(visible)) return false;
+    const fields = deep(document, 'input, textarea, select').filter(
       (el) => !SKIP.has((el.type || '').toLowerCase()) && visible(el),
     );
     if (fields.length < 3) return false;
-    const identity = fields.some(
-      (el) => el.type === 'email' || el.type === 'tel' || IDENTITY.test(described(el)),
-    );
-    if (!identity) return false;
-    if (document.querySelector('input[type="file"]')) return true;
-    return APPLICATION.test(`${document.title} ${(document.body?.innerText || '').slice(0, 20000)}`);
+    return groups(fields).some(([box, els]) => {
+      if (els.length < 3) return false;
+      const identity = els.some(
+        (el) => el.type === 'email' || el.type === 'tel' || IDENTITY.test(described(el)),
+      );
+      if (!identity) return false;
+      return (
+        deep(box, 'input[type="file"]').length > 0 ||
+        APPLY_PATH.test(location.pathname) ||
+        APPLICATION.test(cues(box, els))
+      );
+    });
   }
 
   let host = null;
@@ -156,8 +216,23 @@
       if (guard.allow(e, go)) return;
       guard.stop();
       done = true;
-      remove();
-      send({ type: state.has_cv ? 'offer:fill' : 'open-options' });
+      if (!state.has_cv) {
+        remove();
+        send({ type: 'open-options' });
+        return;
+      }
+      go.disabled = true;
+      // The filler may not be injectable here (no host access to this page): say so and point
+      // at the toolbar icon, rather than taking the button away with nothing filled.
+      send({ type: 'offer:fill' }).then((r) => {
+        if (r.ok) {
+          remove();
+          return;
+        }
+        hint.textContent = t('offer_fill_failed');
+        hint.setAttribute('role', 'status');
+        go.remove();
+      });
     });
     x.addEventListener('click', (e) => {
       if (!e.isTrusted) return;
@@ -183,10 +258,16 @@
     clearTimeout(timer);
   };
 
-  send({ type: 'offer:state' }).then((state) => {
-    // A site that fills on its own needs no button; one that was already filled needs none
-    // either (the panel is there).
-    if (!state.ok || state.auto) return;
+  send({ type: 'offer:state' }).then(async (state) => {
+    if (!state.ok) return;
+    // A site that fills on its own needs no button, as long as the filler is on this page to
+    // do it. It is not when a single-page site moved here from an address it does not run on
+    // (LinkedIn's feed, then a job): then the button is the only way to fill. Scripts injected
+    // separately do not arrive in a set order, so the filler gets a moment to show up.
+    if (state.auto) {
+      if (!window.__epimoniLoaded) await new Promise((r) => setTimeout(r, 1500));
+      if (window.__epimoniLoaded) return;
+    }
     const check = () => {
       // Filled from the toolbar meanwhile: the panel takes the corner, the button goes.
       if (document.getElementById('epimoni-panel')) {
@@ -197,6 +278,10 @@
       // Taken out by the page: a framework that re-renders the whole document (a failed React
       // hydration does, measured on a Greenhouse job board) drops every node it did not make.
       if (host && !host.isConnected) host = null;
+      // LinkedIn runs this on every page so that a job opened from the feed still gets the
+      // button, but only its job pages hold an application; the feed changes constantly and
+      // must not pay for a walk of the document each time it does.
+      if (location.hostname === 'www.linkedin.com' && !location.pathname.startsWith('/jobs/')) return;
       if (!host && looksLikeApplication()) show(state);
     };
     check();

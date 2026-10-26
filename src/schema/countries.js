@@ -10,7 +10,7 @@
 //
 // Words are matched whole, on normalised text (lowercase, no accents), the same form the
 // language packs use. Each country lists its names and the adjectives a person would use for
-// their nationality, in the five interface languages, separated by `|`.
+// their nationality, in the six interface languages, separated by `|`.
 //
 // The limit, stated plainly: a country this table doesn't list is not recognised in a question
 // either, so such a question reads as naming no country and is answered. The table holds the
@@ -22,87 +22,131 @@ export const COUNTRIES = [
   [
     'FR',
     true,
-    'france|francais|francaise|french|frances|francesa|franca|francia|francja|francji|francuski|francuska',
+    'france|francais|francaise|french|frances|francesa|franca|francia|francja|francji|francuski|francuska|francese',
   ],
-  ['BE', true, 'belgique|belge|belgium|belgian|belgica|belga|belgia|belgii'],
-  ['LU', true, 'luxembourg|luxembourgeois|luxembourgeoise|luxemburgo|luksemburg'],
+  ['BE', true, 'belgique|belge|belgium|belgian|belgica|belga|belgia|belgii|belgio'],
+  ['LU', true, 'luxembourg|luxembourgeois|luxembourgeoise|luxemburgo|luksemburg|lussemburgo|lussemburghese'],
   [
     'DE',
     true,
-    'allemagne|allemand|allemande|germany|german|alemania|aleman|alemana|alemanha|alema|niemcy|niemiec',
+    'allemagne|allemand|allemande|germany|german|alemania|aleman|alemana|alemanha|alema|niemcy|niemiec|germania|tedesco|tedesca',
   ],
   ['AT', true, 'autriche|autrichien|autrichienne|austria|austrian|austriaco|austriaca|austriak'],
   [
     'NL',
     true,
-    'paises bajos|pays bas|neerlandais|neerlandaise|netherlands|dutch|holland|holanda|holandes|holandesa|holandia',
+    'paises bajos|pays bas|neerlandais|neerlandaise|netherlands|dutch|holland|holanda|holandes|holandesa|holandia|paesi bassi|olanda|olandese',
   ],
-  ['IT', true, 'italie|italien|italienne|italy|italian|italia|italiano|italiana|wlochy|wloch'],
-  ['ES', true, 'espagne|espagnol|espagnole|spain|spanish|espana|espanol|espanola|espanha|hiszpania|hiszpan'],
-  ['PT', true, 'portugal|portugais|portugaise|portuguese|portugues|portuguesa|portugalia'],
-  ['IE', true, 'irlande|irlandais|irlandaise|ireland|irish|irlanda|irlandes|irlandesa|irlandia'],
+  [
+    'IT',
+    true,
+    'italie|italien|italienne|italy|italian|italia|italiano|italiana|wlochy|wloch|italiani|italiane',
+  ],
+  [
+    'ES',
+    true,
+    'espagne|espagnol|espagnole|spain|spanish|espana|espanol|espanola|espanha|hiszpania|hiszpan|spagna|spagnolo|spagnola',
+  ],
+  [
+    'PT',
+    true,
+    'portugal|portugais|portugaise|portuguese|portugues|portuguesa|portugalia|portogallo|portoghese',
+  ],
+  ['IE', true, 'irlande|irlandais|irlandaise|ireland|irish|irlanda|irlandes|irlandesa|irlandia|irlandese'],
   [
     'PL',
     true,
-    'pologne|polonais|polonaise|poland|polish|polonia|polaco|polaca|polones|polonesa|polska|polski|polak|polka',
+    'pologne|polonais|polonaise|poland|polish|polonia|polaco|polaca|polones|polonesa|polska|polski|polak|polka|polacco|polacca',
   ],
-  ['CZ', true, 'tchequie|tcheque|czechia|czech|chequia|checo|checa|tchequia|czechy'],
-  ['SK', true, 'slovaquie|slovaque|slovakia|slovak|eslovaquia|eslovaco|slowacja'],
-  ['HU', true, 'hongrie|hongrois|hongroise|hungary|hungarian|hungria|hungaro|hungara|wegry'],
-  ['RO', true, 'roumanie|roumain|roumaine|romania|romanian|rumania|rumano|rumana|romenia|romeno|rumunia'],
+  [
+    'CZ',
+    true,
+    'tchequie|tcheque|czechia|czech|chequia|checo|checa|tchequia|czechy|repubblica ceca|ceco|ceca',
+  ],
+  [
+    'SK',
+    true,
+    'slovaquie|slovaque|slovakia|slovak|eslovaquia|eslovaco|slowacja|slovacchia|slovacco|slovacca',
+  ],
+  [
+    'HU',
+    true,
+    'hongrie|hongrois|hongroise|hungary|hungarian|hungria|hungaro|hungara|wegry|ungheria|ungherese',
+  ],
+  [
+    'RO',
+    true,
+    'roumanie|roumain|roumaine|romania|romanian|rumania|rumano|rumana|romenia|romeno|rumunia|rumeno|rumena|romena',
+  ],
   ['BG', true, 'bulgarie|bulgare|bulgaria|bulgarian|bulgaro|bulgara'],
-  ['GR', true, 'grece|grec|grecque|greece|greek|grecia|griego|griega|grego|grega|grecja'],
-  ['CY', true, 'chypre|chypriote|cyprus|cypriot|chipre|cipriota|cypr'],
+  ['GR', true, 'grece|grec|grecque|greece|greek|grecia|griego|griega|grego|grega|grecja|greco|greca'],
+  ['CY', true, 'chypre|chypriote|cyprus|cypriot|chipre|cipriota|cypr|cipro'],
   ['MT', true, 'malte|maltais|maltaise|malta|maltese|maltes'],
-  ['SI', true, 'slovenie|slovene|slovenia|slovenian|eslovenia|esloveno|slowenia'],
-  ['HR', true, 'croatie|croate|croatia|croatian|croacia|croata|chorwacja'],
-  ['DK', true, 'danemark|danois|danoise|denmark|danish|dinamarca|danes|danesa|dinamarques|dania'],
-  ['SE', true, 'suede|suedois|suedoise|sweden|swedish|suecia|sueco|sueca|szwecja'],
-  ['FI', true, 'finlande|finlandais|finlandaise|finland|finnish|finlandia|finlandes|finlandesa'],
-  ['EE', true, 'estonie|estonien|estonienne|estonia|estonian|estonio'],
-  ['LV', true, 'lettonie|letton|lettone|latvia|latvian|letonia|leton|letona|lotwa'],
+  ['SI', true, 'slovenie|slovene|slovenia|slovenian|eslovenia|esloveno|slowenia|sloveno|slovena'],
+  ['HR', true, 'croatie|croate|croatia|croatian|croacia|croata|chorwacja|croazia|croato'],
+  [
+    'DK',
+    true,
+    'danemark|danois|danoise|denmark|danish|dinamarca|danes|danesa|dinamarques|dania|danimarca|danese',
+  ],
+  ['SE', true, 'suede|suedois|suedoise|sweden|swedish|suecia|sueco|sueca|szwecja|svezia|svedese'],
+  ['FI', true, 'finlande|finlandais|finlandaise|finland|finnish|finlandia|finlandes|finlandesa|finlandese'],
+  ['EE', true, 'estonie|estonien|estonienne|estonia|estonian|estonio|estone'],
+  ['LV', true, 'lettonie|letton|lettone|latvia|latvian|letonia|leton|letona|lotwa|lettonia'],
   ['LT', true, 'lituanie|lituanien|lituanienne|lithuania|lithuanian|lituania|lituano|lituana|litwa'],
-  ['NO', true, 'norvege|norvegien|norvegienne|norway|norwegian|noruega|noruego|norwegia'],
-  ['IS', true, 'islande|islandais|islandaise|iceland|icelandic|islandia|islandes|islandesa'],
+  ['NO', true, 'norvege|norvegien|norvegienne|norway|norwegian|noruega|noruego|norwegia|norvegia|norvegese'],
+  [
+    'IS',
+    true,
+    'islande|islandais|islandaise|iceland|icelandic|islandia|islandes|islandesa|islanda|islandese',
+  ],
   ['LI', true, 'liechtenstein'],
-  ['CH', true, 'suisse|switzerland|swiss|suiza|suizo|suica|szwajcaria'],
+  ['CH', true, 'suisse|switzerland|swiss|suiza|suizo|suica|szwajcaria|svizzera|svizzero'],
   [
     'GB',
     false,
-    'wielka brytania|united kingdom|royaume uni|u k|britannique|angleterre|britain|british|england|uk|reino unido|britanico|inglaterra',
+    'wielka brytania|united kingdom|royaume uni|u k|britannique|angleterre|britain|british|england|uk|reino unido|britanico|inglaterra|regno unito|britannico|britannica|inghilterra',
   ],
   [
     'US',
     false,
-    'stany zjednoczone|estados unidos|united states|etats unis|the us|u s a|u s|us citizen|us national|us passport|us citizenship|green card|americain|americaine|usa|american|estadounidense|americano|americana',
+    'stany zjednoczone|estados unidos|united states|etats unis|the us|u s a|u s|us citizen|us national|us passport|us citizenship|green card|americain|americaine|usa|american|estadounidense|americano|americana|stati uniti|statunitense',
   ],
-  ['CA', false, 'canada|canadien|canadienne|canadian|canadiense|canadense|kanada'],
+  ['CA', false, 'canada|canadien|canadienne|canadian|canadiense|canadense|kanada|canadese'],
   ['AU', false, 'australie|australien|australienne|australia|australian|australiano|australiana'],
-  ['NZ', false, 'nouvelle zelande|nueva zelanda|nova zelandia|new zealand'],
+  ['NZ', false, 'nouvelle zelande|nueva zelanda|nova zelandia|new zealand|nuova zelanda'],
   [
     'BR',
     false,
-    'bresil|bresilien|bresilienne|brazil|brazilian|brasil|brasileno|brasilena|brasileiro|brasileira|brazylia',
+    'bresil|bresilien|bresilienne|brazil|brazilian|brasil|brasileno|brasilena|brasileiro|brasileira|brazylia|brasile|brasiliano|brasiliana',
   ],
-  ['MX', false, 'mexique|mexicain|mexicaine|mexico|mexican|mexicano|mexicana|meksyk'],
+  [
+    'MX',
+    false,
+    'mexique|mexicain|mexicaine|mexico|mexican|mexicano|mexicana|meksyk|messico|messicano|messicana',
+  ],
   ['AR', false, 'argentine|argentin|argentina|argentinian|argentino|argentyna'],
-  ['CL', false, 'chili|chilien|chilienne|chile|chilean|chileno|chilena'],
+  ['CL', false, 'chili|chilien|chilienne|chile|chilean|chileno|chilena|cile|cileno|cilena'],
   ['CO', false, 'colombie|colombien|colombienne|colombia|colombian|colombiano|colombiana|kolumbia'],
-  ['PE', false, 'perou|peruvien|peruvienne|peru|peruvian|peruano|peruana'],
-  ['MA', false, 'maroc|marocain|marocaine|morocco|moroccan|marruecos|marroqui|marrocos|marroquino'],
-  ['TN', false, 'tunisie|tunisien|tunisienne|tunisia|tunisian|tunez|tunecino'],
-  ['DZ', false, 'algerie|algerien|algerienne|algeria|algerian|argelia|argelino'],
+  ['PE', false, 'perou|peruvien|peruvienne|peru|peruvian|peruano|peruana|peruviano|peruviana'],
+  [
+    'MA',
+    false,
+    'maroc|marocain|marocaine|morocco|moroccan|marruecos|marroqui|marrocos|marroquino|marocco|marocchino|marocchina',
+  ],
+  ['TN', false, 'tunisie|tunisien|tunisienne|tunisia|tunisian|tunez|tunecino|tunisino|tunisina'],
+  ['DZ', false, 'algerie|algerien|algerienne|algeria|algerian|argelia|argelino|algerino|algerina'],
   ['SN', false, 'senegal|senegalais|senegalaise|senegalese'],
-  ['CI', false, 'cote d ivoire|ivory coast|ivoirien|ivoirienne'],
+  ['CI', false, 'cote d ivoire|ivory coast|ivoirien|ivoirienne|costa d avorio|ivoriano'],
   ['SG', false, 'singapour|singapore|singapur|singapura'],
-  ['JP', false, 'japon|japonais|japonaise|japan|japanese|japones|japonesa|japao|japonia'],
-  ['CN', false, 'chine|chinois|chinoise|china|chinese|chino|chinesa|chiny'],
-  ['IN', false, 'inde|indien|indienne|india|indian|indio|indiano|indie'],
-  ['AE', false, 'united arab emirates|emirats arabes unis|uae|dubai|emiratos'],
-  ['IL', false, 'israel|israelien|israelienne|israeli'],
-  ['TR', false, 'turquie|turc|turque|turkey|turkish|turquia|turco|turca|turcja'],
-  ['UA', false, 'ukraine|ukrainien|ukrainienne|ukrainian|ucrania|ucraniano|ukraina'],
-  ['ZA', false, 'afrique du sud|south african|africa do sul|south africa|sudafrica'],
+  ['JP', false, 'japon|japonais|japonaise|japan|japanese|japones|japonesa|japao|japonia|giappone|giapponese'],
+  ['CN', false, 'chine|chinois|chinoise|china|chinese|chino|chinesa|chiny|cina|cinese'],
+  ['IN', false, 'inde|indien|indienne|india|indian|indio|indiano|indie|indiana'],
+  ['AE', false, 'united arab emirates|emirats arabes unis|uae|dubai|emiratos|emirati arabi uniti|emirati'],
+  ['IL', false, 'israel|israelien|israelienne|israeli|israele|israeliano|israeliana'],
+  ['TR', false, 'turquie|turc|turque|turkey|turkish|turquia|turco|turca|turcja|turchia'],
+  ['UA', false, 'ukraine|ukrainien|ukrainienne|ukrainian|ucrania|ucraniano|ukraina|ucraina|ucraino'],
+  ['ZA', false, 'afrique du sud|south african|africa do sul|south africa|sudafrica|sudafricano'],
 ].map(([code, eu, words]) => ({ code, eu, words: words.split('|') }));
 
 /** Words that make an answer hold across the EU/EEA. A bare "eu" is Portuguese for "I". */
@@ -129,13 +173,16 @@ const EU_WORDS = [
   'eu national',
   'eu nationality',
   'eu passport',
+  'unione europea',
+  'spazio economico europeo',
+  'europei',
 ];
 
 /** A question about a place it does not name: the answer can't be checked against it. */
-// "To work in <somewhere>", in the five interface languages. Read only when no country was
+// "To work in <somewhere>", in the six interface languages. Read only when no country was
 // recognised, so it never vetoes "work in France".
 const SAYS_WHERE =
-  / (work|working|employed|live|living|reside|residing|based) (in|within) | travailler (en|au|aux|a|dans) | resider (en|au|aux|a) | trabajar (en) | trabalhar (em|no|na|nos|nas) | (pracy|pracowac) (w|we|na) /;
+  / (work|working|employed|live|living|reside|residing|based) (in|within) | travailler (en|au|aux|a|dans) | resider (en|au|aux|a) | trabajar (en) | trabalhar (em|no|na|nos|nas) | (pracy|pracowac) (w|we|na) | lavorare (in|nel|nella|negli|nei|a) | risiedere (in|nel|nella|negli|nei|a) /;
 
 const UNNAMED_PLACE = [
   'country listed',
@@ -153,6 +200,9 @@ const UNNAMED_PLACE = [
   'pais de la oferta',
   'pais da vaga',
   'kraju oferty',
+  'questo paese',
+  'paese dell offerta',
+  'paese della posizione',
 ];
 
 const has = (text, phrase) => ` ${text} `.includes(` ${phrase} `);

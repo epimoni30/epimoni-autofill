@@ -14,10 +14,11 @@ import autocomplete from './autocomplete.js';
 import en from './en.js';
 import es from './es.js';
 import fr from './fr.js';
+import it from './it.js';
 import pl from './pl.js';
 import pt from './pt.js';
 
-export const PACKS = [fr, en, es, pt, pl];
+export const PACKS = [fr, en, es, pt, pl, it];
 
 export const AUTOCOMPLETE = autocomplete;
 

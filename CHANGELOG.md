@@ -9,7 +9,19 @@ carries the same number, and the release workflow refuses a tag that does not ma
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-27
+
 ### Added
+
+- Italian: the extension's interface, and Italian application forms. "Nome e cognome",
+  "Cognome", the CAP, the RAL desiderata and the laurea triennale or magistrale are read; a
+  certified e-mail (PEC), a codice fiscale and a birthplace are left alone. A bare "Nome" is
+  offered rather than filled, because a Brazilian form uses the same word for the whole name.
+  Questions in Italian about the right to work in a country are checked against that country.
+
+- LinkedIn Easy Apply: the "Code pays" list is set from the code your phone number carries
+  ("France (+33)"), and the number beside it goes in without that code. A "+1" number is
+  matched to your country, or left for you when that doesn't say which.
 
 - Taleez forms: the phone, the CV and the three dropdowns (level of study, years of
   experience, expected salary) are filled. The dropdowns open into an overlay at the end of the
@@ -24,9 +36,59 @@ carries the same number, and the release workflow refuses a tag that does not ma
   only when exactly one option fits; a figure on the edge of two brackets is left for you.
 - A step of a form that was already in the page and is only shown later (a wizard switching
   steps) is filled as it appears.
+- SmartRecruiters forms: the CV is attached and the city filled. Their fields are web
+  components, and the extension now reads an upload's name and a list's options through the
+  shadow roots they sit in.
+- `npm run probe:console`: a read-only probe to paste into DevTools on a page you're signed in
+  to, for boards an automated browser can't reach. It reads and resolves every field and
+  writes nothing.
+- Workable's French "Résumé" box gets the CV summary. In French the word means a profile
+  summary; the English "Resume" box, which asks for the whole CV as text, is still left alone.
+
+### Changed
+
+- A page that says it is in Portuguese fills a bare "Nome" or "Seu nome" with your full name,
+  and one in Italian fills "Nome" with your first name. Without a page language the field is
+  offered for you to confirm, since the two languages read the word differently.
+- When a board already has one of your saved CVs ticked (LinkedIn's CV step), your CV is
+  offered instead of uploaded. Uploading would replace that choice and add a file to your
+  account on the board.
 
 ### Fixed
 
+- The extension's store description says the analysis and the letter need an Epimoni account;
+  it read as if they worked without one. The English pages say "CV" throughout, and the
+  Spanish consent messages use "usted" like the rest.
+- French diploma fields that name a CAP ("Spécialité du CAP", "Nom du CAP") are no longer
+  taken for a postcode or a surname.
+- "First name (as on file)" and other English first-name labels with "file" or "social" in
+  them are filled again, and a project's name ("Nome do projeto") is no longer taken for yours.
+- The "Remplir avec Epimoni" button now shows on LinkedIn when you reach a job from the feed,
+  a search or a message. LinkedIn opens a job without loading a new page, so a script that ran
+  only on its Jobs pages never arrived. Only the button runs on the rest of LinkedIn, and it
+  does nothing outside the Jobs pages; the filler comes with your click, which is why the
+  extension now asks for access to www.linkedin.com (no new install warning: it already ran
+  there).
+- When the button cannot fill the page it is on, it says so and points to the toolbar icon,
+  instead of disappearing with nothing filled.
+- Hidden parts of the popup, the applications board and the pairing page stay hidden: an
+  unlabelled checkbox showed in the popup over a new tab, the empty board showed above its
+  own "no applications yet" message, and the pairing page kept its buttons after a request
+  had expired.
+- Without a connected account, the "Import my existing CV" card says up front that sorting
+  the text into sections needs one. It used to say so only after you had picked a PDF.
+- Counts are written with real plurals: "1 expérience, 3 compétences" rather than
+  "expérience(s)", in the CV page and in the panel's open questions.
+- Indeed Apply (`smartapply.indeed.com`), where Indeed's own application forms live, is now a
+  supported board: the button shows there and automatic filling works, like on Indeed itself.
+- LinkedIn Easy Apply's "add an experience" form: the start month and year are filled from
+  the job, like its title and company. A month and year under their own "From" caption were
+  read as a separate group and left out of the job.
+- The "Remplir avec Epimoni" button no longer appears on an article whose comment or rating
+  form asks a name and an e-mail just because the article says "application", nor on a
+  checkout whose "Apply" is for a coupon. It now judges each form by its own headings, labels
+  and buttons. It also appears, as it should, on forms built from web components
+  (SmartRecruiters).
 - A row whose label the page doesn't link to its field is read by that label. On Taleez the
   phone and the CV were read as their widget's icon text and missed.
 - A phone field showing its own "+33" gets the national number, and one pre-filled with only
@@ -44,12 +106,10 @@ carries the same number, and the release workflow refuses a tag that does not ma
 - The CV page no longer promises an analysis without an account, and counts each CV once.
 
 ### Removed
-
 - The extension's own anonymous session, which nothing could reach since the analysis needs an
   account.
 
 ### Security
-
 - A form inside a frame is filled only once the browser says a person can see it. A page could
   embed a form from another origin and fade it out, shrink it to a pixel or cover it, and a fill
   clicked on that page wrote the CV into it, where the frame's own script could read it. A frame
@@ -119,7 +179,7 @@ carries the same number, and the release workflow refuses a tag that does not ma
 - The free allowance for the AI features reads one an hour again, matching the backend since
   15 October (it was two from 1 October).
 
-## [0.2.0] - 2026-10-02
+## 0.2.0 - 2026-10-02 (never tagged; its changes shipped in 0.3.0)
 
 Prepared but never tagged: these changes were first published in 0.3.0.
 
@@ -242,6 +302,7 @@ First public version.
 - Community files: contributing guide, code of conduct, issue and pull request templates.
 - Dependabot, CodeQL, and a release workflow that builds the zip from a version tag.
 
-[Unreleased]: https://github.com/epimoni30/epimoni-autofill/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/epimoni30/epimoni-autofill/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/epimoni30/epimoni-autofill/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/epimoni30/epimoni-autofill/compare/v0.1.0...v0.3.0
 [0.1.0]: https://github.com/epimoni30/epimoni-autofill/releases/tag/v0.1.0

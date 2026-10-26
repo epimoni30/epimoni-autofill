@@ -14,7 +14,11 @@
   const DEV = typeof EPIMONI_DEV !== 'undefined' && EPIMONI_DEV;
   if (DEV) console.log('[epimoni] content script active on', location.href);
 
-  const resolver = createResolver({ lexicons: EPIMONI_PACKS, autocomplete: EPIMONI_AUTOCOMPLETE });
+  const resolver = createResolver({
+    lexicons: EPIMONI_PACKS,
+    autocomplete: EPIMONI_AUTOCOMPLETE,
+    lang: document.documentElement.lang,
+  });
   const send = (msg) => new Promise((r) => chrome.runtime.sendMessage(msg, (x) => r(x || {})));
   // Never show a canonical key to a user: they are internal names, and an English one on a
   // French form reads as a bug. A missing translation falls back to the key with underscores
@@ -649,7 +653,16 @@
         const line = 'margin-top:8px;color:#3f3f46';
         summary.replaceChildren(
           h('b', null, headline),
-          ...(c.ai ? [h('br'), h('span', 'color:#71717a', t('panel_open_questions', [String(c.ai)]))] : []),
+          ...(c.ai
+            ? [
+                h('br'),
+                h(
+                  'span',
+                  'color:#71717a',
+                  c.ai === 1 ? t('panel_open_questions_one') : t('panel_open_questions', [String(c.ai)]),
+                ),
+              ]
+            : []),
           h(
             'ul',
             'margin:8px 0 0;padding-left:18px;color:#3f3f46',
@@ -1248,7 +1261,7 @@
     const say = (...nodes) => box.replaceChildren(...nodes.filter(Boolean));
     // The plans on the site's home page, in the user's language: /#pricing, /en/#pricing…
     const lang = chrome.i18n.getUILanguage().slice(0, 2);
-    const plans = `https://www.epimoni30.com/${['en', 'es', 'pt', 'pl'].includes(lang) ? `${lang}/` : ''}#pricing`;
+    const plans = `https://www.epimoni30.com/${['en', 'es', 'pt', 'pl', 'it'].includes(lang) ? `${lang}/` : ''}#pricing`;
     const cta = (parent, href, text) => {
       const a = document.createElement('a');
       a.href = href;

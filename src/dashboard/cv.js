@@ -26,6 +26,18 @@ import { initImporter } from './importer.js';
 const send = (msg) => new Promise((r) => chrome.runtime.sendMessage(msg, (x) => r(x || {})));
 const el = (id) => document.getElementById(id);
 const t = (key, subs) => chrome.i18n.getMessage(key, subs) || key;
+// chrome.i18n has no plural forms, so a count picks its `_one` or `_many` message by the rules
+// of the language the messages came from (which is not always the browser's: a language we do
+// not ship falls back to French).
+const plural = new Intl.PluralRules(t('opt_plural_locale'));
+const count = (key, n) => t(`${key}_${plural.select(n) === 'one' ? 'one' : 'many'}`, [String(n)]);
+/** "17 informations · 2 expériences · 1 compétence" */
+const counts = (fields, work, skills) =>
+  [
+    count('opt_count_fields', fields),
+    count('opt_count_work', work || 0),
+    count('opt_count_skills', skills || 0),
+  ].join(' · ');
 const EXTRAS = [
   'street',
   'postal_code',
@@ -384,14 +396,7 @@ async function renderLibrary() {
     const meta = document.createElement('div');
     meta.className = 'meta';
     const bits = [t(SOURCE_BADGE[row.source] || SOURCE_BADGE.local)];
-    if (row.summary)
-      bits.push(
-        t('opt_counts', [
-          String(row.summary.fields),
-          String(row.summary.work || 0),
-          String(row.summary.skills || 0),
-        ]),
-      );
+    if (row.summary) bits.push(counts(row.summary.fields, row.summary.work, row.summary.skills));
     if (row.file) bits.push(t(row.file.origin === 'upload' ? 'opt_file_badge' : 'opt_file_badge_generated'));
     meta.textContent = bits.join(' · ');
     main.append(title, meta);
@@ -485,7 +490,7 @@ async function renderStatus() {
 
   if (state.has_cv) {
     const s = state.summary || {};
-    line(box, t('opt_counts', [String(state.fields), String(s.work || 0), String(s.skills || 0)]), 'muted');
+    line(box, counts(state.fields, s.work, s.skills), 'muted');
     if (!state.cv_analysable) line(box, t('opt_thin'), 'warn');
   }
   if (state.stale) line(box, t('opt_stale'), 'warn');

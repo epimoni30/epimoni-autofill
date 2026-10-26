@@ -385,3 +385,10 @@ test('every section a form can be filled from also survives an export', () => {
   // And back: what was exported fills the same blocks.
   assert.deepEqual(toEntries(fromJsonResume(out)).projects, toEntries(doc).projects);
 });
+
+test('Italian month names and "in corso" read as dates', () => {
+  assert.equal(toIso8601('maggio 2021'), '2021-05');
+  assert.equal(toIso8601('giu 2019'), '2019-06');
+  assert.equal(toIso8601('dicembre 2020'), '2020-12');
+  assert.equal(toIso8601('in corso'), '');
+});

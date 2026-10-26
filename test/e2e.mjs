@@ -1026,6 +1026,84 @@ await steps.close();
 // Offered on a page once it holds an application form, here only after "Postuler" renders it;
 // the page is filled on the button's click and not before. After that fill, the panel offers to
 // make the site fill on its own, which on a declared site takes one click.
+// Not on an article whose comment or rating form asks a name and an e-mail, however often the
+// article says "application" (a VPN blog showed it the button).
+const blogPage = await ctx.newPage();
+await blogPage.goto(`${base}/blog.html`, { waitUntil: 'load' });
+await blogPage.waitForTimeout(1500);
+const blogPill = await blogPage.evaluate(() => Boolean(document.getElementById('epimoni-offer')));
+check('no button on an article with a comment form that mentions "application"', blogPill === false);
+await blogPage.close();
+// But on an application form built from web components, fields inside shadow roots
+// (SmartRecruiters), it does.
+const srPage = await ctx.newPage();
+await srPage.goto(`${base}/fillers/smartrecruiters/apply.html`, { waitUntil: 'load' });
+await srPage.waitForSelector('#epimoni-offer', { state: 'attached', timeout: 4000 }).catch(() => {});
+const srPill = await srPage.evaluate(() => Boolean(document.getElementById('epimoni-offer')));
+check('the button appears on a form whose fields are in shadow roots', srPill === true);
+await srPage.close();
+// Nor on a checkout whose only "apply" is a coupon button.
+const shopPage = await ctx.newPage();
+await shopPage.goto(`${base}/checkout.html`, { waitUntil: 'load' });
+await shopPage.waitForTimeout(1500);
+const shopPill = await shopPage.evaluate(() => Boolean(document.getElementById('epimoni-offer')));
+check('no button on a checkout whose "Apply" is for a coupon', shopPill === false);
+await shopPage.close();
+
+// LinkedIn opens a job from the feed without loading a page, so only the button script (which
+// runs on all of LinkedIn) is there, not the filler (declared on /jobs/ only). The click must
+// inject the filler, which takes host access to www.linkedin.com: a content-script match
+// alone does not grant it. Served by Playwright, so the origin is the real one.
+{
+  const li = await ctx.newPage();
+  await li.route('https://www.linkedin.com/**', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'text/html',
+      body: `<!doctype html><title>LinkedIn</title><main id="m"><p>Feed</p></main><script>
+        window.openJob = () => {
+          history.pushState({}, '', '/jobs/view/4242/');
+          document.getElementById('m').innerHTML =
+            '<h2>Candidature simplifiée</h2><form onsubmit="window.__submitted=true;return false">' +
+            '<label>Prénom <input name="prenom"></label><label>Nom <input name="nom"></label>' +
+            '<label>E-mail <input name="email" type="email"></label>' +
+            '<label>Téléphone <input name="tel" type="tel"></label>' +
+            '<button>Postuler</button></form>';
+        };
+      </script>`,
+    }),
+  );
+  await li.goto('https://www.linkedin.com/feed/', { waitUntil: 'load' });
+  await li.waitForTimeout(800);
+  const before = await li.evaluate(() => ({ button: Boolean(document.getElementById('epimoni-offer')) }));
+  await li.evaluate(() => window.openJob());
+  await li.waitForSelector('#epimoni-offer', { timeout: 4000 }).catch(() => {});
+  check(
+    'LinkedIn: a job reached from the feed gets the button',
+    !before.button && (await li.evaluate(() => Boolean(document.getElementById('epimoni-offer')))),
+    JSON.stringify(before),
+  );
+  await armed(li, '#epimoni-offer');
+  await li
+    .locator('#epimoni-offer')
+    .getByRole('button', { name: await sw.evaluate(() => chrome.i18n.getMessage('offer_fill')) })
+    .click();
+  await li
+    .waitForFunction(() => document.querySelector('[name="prenom"]')?.value, null, { timeout: 5000 })
+    .catch(() => {});
+  const after = await li.evaluate(() => ({
+    values: ['prenom', 'nom', 'email', 'tel'].map((n) => document.querySelector(`[name="${n}"]`).value),
+    hint: document.getElementById('epimoni-offer')?.shadowRoot?.querySelector('.hint')?.textContent || '',
+    submitted: Boolean(window.__submitted),
+  }));
+  check(
+    "LinkedIn: the button's click injects the filler and fills the job's form",
+    after.values.every(Boolean) && !after.submitted,
+    JSON.stringify(after),
+  );
+  await li.close();
+}
+
 const offerPage = await ctx.newPage();
 await offerPage.goto(`${base}/late.html`, { waitUntil: 'load' });
 await offerPage.waitForTimeout(1200);
@@ -1933,6 +2011,22 @@ check(
   opt.unresolved.join(', ') || `${opt.tagged} keys`,
 );
 check('the CV editor leaks no raw message keys', opt.raw.length === 0, opt.raw.join(', '));
+// Said before a PDF is chosen, not only after reading it: the sorting needs an account.
+const needs = await options.evaluate(() => {
+  const box = document.getElementById('pdf-import-needs');
+  return {
+    shown: Boolean(box && !box.hidden && box.offsetHeight > 0),
+    link: box?.querySelector('a')?.href || '',
+  };
+});
+check(
+  'without an account, the PDF import card says up front that sorting needs one',
+  needs.shown && needs.link.includes('extension-chrome'),
+  JSON.stringify(needs),
+);
+// Counts read as words: "1 experience", "3 skills", never "experience(s)".
+const countText = await options.evaluate(() => document.body.innerText.match(/\S*\((s|es|a)\)\S*/g) || []);
+check('the CV page writes its counts with real plurals', countText.length === 0, countText.join(' '));
 
 // This install is not paired, so there is no allowance to describe. The page used to say
 // "1 analysis per hour, no account", left over from the anonymous tier, which the panel then
