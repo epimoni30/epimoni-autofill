@@ -9,6 +9,8 @@ carries the same number, and the release workflow refuses a tag that does not ma
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-27
+
 ### Added
 
 - Italian: the extension's interface, and Italian application forms. "Nome e cognome",
@@ -177,7 +179,7 @@ carries the same number, and the release workflow refuses a tag that does not ma
 - The free allowance for the AI features reads one an hour again, matching the backend since
   15 October (it was two from 1 October).
 
-## [0.2.0] - 2026-10-02
+## 0.2.0 - 2026-10-02 (never tagged; its changes shipped in 0.3.0)
 
 Prepared but never tagged: these changes were first published in 0.3.0.
 
@@ -300,6 +302,7 @@ First public version.
 - Community files: contributing guide, code of conduct, issue and pull request templates.
 - Dependabot, CodeQL, and a release workflow that builds the zip from a version tag.
 
-[Unreleased]: https://github.com/epimoni30/epimoni-autofill/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/epimoni30/epimoni-autofill/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/epimoni30/epimoni-autofill/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/epimoni30/epimoni-autofill/compare/v0.1.0...v0.3.0
 [0.1.0]: https://github.com/epimoni30/epimoni-autofill/releases/tag/v0.1.0
