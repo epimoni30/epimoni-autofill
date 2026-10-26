@@ -153,6 +153,8 @@ OSTROŻNE WYPEŁNIANIE
   kliknięcie.
 • Każde wypełnione pole jest widoczne w panelu, z opcją „Cofnij wszystko”.
 • Doświadczenie i wykształcenie wypełniane blok po bloku, daty dopasowane do formularza.
+• Gdy formularz prosi o CV w pliku, rozszerzenie dołącza PDF, który mu przekazałeś, albo PDF
+  utworzony z twojego CV.
 • Żadne pole wyboru nie jest zaznaczane, żaden przycisk „Dodaj” klikany, żadne pole hasła ani
   płatności ruszane. W razie wątpliwości pole zostaje puste.
 
