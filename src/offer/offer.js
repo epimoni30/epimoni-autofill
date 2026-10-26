@@ -216,8 +216,23 @@
       if (guard.allow(e, go)) return;
       guard.stop();
       done = true;
-      remove();
-      send({ type: state.has_cv ? 'offer:fill' : 'open-options' });
+      if (!state.has_cv) {
+        remove();
+        send({ type: 'open-options' });
+        return;
+      }
+      go.disabled = true;
+      // The filler may not be injectable here (no host access to this page): say so and point
+      // at the toolbar icon, rather than taking the button away with nothing filled.
+      send({ type: 'offer:fill' }).then((r) => {
+        if (r.ok) {
+          remove();
+          return;
+        }
+        hint.textContent = t('offer_fill_failed');
+        hint.setAttribute('role', 'status');
+        go.remove();
+      });
     });
     x.addEventListener('click', (e) => {
       if (!e.isTrusted) return;
@@ -263,6 +278,10 @@
       // Taken out by the page: a framework that re-renders the whole document (a failed React
       // hydration does, measured on a Greenhouse job board) drops every node it did not make.
       if (host && !host.isConnected) host = null;
+      // LinkedIn runs this on every page so that a job opened from the feed still gets the
+      // button, but only its job pages hold an application; the feed changes constantly and
+      // must not pay for a walk of the document each time it does.
+      if (location.hostname === 'www.linkedin.com' && !location.pathname.startsWith('/jobs/')) return;
       if (!host && looksLikeApplication()) show(state);
     };
     check();

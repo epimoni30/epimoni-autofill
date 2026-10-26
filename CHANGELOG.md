@@ -53,15 +53,22 @@ carries the same number, and the release workflow refuses a tag that does not ma
 
 - The "Remplir avec Epimoni" button now shows on LinkedIn when you reach a job from the feed,
   a search or a message. LinkedIn opens a job without loading a new page, so a script that ran
-  only on its Jobs pages never arrived. Only the button runs on the rest of LinkedIn; the
-  filler comes with your click.
+  only on its Jobs pages never arrived. Only the button runs on the rest of LinkedIn, and it
+  does nothing outside the Jobs pages; the filler comes with your click, which is why the
+  extension now asks for access to www.linkedin.com (no new install warning: it already ran
+  there).
+- When the button cannot fill the page it is on, it says so and points to the toolbar icon,
+  instead of disappearing with nothing filled.
+- Hidden parts of the popup, the applications board and the pairing page stay hidden: an
+  unlabelled checkbox showed in the popup over a new tab, the empty board showed above its
+  own "no applications yet" message, and the pairing page kept its buttons after a request
+  had expired.
 - Without a connected account, the "Import my existing CV" card says up front that sorting
   the text into sections needs one. It used to say so only after you had picked a PDF.
 - Counts are written with real plurals: "1 expérience, 3 compétences" rather than
   "expérience(s)", in the CV page and in the panel's open questions.
 - Indeed Apply (`smartapply.indeed.com`), where Indeed's own application forms live, is now a
   supported board: the button shows there and automatic filling works, like on Indeed itself.
-
 - LinkedIn Easy Apply's "add an experience" form: the start month and year are filled from
   the job, like its title and company. A month and year under their own "From" caption were
   read as a separate group and left out of the job.
@@ -70,7 +77,6 @@ carries the same number, and the release workflow refuses a tag that does not ma
   checkout whose "Apply" is for a coupon. It now judges each form by its own headings, labels
   and buttons. It also appears, as it should, on forms built from web components
   (SmartRecruiters).
-
 - A row whose label the page doesn't link to its field is read by that label. On Taleez the
   phone and the CV were read as their widget's icon text and missed.
 - A phone field showing its own "+33" gets the national number, and one pre-filled with only
@@ -88,12 +94,10 @@ carries the same number, and the release workflow refuses a tag that does not ma
 - The CV page no longer promises an analysis without an account, and counts each CV once.
 
 ### Removed
-
 - The extension's own anonymous session, which nothing could reach since the analysis needs an
   account.
 
 ### Security
-
 - A form inside a frame is filled only once the browser says a person can see it. A page could
   embed a form from another origin and fade it out, shrink it to a pixel or cover it, and a fill
   clicked on that page wrote the CV into it, where the frame's own script could read it. A frame

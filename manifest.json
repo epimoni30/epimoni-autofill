@@ -14,7 +14,8 @@
   "permissions": ["activeTab", "scripting", "storage"],
   "host_permissions": [
     "https://www.epimoni30.com/*",
-    "https://fpd66hmugz4o7j6g7t4obpxlca0bgrvk.lambda-url.eu-central-1.on.aws/*"
+    "https://fpd66hmugz4o7j6g7t4obpxlca0bgrvk.lambda-url.eu-central-1.on.aws/*",
+    "https://www.linkedin.com/*"
   ],
   "optional_host_permissions": ["https://*/*", "http://*/*"],
   "content_security_policy": {

@@ -1506,5 +1506,8 @@
   },
   "offer_hint_no_cv": {
     "message": "Wykryto formularz aplikacyjny. Dodaj swoje CV, aby wypełnić go jednym kliknięciem."
+  },
+  "offer_fill_failed": {
+    "message": "Ten przycisk nie może wypełnić tej strony. Kliknij ikonę Epimoni na pasku narzędzi."
   }
 }

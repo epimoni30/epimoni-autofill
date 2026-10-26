@@ -1050,6 +1050,60 @@ const shopPill = await shopPage.evaluate(() => Boolean(document.getElementById('
 check('no button on a checkout whose "Apply" is for a coupon', shopPill === false);
 await shopPage.close();
 
+// LinkedIn opens a job from the feed without loading a page, so only the button script (which
+// runs on all of LinkedIn) is there, not the filler (declared on /jobs/ only). The click must
+// inject the filler, which takes host access to www.linkedin.com: a content-script match
+// alone does not grant it. Served by Playwright, so the origin is the real one.
+{
+  const li = await ctx.newPage();
+  await li.route('https://www.linkedin.com/**', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'text/html',
+      body: `<!doctype html><title>LinkedIn</title><main id="m"><p>Feed</p></main><script>
+        window.openJob = () => {
+          history.pushState({}, '', '/jobs/view/4242/');
+          document.getElementById('m').innerHTML =
+            '<h2>Candidature simplifiée</h2><form onsubmit="window.__submitted=true;return false">' +
+            '<label>Prénom <input name="prenom"></label><label>Nom <input name="nom"></label>' +
+            '<label>E-mail <input name="email" type="email"></label>' +
+            '<label>Téléphone <input name="tel" type="tel"></label>' +
+            '<button>Postuler</button></form>';
+        };
+      </script>`,
+    }),
+  );
+  await li.goto('https://www.linkedin.com/feed/', { waitUntil: 'load' });
+  await li.waitForTimeout(800);
+  const before = await li.evaluate(() => ({ button: Boolean(document.getElementById('epimoni-offer')) }));
+  await li.evaluate(() => window.openJob());
+  await li.waitForSelector('#epimoni-offer', { timeout: 4000 }).catch(() => {});
+  check(
+    'LinkedIn: a job reached from the feed gets the button',
+    !before.button && (await li.evaluate(() => Boolean(document.getElementById('epimoni-offer')))),
+    JSON.stringify(before),
+  );
+  await armed(li, '#epimoni-offer');
+  await li
+    .locator('#epimoni-offer')
+    .getByRole('button', { name: await sw.evaluate(() => chrome.i18n.getMessage('offer_fill')) })
+    .click();
+  await li
+    .waitForFunction(() => document.querySelector('[name="prenom"]')?.value, null, { timeout: 5000 })
+    .catch(() => {});
+  const after = await li.evaluate(() => ({
+    values: ['prenom', 'nom', 'email', 'tel'].map((n) => document.querySelector(`[name="${n}"]`).value),
+    hint: document.getElementById('epimoni-offer')?.shadowRoot?.querySelector('.hint')?.textContent || '',
+    submitted: Boolean(window.__submitted),
+  }));
+  check(
+    "LinkedIn: the button's click injects the filler and fills the job's form",
+    after.values.every(Boolean) && !after.submitted,
+    JSON.stringify(after),
+  );
+  await li.close();
+}
+
 const offerPage = await ctx.newPage();
 await offerPage.goto(`${base}/late.html`, { waitUntil: 'load' });
 await offerPage.waitForTimeout(1200);

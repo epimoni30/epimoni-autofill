@@ -1506,5 +1506,8 @@
   },
   "offer_hint_no_cv": {
     "message": "Application form detected. Add your CV to fill it in one click."
+  },
+  "offer_fill_failed": {
+    "message": "This button can't fill this page. Click the Epimoni icon in the toolbar instead."
   }
 }

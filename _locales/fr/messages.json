@@ -1506,5 +1506,9 @@
   },
   "offer_hint_no_cv": {
     "message": "Formulaire de candidature détecté. Ajoutez votre CV pour le remplir en un clic."
+  },
+  "offer_fill_failed": {
+    "message": "Impossible de remplir depuis ce bouton sur cette page. Cliquez sur l'icône Epimoni de la barre d'outils.",
+    "description": "Shown on the in-page button when its click could not inject the filler into the page (no host access); the toolbar icon still works there."
   }
 }
