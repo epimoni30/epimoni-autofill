@@ -9,6 +9,12 @@ carries the same number, and the release workflow refuses a tag that does not ma
 
 ## [Unreleased]
 
+### Fixed
+
+- Years of experience asked as brackets ("5 à 10 ans", "8 ans d'expérience") stayed empty
+  whenever the total from your CV was not a whole number of years, which is most of the time.
+  The total is now rounded to the nearest year before a bracket is chosen.
+
 ### Added
 
 - Taleez forms: the phone, the CV and the three dropdowns (level of study, years of
