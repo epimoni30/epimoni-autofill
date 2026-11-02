@@ -55,6 +55,16 @@ test('a total on a shared edge, a gap, or a list that is not brackets: nothing, 
   assert.equal(pick(FR, 'huit'), null);
 });
 
+test('a fractional total, as the CV sum gives it, is read to the nearest year', () => {
+  assert.equal(pick(FR, '8.1'), '5 à 10 ans');
+  assert.equal(pick(TALEEZ, '8.1'), "8 ans d'expérience");
+  assert.equal(pick(TALEEZ, '7,6'), "8 ans d'expérience");
+  assert.equal(pick(EN, '5.6'), '6-10 years', 'no longer falls between "3-5" and "6-10"');
+  assert.equal(pick(FR, '10.2'), '5 à 10 ans');
+  assert.equal(pick(FR, '10.6'), 'Plus de 10 ans');
+  assert.equal(pick(FR, '8.'), null);
+});
+
 test('Italian brackets', () => {
   assert.deepEqual(yearsRange('Meno di 1 anno'), [0, 0.5]);
   assert.deepEqual(yearsRange('Da 3 a 5 anni'), [3, 5]);

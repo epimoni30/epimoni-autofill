@@ -49,10 +49,19 @@ export function yearsRange(text) {
   return m ? [Number(m[1]), Number(m[1])] : null;
 }
 
-/** The one option whose bracket holds `years` (a whole number as text), as an index, or -1. */
+/**
+ * The one option whose bracket holds `years`, as an index, or -1.
+ *
+ * The total arrives as text and is usually fractional ("8.1": months summed over the CV).
+ * Brackets are written in whole years and leave gaps between them ("3-5", "6-10"), so the
+ * total is rounded to the nearest year first: 8.1 is read as 8, 5.6 as 6.
+ */
 export function pickYears(texts, years) {
-  if (!/^\d+$/.test(String(years || '').trim())) return -1;
-  const n = Number(years);
+  const raw = String(years ?? '')
+    .trim()
+    .replace(',', '.');
+  if (!/^\d+(?:\.\d+)?$/.test(raw)) return -1;
+  const n = Math.round(Number(raw));
   const ranges = texts.map(yearsRange);
   if (ranges.filter(Boolean).length < 2) return -1;
   const fits = ranges.map((r, i) => (r && r[0] <= n && n <= r[1] ? i : -1)).filter((i) => i !== -1);
