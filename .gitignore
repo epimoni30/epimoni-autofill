@@ -16,3 +16,7 @@ test/fixtures/postings/.private/
 # Local credentials and OS metadata.
 .secrets
 .DS_Store
+
+# Local assistant notes and settings. They describe this machine's setup and stay out of the public tree.
+CLAUDE.md
+.claude/
