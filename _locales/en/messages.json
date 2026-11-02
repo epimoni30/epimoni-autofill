@@ -3,7 +3,7 @@
     "message": "Epimoni: Job Application Autofill"
   },
   "ext_description": {
-    "message": "Fills your job applications, even without an Epimoni account, and analyses job ads: France Travail, HelloWork, APEC, LinkedIn."
+    "message": "Fills your job applications from your CV, no account needed. Job ad analysis and cover letters with an Epimoni account."
   },
   "action_title": {
     "message": "Fill this application"
@@ -93,7 +93,7 @@
     "message": "Language level"
   },
   "field_cv_file": {
-    "message": "Resume (PDF file)"
+    "message": "CV (PDF file)"
   },
   "field_awards_awarder": {
     "message": "Awarded by"
@@ -293,8 +293,11 @@
       }
     }
   },
+  "panel_open_questions_one": {
+    "message": "1 open question"
+  },
   "panel_open_questions": {
-    "message": "$COUNT$ open question(s)",
+    "message": "$COUNT$ open questions",
     "placeholders": {
       "count": {
         "content": "$1"
@@ -658,17 +661,55 @@
   "opt_source_none": {
     "message": "No CV saved: filling will do nothing."
   },
-  "opt_counts": {
-    "message": "$FIELDS$ details · $WORK$ experience(s) · $SKILLS$ skill(s)",
+  "opt_plural_locale": {
+    "message": "en",
+    "description": "The BCP 47 tag of this file's language, for Intl.PluralRules: picks the _one or _many form of a count."
+  },
+  "opt_count_fields_one": {
+    "message": "$COUNT$ detail",
     "placeholders": {
-      "fields": {
+      "count": {
         "content": "$1"
-      },
-      "work": {
-        "content": "$2"
-      },
-      "skills": {
-        "content": "$3"
+      }
+    }
+  },
+  "opt_count_fields_many": {
+    "message": "$COUNT$ details",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_count_work_one": {
+    "message": "$COUNT$ experience",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_count_work_many": {
+    "message": "$COUNT$ experiences",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_count_skills_one": {
+    "message": "$COUNT$ skill",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_count_skills_many": {
+    "message": "$COUNT$ skills",
+    "placeholders": {
+      "count": {
+        "content": "$1"
       }
     }
   },
@@ -825,13 +866,13 @@
     "message": "Your CV library is full. Delete a CV in the extension, then connect again."
   },
   "opt_file_heading": {
-    "message": "Resume file (PDF)"
+    "message": "CV file (PDF)"
   },
   "opt_file_intro": {
-    "message": "Put in the resume upload on application forms when you fill them. If you have not added your own PDF, the extension makes one from this resume. Everything stays on this computer."
+    "message": "Put in the CV upload on application forms when you fill them. If you have not added your own PDF, the extension makes one from this CV. Everything stays on this computer."
   },
   "opt_file_none": {
-    "message": "No PDF attached to this resume."
+    "message": "No PDF attached to this CV."
   },
   "opt_file_current": {
     "message": "$NAME$ · $SIZE$ KB",
@@ -851,13 +892,13 @@
     "message": "Replace"
   },
   "opt_file_save_first": {
-    "message": "Save this resume first to attach a PDF to it."
+    "message": "Save this CV first to attach a PDF to it."
   },
   "opt_file_saved": {
-    "message": "PDF attached to this resume."
+    "message": "PDF attached to this CV."
   },
   "opt_file_removed": {
-    "message": "Your PDF is removed: the one made from this resume takes its place."
+    "message": "Your PDF is removed: the one made from this CV takes its place."
   },
   "opt_file_error_type": {
     "message": "Only PDF files are accepted."
@@ -899,10 +940,10 @@
     "message": "Filled from"
   },
   "popup_cv_used": {
-    "message": "Resume in use"
+    "message": "CV in use"
   },
   "opt_file_generated": {
-    "message": "Made from this resume: $NAME$ · $SIZE$ KB",
+    "message": "Made from this CV: $NAME$ · $SIZE$ KB",
     "placeholders": {
       "name": {
         "content": "$1"
@@ -922,7 +963,7 @@
     "message": "Preview"
   },
   "opt_file_use_generated": {
-    "message": "Go back to the PDF made from this resume"
+    "message": "Go back to the PDF made from this CV"
   },
   "opt_file_badge_generated": {
     "message": "PDF made"
@@ -1034,7 +1075,7 @@
     "message": "Updated"
   },
   "trk_col_cv": {
-    "message": "Resume"
+    "message": "CV"
   },
   "trk_col_note": {
     "message": "Note"
@@ -1094,7 +1135,7 @@
     "message": "The letter could not be written. Try again."
   },
   "dash_menu_cv": {
-    "message": "My resume"
+    "message": "My CV"
   },
   "dash_menu_applications": {
     "message": "My applications"
@@ -1465,5 +1506,8 @@
   },
   "offer_hint_no_cv": {
     "message": "Application form detected. Add your CV to fill it in one click."
+  },
+  "offer_fill_failed": {
+    "message": "This button can't fill this page. Click the Epimoni icon in the toolbar instead."
   }
 }

@@ -54,7 +54,7 @@ async function fill(path) {
 // The reference: the measurement's own runner, on the CvDoc as stored, in the same browser.
 const cv = JSON.parse(readFileSync(join(HERE, 'cv.fixture.json'), 'utf8'));
 const engine = `${bundleContent(join(HERE, '..'))}
-  const __resolver = createResolver({ lexicons: EPIMONI_PACKS, autocomplete: EPIMONI_AUTOCOMPLETE });`;
+  const __resolver = createResolver({ lexicons: EPIMONI_PACKS, autocomplete: EPIMONI_AUTOCOMPLETE, lang: document.documentElement.lang });`;
 const runner = `const profile = ${JSON.stringify(toProfile(cv, SAMPLE_EXTRAS))}; const entries = ${JSON.stringify(toEntries(cv))};\n${RUNNER_BODY}`;
 async function reference(path) {
   const ref = await browser.newPage();

@@ -1,0 +1,1513 @@
+{
+  "ext_name": {
+    "message": "Epimoni: compilazione automatica delle candidature"
+  },
+  "ext_description": {
+    "message": "Compila le candidature dal tuo CV, senza account. Con un account Epimoni: analisi degli annunci e lettera. LinkedIn e altri siti."
+  },
+  "action_title": {
+    "message": "Compila questa candidatura"
+  },
+  "field_given_name": {
+    "message": "Nome"
+  },
+  "field_family_name": {
+    "message": "Cognome"
+  },
+  "field_full_name": {
+    "message": "Nome e cognome"
+  },
+  "field_email": {
+    "message": "Email"
+  },
+  "field_email_confirm": {
+    "message": "Conferma email"
+  },
+  "field_phone": {
+    "message": "Telefono"
+  },
+  "field_street": {
+    "message": "Indirizzo"
+  },
+  "field_postal_code": {
+    "message": "CAP"
+  },
+  "field_city": {
+    "message": "Città"
+  },
+  "field_country": {
+    "message": "Paese"
+  },
+  "field_linkedin_url": {
+    "message": "LinkedIn"
+  },
+  "field_github_url": {
+    "message": "GitHub"
+  },
+  "field_portfolio_url": {
+    "message": "Sito web"
+  },
+  "field_current_title": {
+    "message": "Ruolo attuale"
+  },
+  "field_current_employer": {
+    "message": "Datore di lavoro attuale"
+  },
+  "field_summary": {
+    "message": "Su di te"
+  },
+  "field_cover_letter": {
+    "message": "Lettera di presentazione"
+  },
+  "field_years_experience": {
+    "message": "Anni di esperienza"
+  },
+  "field_salary_expectation": {
+    "message": "Retribuzione desiderata"
+  },
+  "field_notice_period": {
+    "message": "Preavviso"
+  },
+  "field_availability_date": {
+    "message": "Disponibilità"
+  },
+  "field_work_authorization": {
+    "message": "Autorizzazione al lavoro"
+  },
+  "field_education_degree": {
+    "message": "Titolo di studio"
+  },
+  "field_education_institution": {
+    "message": "Istituto"
+  },
+  "field_skills": {
+    "message": "Competenze"
+  },
+  "field_languages": {
+    "message": "Lingue"
+  },
+  "field_speaks_language": {
+    "message": "Lingua parlata"
+  },
+  "field_language_level": {
+    "message": "Livello di lingua"
+  },
+  "field_cv_file": {
+    "message": "CV (file PDF)"
+  },
+  "field_awards_awarder": {
+    "message": "Conferito da"
+  },
+  "field_awards_date": {
+    "message": "Data"
+  },
+  "field_awards_description": {
+    "message": "Descrizione"
+  },
+  "field_awards_title": {
+    "message": "Titolo"
+  },
+  "field_certificates_date": {
+    "message": "Data"
+  },
+  "field_certificates_issuer": {
+    "message": "Ente"
+  },
+  "field_certificates_name": {
+    "message": "Nome"
+  },
+  "field_certificates_url": {
+    "message": "Link"
+  },
+  "field_education_details": {
+    "message": "Dettagli"
+  },
+  "field_education_end": {
+    "message": "Fine"
+  },
+  "field_education_field": {
+    "message": "Indirizzo di studio"
+  },
+  "field_education_score": {
+    "message": "Voto"
+  },
+  "field_education_start": {
+    "message": "Inizio"
+  },
+  "field_interests_keywords": {
+    "message": "Parole chiave"
+  },
+  "field_interests_name": {
+    "message": "Nome"
+  },
+  "field_languages_fluency": {
+    "message": "Livello"
+  },
+  "field_languages_language": {
+    "message": "Lingua"
+  },
+  "field_projects_description": {
+    "message": "Descrizione"
+  },
+  "field_projects_end": {
+    "message": "Fine"
+  },
+  "field_projects_name": {
+    "message": "Nome"
+  },
+  "field_projects_start": {
+    "message": "Inizio"
+  },
+  "field_projects_url": {
+    "message": "Link"
+  },
+  "field_publications_date": {
+    "message": "Data"
+  },
+  "field_publications_description": {
+    "message": "Descrizione"
+  },
+  "field_publications_name": {
+    "message": "Titolo"
+  },
+  "field_publications_publisher": {
+    "message": "Editore"
+  },
+  "field_publications_url": {
+    "message": "Link"
+  },
+  "field_references_name": {
+    "message": "Nome"
+  },
+  "field_references_reference": {
+    "message": "Referenza"
+  },
+  "field_skills_keywords": {
+    "message": "Parole chiave"
+  },
+  "field_skills_level": {
+    "message": "Livello"
+  },
+  "field_skills_name": {
+    "message": "Nome"
+  },
+  "field_volunteer_description": {
+    "message": "Descrizione"
+  },
+  "field_volunteer_end": {
+    "message": "Fine"
+  },
+  "field_volunteer_organization": {
+    "message": "Organizzazione"
+  },
+  "field_volunteer_position": {
+    "message": "Ruolo"
+  },
+  "field_volunteer_start": {
+    "message": "Inizio"
+  },
+  "field_work_company": {
+    "message": "Azienda"
+  },
+  "field_work_description": {
+    "message": "Descrizione"
+  },
+  "field_work_end": {
+    "message": "Fine"
+  },
+  "field_work_location": {
+    "message": "Luogo"
+  },
+  "field_work_position": {
+    "message": "Ruolo"
+  },
+  "field_work_start": {
+    "message": "Inizio"
+  },
+  "field_work_url": {
+    "message": "Link"
+  },
+  "cvsection_work": {
+    "message": "Esperienza"
+  },
+  "cvsection_volunteer": {
+    "message": "Volontariato"
+  },
+  "cvsection_education": {
+    "message": "Formazione"
+  },
+  "cvsection_awards": {
+    "message": "Premio"
+  },
+  "cvsection_certificates": {
+    "message": "Certificazione"
+  },
+  "cvsection_publications": {
+    "message": "Pubblicazione"
+  },
+  "cvsection_skills": {
+    "message": "Competenza"
+  },
+  "cvsection_languages": {
+    "message": "Lingua"
+  },
+  "cvsection_interests": {
+    "message": "Interesse"
+  },
+  "cvsection_references": {
+    "message": "Referenza"
+  },
+  "cvsection_projects": {
+    "message": "Progetto"
+  },
+  "panel_leftover": {
+    "message": "Altri $COUNT$ × “$SECTION$” nel tuo CV senza un blocco in questa pagina: clicca “Aggiungi” nella pagina, poi avvia di nuovo l'estensione.",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "section": {
+        "content": "$2"
+      }
+    }
+  },
+  "panel_tick_current": {
+    "message": "Ruolo attuale: la data di fine resta vuota. Spunta tu “Lavoro qui attualmente” se il modulo lo chiede."
+  },
+  "panel_filled_one": {
+    "message": "1 campo compilato"
+  },
+  "panel_filled_many": {
+    "message": "$COUNT$ campi compilati",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_to_check": {
+    "message": "Da verificare: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_open_questions_one": {
+    "message": "1 domanda aperta"
+  },
+  "panel_open_questions": {
+    "message": "$COUNT$ domande aperte",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_review": {
+    "message": "Controlla tutto prima di inviare. Nulla viene inviato al posto tuo."
+  },
+  "panel_undo": {
+    "message": "Annulla tutto"
+  },
+  "panel_close": {
+    "message": "Chiudi"
+  },
+  "panel_open_epimoni": {
+    "message": "Apri Epimoni"
+  },
+  "panel_offer_found": {
+    "message": "In questa pagina è stato trovato un annuncio di lavoro."
+  },
+  "panel_analyse_cta": {
+    "message": "Analizza questo annuncio"
+  },
+  "panel_analysing": {
+    "message": "Analisi in corso…"
+  },
+  "panel_match": {
+    "message": "Corrispondenza: $SCORE$",
+    "placeholders": {
+      "score": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_weakest": {
+    "message": "Punti più deboli:"
+  },
+  "panel_see_full": {
+    "message": "Vedi l'analisi completa →"
+  },
+  "panel_quota": {
+    "message": "Nessuna analisi rimasta in quest'ora. Riprova tra $MINUTES$ min.",
+    "placeholders": {
+      "minutes": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_quota_cta": {
+    "message": "Vedi i piani"
+  },
+  "panel_stale": {
+    "message": "La tua sessione è scaduta. Ricollega l'estensione da Epimoni."
+  },
+  "panel_no_cv": {
+    "message": "Aggiungi il tuo CV per analizzare questo annuncio."
+  },
+  "panel_too_long": {
+    "message": "Questo annuncio è troppo lungo per essere analizzato."
+  },
+  "panel_analyse_failed": {
+    "message": "L'analisi non è andata a buon fine. Riprova."
+  },
+  "section_profil": {
+    "message": "Profilo"
+  },
+  "section_experience": {
+    "message": "Esperienza"
+  },
+  "section_formation": {
+    "message": "Formazione"
+  },
+  "section_competences": {
+    "message": "Competenze"
+  },
+  "section_certification": {
+    "message": "Certificazioni"
+  },
+  "section_culture": {
+    "message": "Cultura"
+  },
+  "panel_accept": {
+    "message": "Accetta questo valore"
+  },
+  "panel_dismiss": {
+    "message": "Ignora"
+  },
+  "popup_title": {
+    "message": "Candidature Epimoni"
+  },
+  "popup_connect_link": {
+    "message": "Importa il mio CV da Epimoni →"
+  },
+  "popup_reconnect": {
+    "message": "Ricollega l'estensione →"
+  },
+  "popup_ready_fields": {
+    "message": "$COUNT$ informazioni pronte",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_cv": {
+    "message": "CV: $LABEL$",
+    "placeholders": {
+      "label": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_synced": {
+    "message": "Sincronizzato $WHEN$",
+    "placeholders": {
+      "when": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_today": {
+    "message": "oggi"
+  },
+  "popup_yesterday": {
+    "message": "ieri"
+  },
+  "popup_days_ago": {
+    "message": "$DAYS$ giorni fa",
+    "placeholders": {
+      "days": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_fill": {
+    "message": "Compila questa pagina"
+  },
+  "popup_stale": {
+    "message": "La tua sessione è scaduta. La compilazione funziona ancora, ma ricollega l'estensione per analizzare gli annunci."
+  },
+  "panel_no_profile": {
+    "message": "Ancora nessun CV. Aggiungine uno qui o importalo dal tuo account Epimoni."
+  },
+  "panel_add_cv": {
+    "message": "Aggiungi il mio CV"
+  },
+  "panel_tier_paid": {
+    "message": "Analisi illimitate con il tuo piano."
+  },
+  "panel_tier_free": {
+    "message": "1 analisi all'ora con l'account gratuito."
+  },
+  "panel_tier_spent": {
+    "message": "Analisi già usata. La prossima tra $MINUTES$ min.",
+    "placeholders": {
+      "minutes": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_stale_degraded": {
+    "message": "Sessione scaduta: questa analisi ha usato la quota gratuita."
+  },
+  "panel_keep_analysis": {
+    "message": "Crea un account per conservare le tue analisi →"
+  },
+  "panel_offline": {
+    "message": "Connessione non riuscita. Controlla la rete e riprova."
+  },
+  "popup_no_profile": {
+    "message": "Nessun CV salvato."
+  },
+  "popup_add_cv": {
+    "message": "Aggiungi il mio CV"
+  },
+  "popup_edit_cv": {
+    "message": "Il mio CV"
+  },
+  "popup_cv_local": {
+    "message": "CV salvato in questa estensione"
+  },
+  "popup_cv_site": {
+    "message": "CV importato da Epimoni"
+  },
+  "popup_thin": {
+    "message": "CV incompleto: aggiungi un'esperienza o qualche competenza per analizzare un annuncio."
+  },
+  "popup_tier_paid": {
+    "message": "Analisi illimitate"
+  },
+  "popup_tier_free": {
+    "message": "1 analisi all'ora (account gratuito)"
+  },
+  "popup_tier_spent": {
+    "message": "Analisi usata. La prossima tra $MINUTES$ min.",
+    "placeholders": {
+      "minutes": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_title": {
+    "message": "Il mio CV"
+  },
+  "opt_intro": {
+    "message": "Resta su questo computer. È da qui che vengono compilate le tue candidature."
+  },
+  "opt_status_heading": {
+    "message": "Stato"
+  },
+  "opt_from_account": {
+    "message": "Importa dal mio account Epimoni"
+  },
+  "opt_import": {
+    "message": "Importa un file JSON"
+  },
+  "opt_export": {
+    "message": "Esporta"
+  },
+  "opt_import_ok": {
+    "message": "CV importato."
+  },
+  "opt_import_failed": {
+    "message": "Impossibile leggere il file. Serve un CV in formato JSON."
+  },
+  "opt_import_empty": {
+    "message": "Il file non contiene informazioni di un CV."
+  },
+  "opt_basics": {
+    "message": "Dati personali"
+  },
+  "opt_work": {
+    "message": "Esperienza"
+  },
+  "opt_add_work": {
+    "message": "Aggiungi un'esperienza"
+  },
+  "opt_work_n": {
+    "message": "Esperienza $N$",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_work_empty": {
+    "message": "Ancora nessuna esperienza."
+  },
+  "opt_education": {
+    "message": "Formazione"
+  },
+  "opt_add_education": {
+    "message": "Aggiungi un titolo di studio"
+  },
+  "opt_education_n": {
+    "message": "Formazione $N$",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_education_empty": {
+    "message": "Ancora nessuna formazione."
+  },
+  "opt_skills": {
+    "message": "Competenze e lingue"
+  },
+  "opt_skills_help": {
+    "message": "Competenze, separate da virgole o una per riga."
+  },
+  "opt_languages": {
+    "message": "Lingue"
+  },
+  "opt_add_language": {
+    "message": "Aggiungi una lingua"
+  },
+  "opt_language_n": {
+    "message": "Lingua $N$",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_languages_empty": {
+    "message": "Ancora nessuna lingua."
+  },
+  "opt_language": {
+    "message": "Lingua"
+  },
+  "opt_fluency": {
+    "message": "Livello"
+  },
+  "opt_start": {
+    "message": "Dal"
+  },
+  "opt_end": {
+    "message": "Al"
+  },
+  "opt_details": {
+    "message": "Lode, specializzazione"
+  },
+  "opt_highlights": {
+    "message": "Responsabilità, una per riga"
+  },
+  "opt_remove": {
+    "message": "Rimuovi"
+  },
+  "opt_extras": {
+    "message": "Quello che il tuo CV non dice"
+  },
+  "opt_extras_help": {
+    "message": "Spesso chiesto nei moduli, mai in un CV. Resta su questo computer."
+  },
+  "opt_privacy_heading": {
+    "message": "I tuoi dati"
+  },
+  "opt_privacy": {
+    "message": "Il tuo CV è salvato in questa estensione, su questo computer. Viene inviato a Epimoni solo quando chiedi di analizzare un annuncio."
+  },
+  "opt_unpair": {
+    "message": "Scollega il mio account (il CV resta)"
+  },
+  "opt_forget": {
+    "message": "Cancella tutto"
+  },
+  "opt_forget_confirm": {
+    "message": "Conferma la cancellazione"
+  },
+  "opt_save": {
+    "message": "Salva"
+  },
+  "opt_saved": {
+    "message": "Salvato."
+  },
+  "opt_saved_thin": {
+    "message": "Salvato. Aggiungi un'esperienza o qualche competenza per analizzare un annuncio."
+  },
+  "opt_unsaved": {
+    "message": "Modifiche non salvate."
+  },
+  "opt_cv_untitled": {
+    "message": "CV senza titolo"
+  },
+  "opt_from_account_on": {
+    "message": "Collegato al tuo account Epimoni ($LABEL$)",
+    "placeholders": {
+      "label": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_source_site": {
+    "message": "CV importato da Epimoni, nessun account collegato."
+  },
+  "opt_source_local": {
+    "message": "CV scritto in questa estensione."
+  },
+  "opt_source_none": {
+    "message": "Nessun CV salvato: la compilazione non farà nulla."
+  },
+  "opt_plural_locale": {
+    "message": "it",
+    "description": "The BCP 47 tag of this file's language, for Intl.PluralRules: picks the _one or _many form of a count."
+  },
+  "opt_count_fields_one": {
+    "message": "$COUNT$ informazione",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_count_fields_many": {
+    "message": "$COUNT$ informazioni",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_count_work_one": {
+    "message": "$COUNT$ esperienza",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_count_work_many": {
+    "message": "$COUNT$ esperienze",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_count_skills_one": {
+    "message": "$COUNT$ competenza",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_count_skills_many": {
+    "message": "$COUNT$ competenze",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_thin": {
+    "message": "Non ancora abbastanza per analizzare un annuncio: aggiungi un'esperienza o qualche competenza."
+  },
+  "opt_stale": {
+    "message": "La tua sessione Epimoni è scaduta. La compilazione funziona ancora."
+  },
+  "opt_tier_paid": {
+    "message": "Analisi degli annunci illimitate con il tuo piano."
+  },
+  "opt_tier_free": {
+    "message": "1 analisi di annuncio all'ora con l'account gratuito."
+  },
+  "opt_ai_needs_account": {
+    "message": "L'analisi degli annunci e la lettera di presentazione richiedono un account Epimoni collegato."
+  },
+  "opt_tier_spent": {
+    "message": "Analisi usata. La prossima tra $MINUTES$ min.",
+    "placeholders": {
+      "minutes": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_empty": {
+    "message": "Non è stato possibile confrontare questo annuncio con il tuo CV. La tua quota non è stata usata."
+  },
+  "panel_retry": {
+    "message": "Riprova"
+  },
+  "opt_position": {
+    "message": "Ruolo"
+  },
+  "opt_employer": {
+    "message": "Azienda"
+  },
+  "opt_library_heading": {
+    "message": "I miei CV"
+  },
+  "opt_library_intro": {
+    "message": "Tienine più di uno, per esempio uno breve e uno dettagliato, e scegli quello che compila le tue candidature."
+  },
+  "opt_library_empty": {
+    "message": "Ancora nessun CV."
+  },
+  "opt_library_new": {
+    "message": "Nuovo CV"
+  },
+  "opt_library_use": {
+    "message": "Usa"
+  },
+  "opt_library_active": {
+    "message": "Attivo"
+  },
+  "opt_library_rename": {
+    "message": "Rinomina"
+  },
+  "opt_library_delete": {
+    "message": "Elimina"
+  },
+  "opt_library_delete_confirm": {
+    "message": "Conferma l'eliminazione"
+  },
+  "opt_library_full": {
+    "message": "Limite di $COUNT$ CV raggiunto. Eliminane uno per aggiungerne un altro.",
+    "placeholders": {
+      "COUNT": {
+        "content": "$1",
+        "example": "20"
+      }
+    }
+  },
+  "opt_library_switched": {
+    "message": "CV attivo: $NAME$.",
+    "placeholders": {
+      "NAME": {
+        "content": "$1",
+        "example": "CV court"
+      }
+    }
+  },
+  "opt_library_saved_first": {
+    "message": "Le tue modifiche sono state salvate prima del cambio."
+  },
+  "opt_library_deleted": {
+    "message": "CV eliminato."
+  },
+  "opt_source_account_badge": {
+    "message": "Account Epimoni"
+  },
+  "opt_source_site_badge": {
+    "message": "Da Epimoni"
+  },
+  "opt_source_local_badge": {
+    "message": "Scritto qui"
+  },
+  "opt_export_hint": {
+    "message": "Esportato in formato JSON Resume: leggibile da altri strumenti per CV e reimportabile qui."
+  },
+  "pair_title_account": {
+    "message": "Collegare questo account Epimoni?"
+  },
+  "pair_title_cv": {
+    "message": "Aggiungere questo CV all'estensione?"
+  },
+  "pair_from_site": {
+    "message": "Questa richiesta arriva da www.epimoni30.com."
+  },
+  "pair_account": {
+    "message": "Account"
+  },
+  "pair_cv": {
+    "message": "CV"
+  },
+  "pair_warning_account": {
+    "message": "Accetta solo se hai appena cliccato \"Collega\" sul sito e l'indirizzo qui sopra è il tuo. Le analisi degli annunci useranno questo account."
+  },
+  "pair_warning_cv": {
+    "message": "Accetta solo se hai appena cliccato \"Collega\" sul sito e questo CV è il tuo. Servirà a compilare i tuoi moduli di candidatura."
+  },
+  "pair_accept": {
+    "message": "Accetta"
+  },
+  "pair_refuse": {
+    "message": "Rifiuta"
+  },
+  "pair_done_title": {
+    "message": "Fatto"
+  },
+  "pair_done_account": {
+    "message": "Il tuo account e il tuo CV sono collegati. Puoi chiudere questa scheda."
+  },
+  "pair_done_cv": {
+    "message": "Il CV è stato aggiunto alla tua raccolta. Puoi chiudere questa scheda."
+  },
+  "pair_refused_title": {
+    "message": "Richiesta rifiutata"
+  },
+  "pair_refused": {
+    "message": "Non è stato modificato nulla. Puoi chiudere questa scheda."
+  },
+  "pair_expired_title": {
+    "message": "Richiesta scaduta"
+  },
+  "pair_expired": {
+    "message": "Questa richiesta non è più valida. Se serve, riavvia il collegamento dal sito."
+  },
+  "pair_failed_title": {
+    "message": "Collegamento non riuscito"
+  },
+  "pair_library_full": {
+    "message": "La tua raccolta di CV è piena. Elimina un CV nell'estensione, poi collegati di nuovo."
+  },
+  "opt_file_heading": {
+    "message": "File del CV (PDF)"
+  },
+  "opt_file_intro": {
+    "message": "Viene caricato nel campo del CV dei moduli di candidatura quando li compili. Se non hai aggiunto un tuo PDF, l'estensione ne crea uno da questo CV. Tutto resta su questo computer."
+  },
+  "opt_file_none": {
+    "message": "Nessun PDF allegato a questo CV."
+  },
+  "opt_file_current": {
+    "message": "$NAME$ · $SIZE$ KB",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      },
+      "size": {
+        "content": "$2"
+      }
+    }
+  },
+  "opt_file_choose": {
+    "message": "Allega un PDF"
+  },
+  "opt_file_replace": {
+    "message": "Sostituisci"
+  },
+  "opt_file_save_first": {
+    "message": "Salva prima questo CV per allegarvi un PDF."
+  },
+  "opt_file_saved": {
+    "message": "PDF allegato a questo CV."
+  },
+  "opt_file_removed": {
+    "message": "Il tuo PDF è stato rimosso: al suo posto c'è quello creato da questo CV."
+  },
+  "opt_file_error_type": {
+    "message": "Sono accettati solo file PDF."
+  },
+  "opt_file_error_size": {
+    "message": "Questo PDF supera i 5 MB."
+  },
+  "opt_file_error": {
+    "message": "Non è stato possibile salvare il PDF."
+  },
+  "opt_file_badge": {
+    "message": "PDF allegato"
+  },
+  "pdf_profile": {
+    "message": "Profilo"
+  },
+  "pdf_work": {
+    "message": "Esperienza professionale"
+  },
+  "pdf_education": {
+    "message": "Formazione"
+  },
+  "pdf_projects": {
+    "message": "Progetti"
+  },
+  "pdf_certificates": {
+    "message": "Certificazioni"
+  },
+  "pdf_skills": {
+    "message": "Competenze"
+  },
+  "pdf_languages": {
+    "message": "Lingue"
+  },
+  "pdf_present": {
+    "message": "oggi"
+  },
+  "panel_filled_with": {
+    "message": "Compilato con"
+  },
+  "popup_cv_used": {
+    "message": "CV in uso"
+  },
+  "opt_file_generated": {
+    "message": "Creato da questo CV: $NAME$ · $SIZE$ KB",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      },
+      "size": {
+        "content": "$2"
+      }
+    }
+  },
+  "opt_file_not_printable": {
+    "message": "Aggiungi il tuo nome e qualche esperienza, formazione o competenza e il PDF verrà creato."
+  },
+  "opt_file_own": {
+    "message": "Usa il mio PDF"
+  },
+  "opt_file_preview": {
+    "message": "Anteprima"
+  },
+  "opt_file_use_generated": {
+    "message": "Torna al PDF creato da questo CV"
+  },
+  "opt_file_badge_generated": {
+    "message": "PDF creato"
+  },
+  "panel_tracked": {
+    "message": "Aggiunta alle tue candidature."
+  },
+  "panel_tracked_applied": {
+    "message": "Candidatura segnata come inviata."
+  },
+  "panel_mark_applied": {
+    "message": "Ho inviato la mia candidatura"
+  },
+  "panel_open_tracker": {
+    "message": "Vedi le mie candidature"
+  },
+  "popup_tracker": {
+    "message": "Le mie candidature"
+  },
+  "trk_title": {
+    "message": "Le mie candidature"
+  },
+  "trk_intro": {
+    "message": "Ogni modulo compilato dall'estensione finisce qui. Trascina una scheda nella colonna successiva man mano che la candidatura avanza. Questo elenco resta su questo computer."
+  },
+  "trk_empty": {
+    "message": "Ancora nessuna candidatura. Compila un modulo con l'estensione o aggiungine una a mano."
+  },
+  "trk_export": {
+    "message": "Esporta (CSV)"
+  },
+  "trk_clear": {
+    "message": "Svuota l'elenco"
+  },
+  "trk_clear_confirm": {
+    "message": "Clicca di nuovo per eliminare tutto"
+  },
+  "trk_all": {
+    "message": "Tutte"
+  },
+  "trk_status": {
+    "message": "Stato"
+  },
+  "trk_status_filled": {
+    "message": "Compilata"
+  },
+  "trk_status_applied": {
+    "message": "Inviata"
+  },
+  "trk_status_interview": {
+    "message": "Colloquio"
+  },
+  "trk_status_offer": {
+    "message": "Offerta"
+  },
+  "trk_status_rejected": {
+    "message": "Rifiutata"
+  },
+  "trk_filled_on": {
+    "message": "Compilata il $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "trk_with_cv": {
+    "message": "con “$CV$”",
+    "placeholders": {
+      "cv": {
+        "content": "$1"
+      }
+    }
+  },
+  "trk_note": {
+    "message": "Aggiungi una nota"
+  },
+  "trk_note_placeholder": {
+    "message": "Contatto, data del colloquio, follow-up…"
+  },
+  "trk_delete": {
+    "message": "Elimina"
+  },
+  "trk_delete_confirm": {
+    "message": "Conferma"
+  },
+  "trk_file": {
+    "message": "candidature"
+  },
+  "trk_col_title": {
+    "message": "Posizione"
+  },
+  "trk_col_company": {
+    "message": "Azienda"
+  },
+  "trk_col_site": {
+    "message": "Sito"
+  },
+  "trk_col_url": {
+    "message": "Link"
+  },
+  "trk_col_status": {
+    "message": "Stato"
+  },
+  "trk_col_filled": {
+    "message": "Compilata il"
+  },
+  "trk_col_updated": {
+    "message": "Aggiornata"
+  },
+  "trk_col_cv": {
+    "message": "CV"
+  },
+  "trk_col_note": {
+    "message": "Nota"
+  },
+  "panel_letter_found": {
+    "message": "Questo modulo chiede una lettera di presentazione."
+  },
+  "panel_letter_limit": {
+    "message": "Limite: $MAX$ caratteri.",
+    "placeholders": {
+      "max": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_letter_cta": {
+    "message": "Scrivi la mia lettera con l'IA"
+  },
+  "panel_letter_writing": {
+    "message": "Scrittura della lettera in corso…"
+  },
+  "panel_letter_count": {
+    "message": "$N$ caratteri",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_letter_count_limit": {
+    "message": "$N$ / $MAX$ caratteri",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      },
+      "max": {
+        "content": "$2"
+      }
+    }
+  },
+  "panel_letter_insert": {
+    "message": "Inseriscila nel modulo"
+  },
+  "panel_letter_inserted": {
+    "message": "Lettera aggiunta. Rileggila prima di inviare."
+  },
+  "panel_letter_too_long": {
+    "message": "Più lunga di quanto accetta il modulo: copiala e accorciala."
+  },
+  "panel_letter_copy": {
+    "message": "Copia"
+  },
+  "panel_letter_copied": {
+    "message": "Copiata"
+  },
+  "panel_letter_empty": {
+    "message": "Non è stato possibile scrivere la lettera. Riprova."
+  },
+  "dash_menu_cv": {
+    "message": "Il mio CV"
+  },
+  "dash_menu_applications": {
+    "message": "Le mie candidature"
+  },
+  "panel_skills_found": {
+    "message": "Le tue competenze citate nell'annuncio: $N$ su $TOTAL$",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      },
+      "total": {
+        "content": "$2"
+      }
+    }
+  },
+  "panel_skills_none": {
+    "message": "Nessuna delle tue competenze compare parola per parola nell'annuncio."
+  },
+  "panel_skills_mark": {
+    "message": "Evidenzia nell'annuncio"
+  },
+  "panel_skills_unmark": {
+    "message": "Togli l'evidenziazione"
+  },
+  "popup_ai_heading": {
+    "message": "Funzioni IA"
+  },
+  "popup_analyse": {
+    "message": "Analizza l'annuncio in questa pagina"
+  },
+  "popup_letter": {
+    "message": "Scrivi la lettera di presentazione"
+  },
+  "popup_dashboard": {
+    "message": "Apri la dashboard"
+  },
+  "popup_ai_needs_account": {
+    "message": "Per gli account Epimoni collegati all'estensione."
+  },
+  "popup_ai_connect": {
+    "message": "Collega il mio account Epimoni →"
+  },
+  "popup_ai_reconnect": {
+    "message": "Il tuo collegamento a Epimoni è scaduto."
+  },
+  "panel_ai_needs_account": {
+    "message": "Funzione IA per gli account Epimoni collegati all'estensione."
+  },
+  "panel_ai_connect": {
+    "message": "Collega il mio account Epimoni →"
+  },
+  "panel_ai_reconnect": {
+    "message": "Il tuo collegamento a Epimoni è scaduto."
+  },
+  "panel_ai_reconnect_cta": {
+    "message": "Ricollega →"
+  },
+  "panel_no_advert": {
+    "message": "In questa pagina non è stato trovato nessun annuncio di lavoro."
+  },
+  "panel_no_letter_box": {
+    "message": "In questa pagina non c'è un annuncio per cui scrivere una lettera."
+  },
+  "consent_title": {
+    "message": "Consenti l'invio per l'analisi e la lettera"
+  },
+  "consent_body": {
+    "message": "Per analizzare un annuncio o scrivere una lettera, Epimoni invia il tuo CV e il testo dell'annuncio al suo server, nel momento in cui lo chiedi. Firefox chiede prima il tuo consenso."
+  },
+  "consent_core": {
+    "message": "La compilazione dei moduli non invia nulla e funziona senza questo consenso."
+  },
+  "consent_allow": {
+    "message": "Consenti"
+  },
+  "consent_done": {
+    "message": "Consentito. Puoi chiudere questa scheda."
+  },
+  "consent_refused": {
+    "message": "Non è stato consentito nulla. La compilazione funziona ancora; l'analisi e la lettera restano disattivate."
+  },
+  "consent_pair_note": {
+    "message": "Firefox ti chiederà anche il permesso di inviare il tuo CV e l'annuncio quando usi l'analisi o la lettera."
+  },
+  "ai_consent_note": {
+    "message": "Firefox chiede il tuo consenso prima che il tuo CV e l'annuncio vengano inviati a Epimoni."
+  },
+  "ai_consent_cta": {
+    "message": "Consenti l'invio"
+  },
+  "trk_add": {
+    "message": "Aggiungi una candidatura"
+  },
+  "trk_add_url": {
+    "message": "Link all'annuncio (facoltativo)"
+  },
+  "trk_add_save": {
+    "message": "Aggiungi"
+  },
+  "trk_add_cancel": {
+    "message": "Annulla"
+  },
+  "trk_add_need_title": {
+    "message": "Inserisci almeno il titolo della posizione."
+  },
+  "trk_add_bad_url": {
+    "message": "Questo link non è un indirizzo web valido."
+  },
+  "trk_added_on": {
+    "message": "Aggiunta il $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "popup_site_auto": {
+    "message": "Compila automaticamente su"
+  },
+  "popup_site_off": {
+    "message": "La compilazione automatica è disattivata su questo sito."
+  },
+  "popup_site_refused": {
+    "message": "Il browser non ha concesso l'accesso a questo sito. Puoi comunque compilare la pagina con un clic."
+  },
+  "panel_auto_filled": {
+    "message": "Compilato automaticamente: l'hai attivato per questo sito."
+  },
+  "panel_auto_off": {
+    "message": "Disattiva"
+  },
+  "panel_auto_is_off": {
+    "message": "La compilazione automatica è disattivata su questo sito."
+  },
+  "dash_menu_sites": {
+    "message": "Siti"
+  },
+  "sites_title": {
+    "message": "Siti"
+  },
+  "sites_intro": {
+    "message": "Su questi siti l'estensione compila i moduli di candidatura appena compaiono, senza aspettare il tuo clic. Non invia mai nulla al posto tuo. Per aggiungere un sito, apri l'estensione su quel sito e spunta \"Compila automaticamente\"."
+  },
+  "sites_empty": {
+    "message": "Ancora nessun sito. Ovunque altrove, l'estensione compila una pagina quando clicchi \"Compila questa pagina\"."
+  },
+  "sites_since": {
+    "message": "Attivo dal $DATE$",
+    "placeholders": {
+      "date": {
+        "content": "$1"
+      }
+    }
+  },
+  "sites_declared": {
+    "message": "sito di annunci supportato"
+  },
+  "sites_off": {
+    "message": "Disattiva"
+  },
+  "panel_letter_offer": {
+    "message": "Ti serve una lettera di presentazione per questo annuncio?"
+  },
+  "panel_letter_pdf": {
+    "message": "Scarica in PDF"
+  },
+  "pdf_letter_place_date": {
+    "message": "$CITY$, $DATE$",
+    "placeholders": {
+      "city": {
+        "content": "$1"
+      },
+      "date": {
+        "content": "$2"
+      }
+    }
+  },
+  "pdf_letter_file": {
+    "message": "Lettera-di-presentazione"
+  },
+  "popup_tailor": {
+    "message": "Adatta il mio CV a questo annuncio"
+  },
+  "panel_tailor_offer": {
+    "message": "Vuoi una versione del tuo CV adattata a questo annuncio?"
+  },
+  "panel_tailor_cta": {
+    "message": "Adatta il mio CV con l'IA"
+  },
+  "panel_tailor_working": {
+    "message": "Adattamento del CV all'annuncio in corso…"
+  },
+  "panel_tailor_done": {
+    "message": "Nuovo CV aggiunto alla tua raccolta: \"$LABEL$\". Il tuo CV originale non è cambiato.",
+    "placeholders": {
+      "label": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_tailor_use": {
+    "message": "Compila con questo CV"
+  },
+  "panel_tailor_pdf": {
+    "message": "Scarica il PDF"
+  },
+  "panel_tailor_review": {
+    "message": "Rivedi e modifica"
+  },
+  "panel_tailor_in_use": {
+    "message": "Questo modulo è compilato con \"$LABEL$\", il tuo CV adattato.",
+    "placeholders": {
+      "label": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_tailor_empty": {
+    "message": "L'IA non ha proposto modifiche per questo annuncio. Forse il tuo CV è già adatto."
+  },
+  "panel_tailor_full": {
+    "message": "La tua raccolta di CV è piena. Elimina un CV nella dashboard, poi riprova."
+  },
+  "tailored_label": {
+    "message": "Adattato · $FOR$",
+    "placeholders": {
+      "for": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_source_tailored_badge": {
+    "message": "Adattato a un annuncio"
+  },
+  "panel_tailor_review_intro": {
+    "message": "Modifiche proposte: $N$. Tieni quelle vere per te, poi crea il CV.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "panel_tailor_adds": {
+    "message": "Aggiunge qualcosa che il tuo CV non dice. Spuntala solo se è vera."
+  },
+  "panel_tailor_make": {
+    "message": "Crea il CV adattato"
+  },
+  "panel_tailor_none": {
+    "message": "Spunta almeno una modifica."
+  },
+  "opt_pdf_import_heading": {
+    "message": "Importa il mio CV esistente"
+  },
+  "opt_pdf_import_intro": {
+    "message": "Scegli il tuo CV in PDF: il testo viene letto su questo computer e lo controlli tu. L'IA di Epimoni lo divide poi in sezioni senza riscrivere una parola. Il tuo PDF resta il file inviato ai moduli."
+  },
+  "opt_pdf_import_choose": {
+    "message": "Scegli il mio CV (PDF)"
+  },
+  "opt_pdf_import_paste": {
+    "message": "oppure incolla il testo"
+  },
+  "opt_pdf_import_text_label": {
+    "message": "Il testo del tuo CV (correggilo se serve)"
+  },
+  "opt_pdf_import_go": {
+    "message": "Crea il CV con l'IA"
+  },
+  "opt_pdf_import_needs_account": {
+    "message": "La suddivisione con l'IA richiede un account Epimoni collegato. Senza, puoi compilare a mano le sezioni qui sotto."
+  },
+  "opt_pdf_import_reading": {
+    "message": "Lettura del PDF in corso…"
+  },
+  "opt_pdf_import_read": {
+    "message": "Parole lette: $N$. Controlla il testo, poi crea il CV.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_pdf_import_not_pdf": {
+    "message": "Questo file non è un PDF."
+  },
+  "opt_pdf_import_encrypted": {
+    "message": "Questo PDF è protetto da password. Aprilo, copia il testo e incollalo qui."
+  },
+  "opt_pdf_import_no_text": {
+    "message": "Questo PDF non contiene testo leggibile (probabilmente è un'immagine o una scansione). Incolla invece il testo del tuo CV."
+  },
+  "opt_pdf_import_unreadable": {
+    "message": "Non è stato possibile leggere questo PDF. Incolla invece il testo del tuo CV."
+  },
+  "opt_pdf_import_too_short": {
+    "message": "Il testo è troppo corto per essere un CV."
+  },
+  "opt_pdf_import_too_long": {
+    "message": "Il testo è troppo lungo (al massimo 30.000 caratteri)."
+  },
+  "opt_pdf_import_working": {
+    "message": "L'IA sta dividendo il tuo CV in sezioni…"
+  },
+  "opt_pdf_import_empty": {
+    "message": "In questo testo non è stata riconosciuta nessuna sezione."
+  },
+  "opt_pdf_import_failed": {
+    "message": "L'importazione non è riuscita. Riprova tra poco."
+  },
+  "opt_pdf_import_done": {
+    "message": "CV creato. Controlla ogni sezione qui sotto, poi salva."
+  },
+  "offer_fill": {
+    "message": "Compila il modulo"
+  },
+  "offer_add_cv": {
+    "message": "Aggiungi il mio CV"
+  },
+  "offer_close": {
+    "message": "Non su questo sito per ora"
+  },
+  "panel_always_offer": {
+    "message": "La prossima volta compilare questo sito da solo?"
+  },
+  "panel_always_on": {
+    "message": "Compila sempre qui"
+  },
+  "panel_always_done": {
+    "message": "Fatto: questo sito verrà compilato automaticamente."
+  },
+  "panel_always_needs_menu": {
+    "message": "Per questo sito Chrome deve prima dare il suo consenso: apri il menu dell'estensione e spunta \"Compila automaticamente\"."
+  },
+  "popup_site_needs_cv": {
+    "message": "Disponibile dopo aver aggiunto un CV."
+  },
+  "popup_everywhere_on": {
+    "message": "Mostra il pulsante \"Compila con Epimoni\" su tutti i siti di candidatura"
+  },
+  "popup_everywhere_done": {
+    "message": "Fatto: il pulsante comparirà sui moduli di candidatura."
+  },
+  "sites_offer_heading": {
+    "message": "Il pulsante \"Compila con Epimoni\""
+  },
+  "sites_offer_intro": {
+    "message": "Quando una pagina contiene un modulo di candidatura, compare un pulsante nell'angolo in basso: un clic e il modulo è compilato. È già attivo sui siti di annunci supportati. Per averlo anche sui siti carriere delle aziende, Chrome chiederà l'accesso a tutti i siti: lì l'estensione controlla solo se c'è un modulo e non compila nulla senza il tuo clic."
+  },
+  "sites_offer_on": {
+    "message": "Attivalo su tutti i siti"
+  },
+  "sites_offer_off": {
+    "message": "Toglilo dagli altri siti"
+  },
+  "sites_offer_is_on": {
+    "message": "Attivo su tutti i siti."
+  },
+  "sites_offer_is_off": {
+    "message": "Attivo solo sui siti di annunci supportati."
+  },
+  "guard_refused": {
+    "message": "Clic ignorato: questa pagina nascondeva o copriva il pulsante. Usa invece l'icona di Epimoni nella barra degli strumenti.",
+    "description": "Shown when a click on the in-page panel or button was refused because the page hid or covered it (clickjacking)."
+  },
+  "offer_hint": {
+    "message": "Modulo di candidatura rilevato."
+  },
+  "offer_hint_no_cv": {
+    "message": "Modulo di candidatura rilevato. Aggiungi il tuo CV per compilarlo con un clic."
+  },
+  "offer_fill_failed": {
+    "message": "Questo pulsante non può compilare la pagina. Clicca invece sull'icona di Epimoni nella barra degli strumenti."
+  }
+}

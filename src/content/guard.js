@@ -15,6 +15,8 @@
 // control's popup and nothing else is. A filler for the degree dropdown cannot reach the
 // "Envoyer ma candidature" button three sections down, whatever its code says.
 
+import { byIdAnywhere, holds } from './dom.js';
+
 const CLICK_BUDGET = 6; // per write: open, maybe scroll a list, choose. Never a loop.
 const WAIT_CAP_MS = 2000;
 
@@ -55,7 +57,9 @@ function popupsOf(control) {
         .split(/\s+/)
         .filter(Boolean),
     );
-  return ids.map((id) => root.getElementById?.(id) || doc.getElementById(id)).filter(Boolean);
+  return ids
+    .map((id) => root.getElementById?.(id) || doc.getElementById(id) || byIdAnywhere(control, id))
+    .filter(Boolean);
 }
 
 /**
@@ -87,8 +91,9 @@ export function createGuard(control, { setValue, clearValue, matchOption }) {
     return obs;
   };
   const shown = () => [...popupsOf(control), ...opened.filter((n) => n.isConnected)];
-  const within = (target) =>
-    target === control || control.contains(target) || shown().some((p) => p.contains(target));
+  // Inside, including the shadow roots below: a design system's option is often a few shadow
+  // roots down from the list that declares it.
+  const within = (target) => holds(control, target) || shown().some((p) => holds(p, target));
   const refuse = (why, target) => {
     refusals.push(`${why}: <${target?.tagName?.toLowerCase?.() || '?'}>`);
     return false;

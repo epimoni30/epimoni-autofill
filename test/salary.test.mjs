@@ -46,3 +46,16 @@ test('an edge, a range across brackets, a monthly figure or words: nothing', () 
   assert.equal(pick(TALEEZ, 'Selon profil'), null);
   assert.equal(pick(['Oui', 'Non'], '45k'), null);
 });
+
+test('Italian brackets, and a monthly figure is only compared with monthly ones', () => {
+  assert.deepEqual(amountRange('Meno di 30.000 €'), [0, 29999.5]);
+  assert.deepEqual(amountRange('Oltre 50.000 €'), [50000.5, Infinity]);
+  assert.equal(
+    pickSalary(['Meno di 30.000 €', '30.000 - 40.000 €', '40.000 - 50.000 €', 'Oltre 50.000 €'], '42 000 €'),
+    2,
+  );
+  assert.equal(
+    pickSalary(['Meno di 30.000 €', '30.000 - 40.000 €', '40.000 - 50.000 €'], '2 000 € al mese'),
+    -1,
+  );
+});

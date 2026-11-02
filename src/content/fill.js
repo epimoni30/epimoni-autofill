@@ -22,6 +22,7 @@ import {
   answerHolds,
   assignBlocks,
   clearValue,
+  documentChosen,
   fileInputs,
   fillableElements,
   hasUserValue,
@@ -144,8 +145,9 @@ export async function runFill({
   const keep = found.map((el) => !widgets.some((w) => w !== el && w.contains(el)));
   const els = found.filter((_, i) => keep[i]);
   const owners = claimed.filter((_, i) => keep[i]);
-  const bundles = els.map((el, i) => {
-    const sources = active.flatMap((f) => {
+  // What the active fillers say about a control: label evidence, weighed like any other.
+  const describedBy = (el) =>
+    active.flatMap((f) => {
       if (!f.describe) return [];
       const got = safely(errors, f, 'describe', () => f.describe(el));
       return (Array.isArray(got) ? got : got ? [got] : []).map((text) => ({
@@ -153,6 +155,8 @@ export async function runFill({
         text: String(text),
       }));
     });
+  const bundles = els.map((el, i) => {
+    const sources = describedBy(el);
     const owner = owners[i];
     // `options` is the answers a custom dropdown offers, or `true` for a closed list whose
     // answers only exist once it is opened: the filler then picks with `api.pick`.
@@ -263,7 +267,9 @@ export async function runFill({
     return loaded.get(key);
   };
   const fileEls = fileInputs(root);
-  const fileBundles = fileEls.map((el) => labelBundle(el));
+  // The same filler evidence as any other control: an upload's name can live where no label
+  // rule reaches (a web component's shadow root).
+  const fileBundles = fileEls.map((el) => labelBundle(el, { sources: describedBy(el) }));
   const fileDecisions = resolver.resolveAll(fileBundles);
   let attached = 0;
   for (const [i, el] of fileEls.entries()) {
@@ -274,7 +280,9 @@ export async function runFill({
     if (hasUserValue(el)) continue; // a file the user chose is theirs
     const file = await fileOf(d.key);
     if (!file) continue; // no document attached to this CV: recognised, nothing to put there
-    if (d.action === 'suggest') {
+    // The site already holds a CV and has one ticked (LinkedIn's saved resumes): uploading
+    // would replace that choice and add a file to the person's account there, so it is offered.
+    if (d.action === 'suggest' || documentChosen(el)) {
       suggestions.push({ el, key: d.key, value: file, owner: null });
       continue;
     }

@@ -10,8 +10,9 @@
 // Order matters only for widget ownership: the first filler whose `match.widget` claims a
 // control operates it. Site fillers come first so that a site can override a generic widget.
 
+import smartrecruiters from './site/smartrecruiters.js';
 import workday from './site/workday.js';
 import ariaCombobox from './widget/aria-combobox.js';
 import taleezSelect from './widget/taleez-select.js';
 
-export const FILLERS = [workday, taleezSelect, ariaCombobox];
+export const FILLERS = [workday, smartrecruiters, taleezSelect, ariaCombobox];

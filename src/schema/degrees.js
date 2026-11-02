@@ -31,6 +31,7 @@ const NAMES = [
   ['doctorado', 8],
   ['doutorado', 8],
   ['doktorat', 8],
+  ['dottorato', 8],
   ['master 1', 4],
   ['maitrise', 4],
   ['master', 5],
@@ -44,6 +45,12 @@ const NAMES = [
   ['maestria', 5],
   ['mestrado', 5],
   ['magister', 5],
+  // Italian: the two-tier laurea. A bare "laurea" is either tier (the old single degree was
+  // five years), so only the named tiers are read; an Italian "master" is a postgraduate
+  // course, not this degree, but forms that list it list it beside these.
+  ['laurea magistrale', 5],
+  ['laurea specialistica', 5],
+  ['laurea magistrale a ciclo unico', 5],
   ['licence', 3],
   ['bachelor', 3],
   ['bachelors', 3],
@@ -51,6 +58,7 @@ const NAMES = [
   ['licenciatura', 3],
   ['grado', 3],
   ['licencjat', 3],
+  ['laurea triennale', 3],
   ['bts', 2],
   ['dut', 2],
   ['deug', 2],
@@ -61,6 +69,9 @@ const NAMES = [
   ['bachillerato', 0],
   ['ensino medio', 0],
   ['matura', 0],
+  ['diploma di maturita', 0],
+  ['maturita', 0],
+  ['nessun titolo', -2],
   ['cap', -1],
   ['bep', -1],
 ].sort((a, b) => b[0].length - a[0].length);

@@ -35,7 +35,7 @@ export async function buildPlayground() {
     '// Built by tools/playground.mjs from src/: do not edit.',
     '(() => {',
     bundleContent(ROOT),
-    'const __resolver = createResolver({ lexicons: EPIMONI_PACKS, autocomplete: EPIMONI_AUTOCOMPLETE });',
+    'const __resolver = createResolver({ lexicons: EPIMONI_PACKS, autocomplete: EPIMONI_AUTOCOMPLETE, lang: document.documentElement.lang });',
     `window.__epimoniRun = (profile, entries) => {${RUNNER_BODY}};`,
     "window.__epimoniTargets = () => deepQueryAll(document, '[data-expect]');",
     '})();',

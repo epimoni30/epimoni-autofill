@@ -74,6 +74,19 @@ const results = await page.evaluate(`(() => {
   r.overlayBefore = ov.choose($('before'));
   r.overlayNotOpenedHere = early.choose($('ov-a'));
   r.overlayPickYears = ov.pick(['1 à 3 ans', '5 à 10 ans', 'Plus de 10 ans'], '8');
+  // A popup whose options sit in shadow roots below it: inside it, those count, a submit
+  // button there is still a submit button, and another component's shadow root is not inside.
+  const sh = document.createElement('div');
+  sh.innerHTML = '<input id="sh-in" role="combobox" aria-controls="sh-menu"><div id="sh-menu"><span id="sh-host"></span></div><span id="sh-other"></span>';
+  document.body.appendChild(sh);
+  const deepRoot = $('sh-host').attachShadow({ mode: 'open' });
+  deepRoot.innerHTML = '<div role="option" id="sh-opt">Nantes</div><button type="submit" form="f" id="sh-submit">Envoyer</button>';
+  const otherRoot = $('sh-other').attachShadow({ mode: 'open' });
+  otherRoot.innerHTML = '<div role="option" id="sh-far">Paris</div>';
+  const shApi = createGuard($('sh-in'), { setValue, clearValue, matchOption });
+  r.shadowOption = shApi.choose(deepRoot.getElementById('sh-opt'));
+  r.shadowSubmit = shApi.choose(deepRoot.getElementById('sh-submit'));
+  r.shadowFar = shApi.choose(otherRoot.getElementById('sh-far'));
   // The budget: six clicks per write, whatever the filler's loop does.
   const budget = createGuard(box, { setValue, clearValue, matchOption });
   let n = 0;
@@ -130,6 +143,9 @@ check(
 check('a submit button in that overlay is still refused', results.overlaySubmit === false);
 check('a button that was already on the page is not part of it', results.overlayBefore === false);
 check('another control that opened nothing cannot click it', results.overlayNotOpenedHere === false);
+check('an option a few shadow roots below the popup is inside it', results.shadowOption === true);
+check('a submit button down there is still refused', results.shadowSubmit === false);
+check("another component's shadow root is not inside the popup", results.shadowFar === false);
 check(
   'pick follows the key: eight years pick "5 à 10 ans"',
   results.overlayPickYears === 1,

@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="fr">
+<!-- The shape of LinkedIn Easy Apply's CV step (measured 2026-10-18), rebuilt in our own words.
+     The board lists the CVs it keeps for the person, one already ticked, with an upload beside
+     them. Uploading there would replace that choice and add a file to the person's LinkedIn
+     account, so the CV is offered, not attached. -->
+<meta charset="utf-8"><title>Postuler (forme LinkedIn Easy Apply, étape CV)</title>
+<body>
+<div role="dialog" aria-labelledby="li-h">
+  <h2 id="li-h">Postuler chez Exemple</h2>
+  <form onsubmit="window.__submitted = true; return false">
+    <h3>CV</h3>
+    <div>
+      <input type="radio" id="li-doc-1" name="doc" checked data-expect="none">
+      <label for="li-doc-1"><h3>CV Camille 2024.pdf</h3><p>Dernière utilisation le 02/10/2026</p></label>
+    </div>
+    <div>
+      <input type="radio" id="li-doc-2" name="doc" data-expect="none">
+      <label for="li-doc-2"><h3>CV-Camille-anglais.pdf</h3><p>Dernière utilisation le 14/06/2026</p></label>
+    </div>
+    <label for="li-up">Télécharger le CV</label>
+    <input type="file" id="li-up" accept=".pdf,.doc,.docx" data-expect="none">
+    <p>DOC, DOCX, PDF (2 Mo)</p>
+    <button type="submit">Suivant</button>
+  </form>
+</div>
+</body></html>

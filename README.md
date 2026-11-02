@@ -8,7 +8,7 @@
 [![Code style: Biome](https://img.shields.io/badge/code%20style-Biome-60a5fa?logo=biome&logoColor=white)](https://biomejs.dev)
 
 A Chrome extension that fills in job application forms from your CV. We started with the
-French job boards (France Travail, HelloWork, APEC, Welcome to the Jungle, Indeed.fr and
+French job boards (France Travail, HelloWork, APEC, Welcome to the Jungle, Indeed and
 LinkedIn) and the ATS pages they send you to.
 
 You can [try it in your browser](https://epimoni30.github.io/epimoni-autofill/) without
