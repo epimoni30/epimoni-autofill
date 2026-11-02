@@ -11,7 +11,7 @@
 // any other control's) or which answer to give (the core formats the value; `api.pick`
 // matches it against the options by the core's own rule). It only operates the widget.
 
-import { deepQueryAll, normalize } from '../../content/dom.js';
+import { byIdAnywhere, deepQueryAll, normalize } from '../../content/dom.js';
 
 // Options that are prompts rather than answers: "Select One", "Choisir…", ": ".
 const PROMPT = /^(select|choose|choisi|selectionn|seleccion|elige|pick|--|—|-)/;
@@ -29,12 +29,31 @@ const isCombobox = (el) =>
     el.getAttribute('aria-controls') || el.getAttribute('aria-owns') || el.getAttribute('aria-haspopup'),
   );
 
+/**
+ * An option's label. Usually its text; in a web component the label is often slotted in from
+ * outside, so the option's own text is empty and the slot's assigned content is what shows.
+ */
+export const optionText = (o) => {
+  const own = (o.textContent || '').trim();
+  if (own) return own;
+  return [...o.querySelectorAll('slot')]
+    .map((s) =>
+      s
+        .assignedNodes({ flatten: true })
+        .map((n) => n.textContent || '')
+        .join(''),
+    )
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+};
+
 /** Options currently rendered in the popups this control declares, prompts left out. */
 function renderedOptions(api) {
   return api
     .popups()
-    .flatMap((p) => [...p.querySelectorAll('[role="option"]')])
-    .filter((o) => o.getAttribute('aria-disabled') !== 'true' && !isPrompt(o.textContent));
+    .flatMap((p) => deepQueryAll(p, '[role="option"]'))
+    .filter((o) => o.getAttribute('aria-disabled') !== 'true' && !isPrompt(optionText(o)));
 }
 
 export default {
@@ -51,16 +70,15 @@ export default {
    */
   options(el) {
     const root = el.getRootNode();
-    const ids = `${el.getAttribute('aria-controls') || ''} ${el.getAttribute('aria-owns') || ''}`.split(
-      /\s+/,
-    );
+    // Either attribute may be missing, and the join leaves an empty id that is not a popup.
+    const ids = `${el.getAttribute('aria-controls') || ''} ${el.getAttribute('aria-owns') || ''}`
+      .split(/\s+/)
+      .filter(Boolean);
     const popup = ids
-      .map((id) => id && (root.getElementById?.(id) || el.ownerDocument.getElementById(id)))
+      .map((id) => root.getElementById?.(id) || el.ownerDocument.getElementById(id) || byIdAnywhere(el, id))
       .find(Boolean);
     const texts = popup
-      ? [...popup.querySelectorAll('[role="option"]')]
-          .map((o) => o.textContent.trim())
-          .filter((t) => !isPrompt(t))
+      ? [...popup.querySelectorAll('[role="option"]')].map(optionText).filter((t) => !isPrompt(t))
       : [];
     return texts.length ? texts : true;
   },
@@ -69,13 +87,14 @@ export default {
   answered(el) {
     if (el.matches('input')) return Boolean(el.value.trim());
     const root = el.getRootNode();
-    const ids = `${el.getAttribute('aria-controls') || ''} ${el.getAttribute('aria-owns') || ''}`.split(
-      /\s+/,
-    );
+    // Either attribute may be missing, and the join leaves an empty id that is not a popup.
+    const ids = `${el.getAttribute('aria-controls') || ''} ${el.getAttribute('aria-owns') || ''}`
+      .split(/\s+/)
+      .filter(Boolean);
     return ids.some((id) => {
-      const popup = id && (root.getElementById?.(id) || el.ownerDocument.getElementById(id));
+      const popup = root.getElementById?.(id) || el.ownerDocument.getElementById(id) || byIdAnywhere(el, id);
       const selected = popup?.querySelector('[role="option"][aria-selected="true"]');
-      return Boolean(selected && !isPrompt(selected.textContent));
+      return Boolean(selected && !isPrompt(optionText(selected)));
     });
   },
 
@@ -91,7 +110,7 @@ export default {
     };
     if (el.matches('input')) api.type(el, value);
     if (!expanded() && !api.open(el)) return miss();
-    const texts = (found) => found.map((o) => o.textContent.trim());
+    const texts = (found) => found.map(optionText);
     // A typeahead's answers come from a server: the first list shown can be the previous
     // query's, or "No results" while the request is in flight. So it waits, up to the guard's
     // cap, for a list holding a match; a list already in the page needs no such wait.
@@ -119,7 +138,7 @@ export default {
           api
             .popups()
             .flatMap((p) => [...p.querySelectorAll('[role="option"]')])
-            .find((o) => isPrompt(o.textContent)),
+            .find((o) => isPrompt(optionText(o))),
         );
         if (prompt) api.choose(prompt);
         else if (expanded()) api.open(el);

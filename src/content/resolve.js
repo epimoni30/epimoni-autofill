@@ -81,8 +81,17 @@ function compile(lexicons) {
  * - `captionFiller`: words that decorate a section heading without changing what it is:
  *   "Vos expériences", "Formation (facultatif)", "Expérience n° 2".
  */
-export function createResolver({ lexicons, autocomplete = {} }) {
+export function createResolver({ lexicons, autocomplete = {}, lang = '' }) {
   const keys = compile(lexicons);
+  // A word two languages read differently ("nome": a first name in Italian, the whole name in
+  // Portuguese) is offered, not filled, because merged packs cannot tell which language a label
+  // is in. A page that says its language can: its own pack's `ties` name the key that word
+  // means there. Only between the two keys it is contested by, and only on the pack's own
+  // language, so a page with no `lang`, or another one, is exactly as cautious as before.
+  const code = String(lang || '')
+    .toLowerCase()
+    .split('-')[0];
+  const ties = new Map(code ? Object.entries(lexicons.find((l) => l.lang === code)?.ties || {}) : []);
   const sections = compileSections(lexicons);
   const thirdParty = [...new Set(lexicons.flatMap((l) => l.thirdParty || []))];
   const captionFiller = new Set(lexicons.flatMap((l) => l.captionFiller || []));
@@ -263,6 +272,13 @@ export function createResolver({ lexicons, autocomplete = {} }) {
     const at = block ? { index: block.index, part: bundle.part || null } : {};
     const gap = next ? top.score - next.score : 1;
     if (next && gap < MARGIN) {
+      // The tie names the key its own phrase matched, and that phrase is no shorter than the
+      // rival's: "seu nome" on an Italian page is a Portuguese phrase, not a tied "nome".
+      const won = (a, b) =>
+        ties.get(a.phrase) === a.key && (a.phrase || '').length >= (b.phrase || '').length;
+      const pick = won(top, next) ? top : won(next, top) ? next : null;
+      if (pick && !block && pick.score >= FILL_THRESHOLD)
+        return { action: 'fill', key: pick.key, score: pick.score, via: pick.via, phrase: pick.phrase };
       return {
         action: 'suggest',
         key: top.key,

@@ -22,6 +22,10 @@ export default {
   thirdParty: [],
   // Words that decorate a section heading: "your", "optional", "required"…
   captionFiller: [],
+  // A phrase another language reads as a different key, and what it means in yours:
+  // { nome: 'given_name' }. Used only on a page whose `lang` is this pack's, to fill a field
+  // that would otherwise be offered as ambiguous. Leave it empty unless a test shows the tie.
+  ties: {},
   dates: {
     // Month-name prefixes → month number: { jan: 1, feb: 2, … }. Prefixes, not whole words.
     months: {},

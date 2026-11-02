@@ -5,6 +5,9 @@
 <meta charset="utf-8">
 <title>Epimoni</title>
 <style>
+  /* Author `display` rules beat the `hidden` attribute; this keeps hidden meaning hidden. */
+  /* biome-ignore lint/complexity/noImportantStyles: must beat every class that sets display */
+  [hidden] { display: none !important; }
   :root { color-scheme: light dark; --fg: #111; --muted: #71717a; --line: #e4e4e7; --bg: #fff; --accent: #7c5cff; --ok: #15803d; }
   @media (prefers-color-scheme: dark) { :root { --fg: #f4f4f5; --muted: #a1a1aa; --line: #3f3f46; --bg: #18181b; --ok: #4ade80; } }
   body { width: 300px; margin: 0; padding: 14px; font: 13px/1.5 system-ui, -apple-system, sans-serif; color: var(--fg); background: var(--bg); }

@@ -10,13 +10,14 @@
 // Texts arrive raw: the usual normalisation drops the "+" and "-" that brackets are made of
 // ("10+ years", "1-2 ans"), so this module folds case and accents itself and keeps them.
 
-const UNIT = '(?:ans?|annees?|years?|yrs?|anos?|lat|lata|rok|roku)';
+const UNIT = '(?:ans?|annees?|years?|yrs?|anos?|lat|lata|rok|roku|anni|anno)';
 const NONE =
-  /\b(aucune experience|pas d experience|no experience|sin experiencia|sem experiencia|brak doswiadczenia|debutant accepte)\b/;
-const BELOW = /(?:\bmoins d(?:e)?|\bless than|\bunder|\bmenos de|\bponizej|\bmniej niz|<)\s*(\d+)/;
-const ABOVE = /(?:\bplus d(?:e)?|\bmore than|\bover|\bmas de|\bmais de|\bpowyzej|\bponad|\+\s*de|>)\s*(\d+)/;
+  /\b(aucune experience|pas d experience|no experience|sin experiencia|sem experiencia|brak doswiadczenia|nessuna esperienza|senza esperienza|debutant accepte)\b/;
+const BELOW = /(?:\bmoins d(?:e)?|\bless than|\bunder|\bmenos de|\bponizej|\bmniej niz|\bmeno di|<)\s*(\d+)/;
+const ABOVE =
+  /(?:\bplus d(?:e)?|\bmore than|\bover|\bmas de|\bmais de|\bpowyzej|\bponad|\bpiu di|\boltre|\+\s*de|>)\s*(\d+)/;
 const AT_LEAST = new RegExp(
-  `\\b(\\d+)\\s*(?:\\+|${UNIT}\\s*(?:et plus|and more|and above|or more|o mas|ou mais|i wiecej|\\+))`,
+  `\\b(\\d+)\\s*(?:\\+|${UNIT}\\s*(?:et plus|and more|and above|or more|o mas|ou mais|i wiecej|e oltre|o piu|\\+))`,
 );
 const BETWEEN = /\b(\d+)\s*(?:-|a|to|y|e|et|do|and)\s*(\d+)\b/;
 const SINGLE = /\b(\d+)\b/;
@@ -48,10 +49,19 @@ export function yearsRange(text) {
   return m ? [Number(m[1]), Number(m[1])] : null;
 }
 
-/** The one option whose bracket holds `years` (a whole number as text), as an index, or -1. */
+/**
+ * The one option whose bracket holds `years`, as an index, or -1.
+ *
+ * The total arrives as text and is usually fractional ("8.1": months summed over the CV).
+ * Brackets are written in whole years and leave gaps between them ("3-5", "6-10"), so the
+ * total is rounded to the nearest year first: 8.1 is read as 8, 5.6 as 6.
+ */
 export function pickYears(texts, years) {
-  if (!/^\d+$/.test(String(years || '').trim())) return -1;
-  const n = Number(years);
+  const raw = String(years ?? '')
+    .trim()
+    .replace(',', '.');
+  if (!/^\d+(?:\.\d+)?$/.test(raw)) return -1;
+  const n = Math.round(Number(raw));
   const ranges = texts.map(yearsRange);
   if (ranges.filter(Boolean).length < 2) return -1;
   const fits = ranges.map((r, i) => (r && r[0] <= n && n <= r[1] ? i : -1)).filter((i) => i !== -1);

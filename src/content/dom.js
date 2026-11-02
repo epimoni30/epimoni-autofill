@@ -9,7 +9,7 @@
 import { MONTHS } from '../lexicon/index.js';
 import { workRightCovers } from '../schema/countries.js';
 import { pickByLevel } from '../schema/fluency.js';
-import { forDialCode } from '../schema/phone.js';
+import { dialOf, forDialCode, isDialList, pickDial } from '../schema/phone.js';
 import { pickYears, yearsRange } from '../schema/years.js';
 import { highestDegree, pickDegree } from '../schema/degrees.js';
 import { pickSalary } from '../schema/salary.js';
@@ -49,6 +49,29 @@ export function deepQueryAll(root, selector) {
   };
   visit(root);
   return out;
+}
+
+/**
+ * An element by id: in the node's own root, then the document, then any open shadow root. A
+ * design system can render a combobox's list in another component's shadow root, where the id
+ * its `aria-controls` names is invisible to both of the usual lookups.
+ */
+export function byIdAnywhere(node, id) {
+  if (!id) return null;
+  const doc = node.ownerDocument || node;
+  const near = node.getRootNode?.().getElementById?.(id) || doc.getElementById(id);
+  if (near) return near;
+  return deepQueryAll(doc, `[id="${CSS.escape(id)}"]`)[0] || null;
+}
+
+/** Is `target` inside `outer`, climbing out of each shadow root to the element that hosts it? */
+export function holds(outer, target) {
+  for (let n = target; n; ) {
+    if (n === outer) return true;
+    const root = n.getRootNode?.();
+    n = n.parentElement || (root && root !== n ? root.host : null) || null;
+  }
+  return false;
 }
 
 const CONTROL = 'input, textarea, select';
@@ -611,6 +634,41 @@ function dialCodeBeside(el) {
   return null;
 }
 
+/**
+ * The code a country-code list elsewhere in the same form gives this phone input: the one
+ * chosen there, or, while none is, the stored number's own, since the list is filled from it.
+ * Only when the form holds exactly one such list, or which number it belongs to is a guess.
+ */
+function dialFromList(el, stored) {
+  const root = el.form || el.closest('form, [role="dialog"]');
+  if (!root) return null;
+  const lists = Array.from(root.querySelectorAll('select')).filter((s) =>
+    isDialList(Array.from(s.options, (o) => o.textContent)),
+  );
+  if (lists.length !== 1) return null;
+  const chosen = dialOf(lists[0].selectedOptions[0]?.textContent);
+  if (chosen) return chosen;
+  const texts = Array.from(lists[0].options, (o) => o.textContent);
+  const i = pickDial(texts, stored);
+  return i === null || i === -1 ? null : dialOf(texts[i]);
+}
+
+/**
+ * Whether the form around an upload already has a document chosen: a ticked option named
+ * after a file ("CV 2023.pdf"), the way boards offer the CVs they keep for the person.
+ */
+export function documentChosen(el) {
+  const root = el.form || el.closest('form, [role="dialog"]');
+  if (!root) return false;
+  // Element by element: a card's file name and the line under it run together in textContent
+  // ("CV 2023.pdfDernière utilisation").
+  const FILE = /\.(pdf|docx?|odt|rtf)$/i;
+  const named = (node) => [node, ...node.querySelectorAll('*')].some((n) => FILE.test(n.textContent.trim()));
+  return Array.from(root.querySelectorAll('input[type="radio"]:checked')).some(
+    (r) => [...(r.labels || [])].some(named) || FILE.test((r.getAttribute('aria-label') || '').trim()),
+  );
+}
+
 /** A text input that opens a calendar: Material's, or any component naming itself a date picker. */
 function datePicker(el) {
   return (
@@ -668,13 +726,26 @@ export function valueFor(decision, el, bundle, profile, entries) {
       }
       if (degree && bundle.tag === 'select') return formatValue(el, bundle, degree);
     }
+    // "Code pays" as a list of "France (+33)": the code the stored number carries picks it.
+    if (key === 'country') {
+      const list = optionList(el, bundle);
+      if (list && isDialList(list.map((o) => o.text))) {
+        const i = pickDial(
+          list.map((o) => o.text),
+          profile?.phone,
+          (texts) => texts.findIndex((t) => matchOption([{ text: t, value: t }], profile?.country)),
+        );
+        if (i === -1) return null;
+        if (i !== null) return { value: list[i].value };
+      }
+    }
     const got = formatValue(el, bundle, profile?.[key]);
     // "Immédiate" or "Dans un mois" typed into a date picker is not a date, and the picker
     // either rejects it or keeps it as garbage. Offered instead, for the person to pick a day.
     if (got?.value && datePicker(el) && !/\d/.test(got.value)) return { suggest: got.value };
     // A phone field showing its own country code takes the national number (schema/phone.js).
     if (key === 'phone' && got?.value) {
-      const dial = dialCodeBeside(el);
+      const dial = dialCodeBeside(el) || dialFromList(el, got.value);
       if (dial) return forDialCode(got.value, dial, el.getAttribute('placeholder') || '');
     }
     return got;
@@ -893,7 +964,9 @@ function structuralBlock(el, lex, ctx) {
       if (section && hit !== section) break;
       section = hit;
       root = node;
-    } else if (!caps.some((c) => /[0-9]/.test(c))) {
+    } else if (!caps.some((c) => /[0-9]/.test(c)) && !ctx.dateOnly(node)) {
+      // A caption over the halves of one date ("From": month, year) names the date, not a
+      // group: LinkedIn's "Dates of employment" sits inside the job like any field.
       break;
     }
   }
@@ -972,7 +1045,13 @@ export function assignBlocks(els, lex, hints = []) {
     const first = sig(nodes[0]);
     return nodes.every((n) => sig(n) === first);
   };
-  const ctx = { count, sameShape };
+  const dateOnly = (node) => {
+    const inside = els.filter((e) => node.contains(e));
+    return (
+      inside.length > 0 && inside.every((e) => datePart(e, [{ text: normalize(forLabelText(e) || '') }]))
+    );
+  };
+  const ctx = { count, sameShape, dateOnly };
 
   const attrs = els.map((el) => attrEvidence(el, lex));
   // A form may number its rows from 1. Decided per section, from the whole page: a lone

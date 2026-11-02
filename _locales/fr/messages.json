@@ -3,7 +3,7 @@
     "message": "Epimoni : candidatures pré-remplies"
   },
   "ext_description": {
-    "message": "Remplit vos candidatures, même sans compte Epimoni, et analyse les offres : France Travail, HelloWork, APEC, LinkedIn."
+    "message": "Remplit vos candidatures depuis votre CV, sans compte. Avec un compte Epimoni : analyse d'offre et lettre. France Travail, LinkedIn…"
   },
   "action_title": {
     "message": "Remplir cette candidature"
@@ -293,8 +293,11 @@
       }
     }
   },
+  "panel_open_questions_one": {
+    "message": "1 question ouverte"
+  },
   "panel_open_questions": {
-    "message": "$COUNT$ question(s) ouverte(s)",
+    "message": "$COUNT$ questions ouvertes",
     "placeholders": {
       "count": {
         "content": "$1"
@@ -658,17 +661,55 @@
   "opt_source_none": {
     "message": "Aucun CV enregistré : le remplissage ne fera rien."
   },
-  "opt_counts": {
-    "message": "$FIELDS$ informations · $WORK$ expérience(s) · $SKILLS$ compétence(s)",
+  "opt_plural_locale": {
+    "message": "fr",
+    "description": "The BCP 47 tag of this file's language, for Intl.PluralRules: picks the _one or _many form of a count."
+  },
+  "opt_count_fields_one": {
+    "message": "$COUNT$ information",
     "placeholders": {
-      "fields": {
+      "count": {
         "content": "$1"
-      },
-      "work": {
-        "content": "$2"
-      },
-      "skills": {
-        "content": "$3"
+      }
+    }
+  },
+  "opt_count_fields_many": {
+    "message": "$COUNT$ informations",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_count_work_one": {
+    "message": "$COUNT$ expérience",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_count_work_many": {
+    "message": "$COUNT$ expériences",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_count_skills_one": {
+    "message": "$COUNT$ compétence",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_count_skills_many": {
+    "message": "$COUNT$ compétences",
+    "placeholders": {
+      "count": {
+        "content": "$1"
       }
     }
   },
@@ -1465,5 +1506,9 @@
   },
   "offer_hint_no_cv": {
     "message": "Formulaire de candidature détecté. Ajoutez votre CV pour le remplir en un clic."
+  },
+  "offer_fill_failed": {
+    "message": "Impossible de remplir depuis ce bouton sur cette page. Cliquez sur l'icône Epimoni de la barre d'outils.",
+    "description": "Shown on the in-page button when its click could not inject the filler into the page (no host access); the toolbar icon still works there."
   }
 }

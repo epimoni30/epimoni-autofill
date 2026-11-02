@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="it">
+<!-- An Italian careers-site form, written for this test. Two things an Italian form asks that no
+     other language's does: a certified e-mail address (PEC) and a codice fiscale, neither of
+     which is on a CV. Bare "Nome" is a first name here and a whole name on a Brazilian form, so
+     it is offered, not written; "Cognome" beside it is not in doubt. -->
+<meta charset="utf-8"><title>Candidatura</title>
+<body>
+<form id="it" onsubmit="window.__submitted = true; return false">
+  <label for="n">Nome</label><input id="n" name="nome" data-controlled data-expect="given_name">
+  <label for="c">Cognome</label><input id="c" name="cognome" data-controlled data-expect="family_name">
+  <label for="e">Indirizzo email</label><input id="e" type="email" name="email" data-controlled data-expect="email">
+  <label for="pec">Indirizzo PEC</label><input id="pec" name="pec" data-expect="none">
+  <label for="t">Cellulare</label><input id="t" type="tel" name="cellulare" data-controlled data-expect="phone">
+  <label for="ci">Città di residenza</label><input id="ci" name="citta" data-controlled data-expect="city">
+  <label for="cap">CAP</label><input id="cap" name="cap" data-controlled data-expect="postal_code">
+  <label for="ln">Luogo di nascita</label><input id="ln" name="luogo_nascita" data-expect="none">
+  <label for="cf">Codice fiscale</label><input id="cf" name="cf" data-expect="none">
+  <label for="li">Profilo LinkedIn</label><input id="li" name="linkedin" data-controlled data-expect="linkedin_url">
+  <label for="ra">Ruolo attuale</label><input id="ra" name="ruolo" data-controlled data-expect="current_title">
+  <label for="dl">Datore di lavoro attuale</label><input id="dl" name="datore" data-controlled data-expect="current_employer">
+  <label for="ae">Anni di esperienza</label><input id="ae" name="anni" data-controlled data-expect="years_experience">
+  <label for="av">Anni di esperienza nella vendita</label><input id="av" name="anni_vendita" data-expect="none">
+  <label for="rd">RAL desiderata</label><input id="rd" name="ral" data-controlled data-expect="salary_expectation">
+  <label for="rat">RAL attuale</label><input id="rat" name="ral_attuale" data-expect="none">
+  <fieldset>
+    <legend>Contatto di emergenza</legend>
+    <label for="et">Telefono</label><input id="et" type="tel" name="emergenza_tel" data-expect="none">
+  </fieldset>
+  <label for="pt">Parlaci di te</label><textarea id="pt" name="about" data-controlled data-expect="summary"></textarea>
+  <label for="cv">Carica il tuo CV</label><input id="cv" type="file" name="cv" data-expect="cv_file">
+  <label for="lp">Lettera di presentazione (PDF)</label><input id="lp" type="file" name="lettera" data-expect="none">
+  <button type="submit">Invia candidatura</button>
+</form>
+<script src="_react.js"></script><script>window.__controlAll()</script>
+</body></html>

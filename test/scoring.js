@@ -36,7 +36,9 @@ export const RUNNER_BODY = `
   // The engine the content script runs, fillers included: \`runFill\` in src/content/fill.js.
   return runFill({ root: document, url: location.href, profile, entries, files, resolver: __resolver, fillers: EPIMONI_FILLERS })
     .then((run) => {
-  if (run.errors.length) console.warn('filler errors', run.errors);
+  // Kept on the page for the measure to read: a filler that throws is a bug even when the
+  // fill around it carries on.
+  window.__fillerErrors = (window.__fillerErrors || []).concat(run.errors.map(String));
   const outcome = new Map();
   for (const r of run.rows) {
     const d = r.decision;

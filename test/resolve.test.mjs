@@ -551,3 +551,101 @@ test('an expected salary range is asked of the person; agreeing with the adverti
   ])
     assert.notEqual(key(normalize(label)), 'salary_expectation', label);
 });
+
+// ── Italian ──────────────────────────────────────────────────────────────────────────────
+//
+// Bare "Nome" is a first name in Italian and the whole name in Brazilian Portuguese, so without
+// a page language it is offered rather than written. "Nome e cognome" and "Cognome" are not in
+// doubt. Italian forms also ask for a certified e-mail (PEC) and a birthplace, neither of which
+// is in a CV.
+
+const it = (label, opts) => key(normalize(label), opts);
+const itBlock = (label, at, opts) => blockKey(normalize(label), at, opts);
+
+test('Italian identity fields', () => {
+  assert.equal(it('Nome e cognome'), 'full_name');
+  assert.equal(it('Cognome'), 'family_name');
+  assert.equal(it('Nome'), 'suggest:ambiguous');
+  assert.equal(it('Indirizzo email'), 'email');
+  assert.equal(it('Conferma email'), 'email_confirm');
+  assert.equal(it('Numero di cellulare'), 'phone');
+  assert.equal(it('CAP'), 'postal_code');
+  assert.equal(it('Città di residenza'), 'city');
+  assert.equal(it('Indirizzo di residenza'), 'street');
+  assert.equal(it('Profilo LinkedIn'), 'linkedin_url');
+  assert.equal(it('Ruolo attuale'), 'current_title');
+  assert.equal(it('Anni di esperienza'), 'years_experience');
+  assert.equal(it('RAL desiderata'), 'salary_expectation');
+  assert.equal(it('Periodo di preavviso'), 'notice_period');
+  assert.equal(it('Lettera di presentazione', { tag: 'textarea' }), 'cover_letter');
+  assert.equal(it('Carica il tuo CV', { type: 'file' }), 'cv_file');
+});
+
+test('an Italian form asks for things that are not the candidate', () => {
+  assert.equal(it('Indirizzo PEC'), 'skip:no-match');
+  assert.equal(it('Luogo di nascita'), 'skip:no-match');
+  assert.equal(it("Nome dell'azienda"), 'skip:no-match');
+  assert.equal(it('Telefono contatto di emergenza'), 'skip:no-match');
+  assert.equal(it('Nome del referente'), 'skip:no-match');
+  assert.equal(it('Anni di esperienza nella vendita'), 'skip:no-match');
+  assert.notEqual(it('Hai bisogno di uno sponsor per il permesso di lavoro?'), 'work_authorization');
+  assert.notEqual(it('Lettera di presentazione', { type: 'file' }), 'cv_file');
+});
+
+// The Italian pack is merged into every page, so its words must not change what other
+// languages' labels mean. Each case below did, before its veto.
+test('the Italian pack leaves French, English and Portuguese labels as they were', () => {
+  // In French a CAP is a diploma, not a postcode.
+  assert.equal(it('Spécialité du CAP'), 'skip:no-match');
+  assert.equal(it('Intitulé du CAP ou BEP'), 'skip:no-match');
+  assert.equal(it('Diplôme (CAP, BEP, Bac)'), 'education_degree');
+  assert.equal(it('Nom du CAP'), 'skip:no-match');
+  assert.equal(it('C.A.P.'), 'postal_code');
+  // "file" and "social" are English words, so the vetoes are phrases.
+  assert.equal(it('First name (as on file)'), 'given_name');
+  assert.equal(it('Legal first name (as it appears on your social insurance number)'), 'given_name');
+  assert.equal(it('Nome social'), 'skip:no-match');
+  assert.equal(it('Nome do projeto'), 'skip:no-match');
+  assert.equal(it('Esperienza totale'), 'years_experience');
+});
+
+// What the page says its language is breaks a tie its own pack names, and nothing else.
+test('bare "Nome" follows the page language, and stays a suggestion without one', () => {
+  const on = (lang) => {
+    const r = createResolver({ lexicons: PACKS, autocomplete: AUTOCOMPLETE, lang });
+    return (label) => {
+      const d = r.resolve(el(normalize(label)));
+      return d.action === 'fill' ? d.key : `${d.action}:${d.reason}`;
+    };
+  };
+  assert.equal(on('pt-BR')('Nome'), 'full_name');
+  assert.equal(on('pt-BR')('Seu nome'), 'full_name');
+  assert.equal(on('it')('Nome'), 'given_name');
+  // A Portuguese phrase on an Italian page is not the tied word.
+  assert.equal(on('it')('Seu nome'), 'suggest:ambiguous');
+  for (const lang of ['', 'fr', 'en'])
+    assert.equal(on(lang)('Nome'), 'suggest:ambiguous', `lang=${lang || '(none)'}`);
+});
+
+test('Italian blocks: "corso di laurea" is the field of study, the title is the degree', () => {
+  assert.equal(itBlock('Azienda', work0), 'work.company@0');
+  assert.equal(itBlock('Ruolo', work0), 'work.position@0');
+  assert.equal(itBlock('Data di inizio', work0), 'work.start@0');
+  assert.equal(itBlock('Data di fine', work0), 'work.end@0');
+  const edu = { section: 'education', index: 0, weak: false };
+  assert.equal(itBlock('Corso di laurea', edu), 'education.field@0');
+  assert.equal(itBlock('Titolo conseguito', edu), 'education.degree@0');
+  assert.equal(itBlock('Università', edu), 'education.institution@0');
+  assert.equal(itBlock('Voto di laurea', edu), 'education.score@0');
+  assert.equal(resolver.sectionOf(normalize('Esperienze lavorative')), 'work');
+  assert.equal(resolver.sectionOf(normalize('Istruzione e formazione')), 'education');
+  assert.equal(resolver.sectionOf(normalize('Conoscenze linguistiche')), 'languages');
+});
+
+test('the Italian pack leaves the other packs as they were', () => {
+  assert.equal(key('nome completo'), 'full_name');
+  assert.equal(key('nome social'), 'skip:no-match');
+  assert.equal(key('nome da empresa'), 'skip:no-match');
+  assert.equal(blockKey('nome do cargo', work0), 'work.position@0');
+  assert.notEqual(key(normalize('How did you hear about us? (via)')), 'street');
+});

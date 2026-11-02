@@ -3,7 +3,7 @@
     "message": "Epimoni: automatyczne wypełnianie aplikacji"
   },
   "ext_description": {
-    "message": "Wypełnia formularze aplikacyjne, także bez konta Epimoni, i analizuje oferty pracy na LinkedIn i portalach z ogłoszeniami."
+    "message": "Wypełnia formularze aplikacyjne z twojego CV, bez konta. Z kontem Epimoni: analiza ofert i list motywacyjny. LinkedIn i portale."
   },
   "action_title": {
     "message": "Wypełnij tę aplikację"
@@ -272,7 +272,7 @@
     }
   },
   "panel_tick_current": {
-    "message": "Obecne stanowisko: data zakończenia zostaje pusta. Jeśli formularz o to prosi, zaznacz sam(a) „Obecnie tu pracuję”."
+    "message": "Obecne stanowisko: data zakończenia zostaje pusta. Jeśli formularz o to prosi, zaznacz pole „Obecnie tu pracuję”."
   },
   "panel_filled_one": {
     "message": "Wypełniono 1 pole"
@@ -292,6 +292,9 @@
         "content": "$1"
       }
     }
+  },
+  "panel_open_questions_one": {
+    "message": "Pytania otwarte: 1"
   },
   "panel_open_questions": {
     "message": "Pytania otwarte: $COUNT$",
@@ -658,17 +661,55 @@
   "opt_source_none": {
     "message": "Brak zapisanego CV: wypełnianie nic nie zrobi."
   },
-  "opt_counts": {
-    "message": "Dane: $FIELDS$ · doświadczenie: $WORK$ · umiejętności: $SKILLS$",
+  "opt_plural_locale": {
+    "message": "pl",
+    "description": "The BCP 47 tag of this file's language, for Intl.PluralRules: picks the _one or _many form of a count."
+  },
+  "opt_count_fields_one": {
+    "message": "Dane: $COUNT$",
     "placeholders": {
-      "fields": {
+      "count": {
         "content": "$1"
-      },
-      "work": {
-        "content": "$2"
-      },
-      "skills": {
-        "content": "$3"
+      }
+    }
+  },
+  "opt_count_fields_many": {
+    "message": "Dane: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_count_work_one": {
+    "message": "doświadczenie: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_count_work_many": {
+    "message": "doświadczenie: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_count_skills_one": {
+    "message": "umiejętności: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "opt_count_skills_many": {
+    "message": "umiejętności: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
       }
     }
   },
@@ -1465,5 +1506,8 @@
   },
   "offer_hint_no_cv": {
     "message": "Wykryto formularz aplikacyjny. Dodaj swoje CV, aby wypełnić go jednym kliknięciem."
+  },
+  "offer_fill_failed": {
+    "message": "Ten przycisk nie może wypełnić tej strony. Kliknij ikonę Epimoni na pasku narzędzi."
   }
 }
