@@ -45,7 +45,39 @@ async function count() {
   document.getElementById('nav-count').textContent = apps.length ? String(apps.length) : '';
 }
 
+/**
+ * The menu's light/dark switch. Light is the default; the choice lives in localStorage under
+ * the key `src/shared/theme.js` reads in every page's <head>, so it applies before paint.
+ */
+function themeToggle() {
+  const button = document.getElementById('theme-toggle');
+  const root = document.documentElement;
+  const label = () => {
+    const dark = root.dataset.theme === 'dark';
+    button.setAttribute('aria-pressed', String(dark));
+    button.title = t('dash_theme_dark');
+    button.setAttribute('aria-label', t('dash_theme_dark'));
+  };
+  button.addEventListener('click', () => {
+    const dark = root.dataset.theme !== 'dark';
+    if (dark) root.dataset.theme = 'dark';
+    else delete root.dataset.theme;
+    try {
+      localStorage.setItem('epimoni-theme', dark ? 'dark' : 'light');
+    } catch {
+      // Storage blocked: the switch still holds for this page.
+    }
+    label();
+  });
+  // theme.js follows a change made in another tab; keep the pressed state in step.
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'epimoni-theme') label();
+  });
+  label();
+}
+
 localise();
+themeToggle();
 window.addEventListener('hashchange', show);
 await Promise.all([initCv(), initApplications()]);
 await show();
