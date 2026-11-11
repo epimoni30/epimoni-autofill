@@ -5,12 +5,13 @@
 <html>
 <meta charset="utf-8">
 <title>Epimoni</title>
+<script src="../shared/theme.js"></script>
 <style>
   /* Author `display` rules beat the `hidden` attribute; this keeps hidden meaning hidden. */
   /* biome-ignore lint/complexity/noImportantStyles: must beat every class that sets display */
   [hidden] { display: none !important; }
-  :root { color-scheme: light dark; --fg: #18181b; --muted: #71717a; --line: #e4e4e7; --bg: #fafafa; --card: #fff; --accent: #7c5cff; --warn: #b45309; --ok: #15803d; }
-  @media (prefers-color-scheme: dark) { :root { --fg: #f4f4f5; --muted: #a1a1aa; --line: #3f3f46; --bg: #121214; --card: #18181b; --warn: #fbbf24; --ok: #4ade80; } }
+  :root { color-scheme: light; --fg: #18181b; --muted: #71717a; --line: #e4e4e7; --bg: #fafafa; --card: #fff; --accent: #7c5cff; --warn: #b45309; --ok: #15803d; }
+  :root[data-theme="dark"] { color-scheme: dark; --fg: #f4f4f5; --muted: #a1a1aa; --line: #3f3f46; --bg: #121214; --card: #18181b; --warn: #fbbf24; --ok: #4ade80; }
   * { box-sizing: border-box; }
   body { margin: 0; padding: 48px 16px; font: 14px/1.55 system-ui, -apple-system, sans-serif; color: var(--fg); background: var(--bg); }
   main { max-width: 480px; margin: 0 auto; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 20px 22px; }

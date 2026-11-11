@@ -1273,6 +1273,9 @@
   "dash_menu_sites": {
     "message": "Sites"
   },
+  "dash_theme_dark": {
+    "message": "Mode sombre"
+  },
   "sites_title": {
     "message": "Sites"
   },

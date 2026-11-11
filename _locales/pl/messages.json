@@ -1273,6 +1273,9 @@
   "dash_menu_sites": {
     "message": "Strony"
   },
+  "dash_theme_dark": {
+    "message": "Tryb ciemny"
+  },
   "sites_title": {
     "message": "Strony"
   },
