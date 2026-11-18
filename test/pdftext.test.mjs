@@ -53,6 +53,22 @@ test('a file that needs a real password is refused as encrypted, not read as noi
   assert.equal(r.text, '');
 });
 
+test('a page tree whose /Kids is not an array reads as no text, not as a crash', async () => {
+  // Found by the fuzzer (release v0.4.1, seed 2105620262): a damaged file held a number where
+  // the page tree's /Kids array belongs, and the walk threw "object is not iterable".
+  const doc = [
+    '%PDF-1.7',
+    '1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj',
+    '2 0 obj << /Type /Pages /Kids 7 /Count 1 >> endobj',
+    '3 0 obj << /Type /Pages /Kids << /Odd true >> /Count 1 >> endobj',
+    'trailer << /Root 1 0 R >>',
+    '%%EOF',
+  ].join('\n');
+  const out = await pdfText(new TextEncoder().encode(doc));
+  assert.equal(out.text, '');
+  assert.equal(out.problem, 'no-text');
+});
+
 test('a scan has no text layer, and says so', async () => {
   assert.equal((await pdfText(fixture('scan'))).problem, 'no-text');
 });

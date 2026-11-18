@@ -448,8 +448,11 @@ export async function pdfText(input) {
     const n = get(node);
     if (!n || depth > 32) return;
     const res = n.Resources !== undefined ? get(n.Resources) : inherited;
-    if (nameOf(n.Type) === 'Page' || (n.Contents !== undefined && !n.Kids)) pages.push({ page: n, res });
-    else for (const kid of n.Kids || []) walk(kid, res, depth + 1);
+    // /Kids is an array, possibly behind a reference; a damaged file can hold anything there
+    // (a number, a dictionary), and iterating that threw instead of reading no pages.
+    const kids = n.Kids !== undefined ? get(n.Kids) : undefined;
+    if (nameOf(n.Type) === 'Page' || (n.Contents !== undefined && !kids)) pages.push({ page: n, res });
+    else if (Array.isArray(kids)) for (const kid of kids) walk(kid, res, depth + 1);
   };
   if (catalog?.Pages) walk(catalog.Pages, null);
   if (!pages.length)

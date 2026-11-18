@@ -9,6 +9,15 @@ carries the same number, and the release workflow refuses a tag that does not ma
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-11-18
+
+### Fixed
+
+- A damaged PDF whose page tree held something other than a list of pages made the CV reader
+  stop with an error instead of saying the file has no readable text. Found by the fuzz tests
+  while building 0.4.1, which therefore never got a release: 0.4.2 is the first build with the
+  change below.
+
 ## [0.4.1] - 2026-11-18
 
 ### Changed
@@ -317,7 +326,8 @@ First public version.
 - Community files: contributing guide, code of conduct, issue and pull request templates.
 - Dependabot, CodeQL, and a release workflow that builds the zip from a version tag.
 
-[Unreleased]: https://github.com/epimoni30/epimoni-autofill/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/epimoni30/epimoni-autofill/compare/v0.4.2...HEAD
+[0.4.2]: https://github.com/epimoni30/epimoni-autofill/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/epimoni30/epimoni-autofill/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/epimoni30/epimoni-autofill/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/epimoni30/epimoni-autofill/compare/v0.1.0...v0.3.0
