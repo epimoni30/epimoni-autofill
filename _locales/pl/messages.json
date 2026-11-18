@@ -340,7 +340,7 @@
     "message": "Zobacz pełną analizę →"
   },
   "panel_quota": {
-    "message": "W tej godzinie nie masz już analiz. Spróbuj ponownie za $MINUTES$ min.",
+    "message": "Dzisiejsza analiza została wykorzystana. Spróbuj ponownie za $MINUTES$.",
     "placeholders": {
       "minutes": {
         "content": "$1"
@@ -449,7 +449,7 @@
     "message": "Nielimitowane analizy w twoim planie."
   },
   "panel_tier_free": {
-    "message": "1 analiza na godzinę na darmowym koncie."
+    "message": "1 analiza dziennie na darmowym koncie."
   },
   "panel_tier_spent": {
     "message": "Analiza już wykorzystana. Następna za $MINUTES$ min.",
@@ -490,7 +490,7 @@
     "message": "Nielimitowane analizy"
   },
   "popup_tier_free": {
-    "message": "1 analiza na godzinę (darmowe konto)"
+    "message": "1 analiza dziennie (darmowe konto)"
   },
   "popup_tier_spent": {
     "message": "Analiza wykorzystana. Następna za $MINUTES$ min.",
@@ -723,7 +723,7 @@
     "message": "Nielimitowane analizy ofert w twoim planie."
   },
   "opt_tier_free": {
-    "message": "1 analiza oferty na godzinę na darmowym koncie."
+    "message": "1 analiza oferty dziennie na darmowym koncie."
   },
   "opt_ai_needs_account": {
     "message": "Analiza ogłoszeń i list motywacyjny wymagają połączonego konta Epimoni."

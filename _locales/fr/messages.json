@@ -340,7 +340,7 @@
     "message": "Voir l'analyse complète →"
   },
   "panel_quota": {
-    "message": "Analyse épuisée pour cette heure. Réessayez dans $MINUTES$ min.",
+    "message": "Analyse du jour épuisée. Réessayez dans $MINUTES$.",
     "placeholders": {
       "minutes": {
         "content": "$1"
@@ -449,7 +449,7 @@
     "message": "Analyses illimitées avec votre formule."
   },
   "panel_tier_free": {
-    "message": "1 analyse par heure avec le compte gratuit."
+    "message": "1 analyse par jour avec le compte gratuit."
   },
   "panel_tier_spent": {
     "message": "Analyse déjà utilisée. Prochaine dans $MINUTES$ min.",
@@ -490,7 +490,7 @@
     "message": "Analyses illimitées"
   },
   "popup_tier_free": {
-    "message": "1 analyse par heure (compte gratuit)"
+    "message": "1 analyse par jour (compte gratuit)"
   },
   "popup_tier_spent": {
     "message": "Analyse utilisée. Prochaine dans $MINUTES$ min.",
@@ -723,7 +723,7 @@
     "message": "Analyses d'offres illimitées avec votre formule."
   },
   "opt_tier_free": {
-    "message": "1 analyse d'offre par heure avec le compte gratuit."
+    "message": "1 analyse d'offre par jour avec le compte gratuit."
   },
   "opt_ai_needs_account": {
     "message": "L'analyse d'offre et la lettre de motivation demandent un compte Epimoni connecté."

@@ -1,7 +1,7 @@
 // What a paired account's token is allowed to do.
 //
 // The AI features belong to an Epimoni account paired from the site. Paying customers are
-// not metered at all; a free account gets one model-backed call an hour, the same window as
+// not metered at all; a free account gets one model-backed call a day, the same window as
 // the website. Without a paired account there is no AI, so there is nothing here to ask:
 // the worker refuses before any of this runs, and no session is ever opened on somebody's
 // behalf.
@@ -19,7 +19,7 @@ const TIER_TTL_MS = 5 * 60 * 1000;
 /**
  * Is this person metered, and are they out of window right now.
  *
- * Read before the analysis is offered, so the panel can say "1 analyse par heure" to a free
+ * Read before the analysis is offered, so the panel can say "1 analyse par jour" to a free
  * user and nothing at all to a paying one. `/users/me` is unmetered, it carries no
  * rate-limit dependency and only reads the window, never spends it,
  * so asking is free. Cached anyway, because it is asked once per panel and the answer does

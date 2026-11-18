@@ -340,7 +340,7 @@
     "message": "Ver a análise completa →"
   },
   "panel_quota": {
-    "message": "Nenhuma análise disponível nesta hora. Tente de novo em $MINUTES$ min.",
+    "message": "Nenhuma análise disponível hoje. Tente de novo em $MINUTES$.",
     "placeholders": {
       "minutes": {
         "content": "$1"
@@ -449,7 +449,7 @@
     "message": "Análises ilimitadas no seu plano."
   },
   "panel_tier_free": {
-    "message": "1 análise por hora na conta gratuita."
+    "message": "1 análise por dia na conta gratuita."
   },
   "panel_tier_spent": {
     "message": "Análise já usada. A próxima em $MINUTES$ min.",
@@ -490,7 +490,7 @@
     "message": "Análises ilimitadas"
   },
   "popup_tier_free": {
-    "message": "1 análise por hora (conta gratuita)"
+    "message": "1 análise por dia (conta gratuita)"
   },
   "popup_tier_spent": {
     "message": "Análise usada. A próxima em $MINUTES$ min.",
@@ -723,7 +723,7 @@
     "message": "Análises de vagas ilimitadas no seu plano."
   },
   "opt_tier_free": {
-    "message": "1 análise de vaga por hora na conta gratuita."
+    "message": "1 análise de vaga por dia na conta gratuita."
   },
   "opt_ai_needs_account": {
     "message": "A análise de vagas e a carta de apresentação exigem uma conta Epimoni conectada."

@@ -9,6 +9,15 @@ carries the same number, and the release workflow refuses a tag that does not ma
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-11-18
+
+### Changed
+
+- The free account now gets one analysis a day, not one an hour, the same window as the
+  website. Every sentence that said "per hour" says "per day" in the six languages and the
+  store listing, and the wait before the next free analysis reads in hours and minutes
+  ("23 h 05") instead of a count of minutes.
+
 ### Fixed
 
 - Years of experience asked as brackets ("5 à 10 ans", "8 ans d'expérience") stayed empty
@@ -308,7 +317,8 @@ First public version.
 - Community files: contributing guide, code of conduct, issue and pull request templates.
 - Dependabot, CodeQL, and a release workflow that builds the zip from a version tag.
 
-[Unreleased]: https://github.com/epimoni30/epimoni-autofill/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/epimoni30/epimoni-autofill/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/epimoni30/epimoni-autofill/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/epimoni30/epimoni-autofill/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/epimoni30/epimoni-autofill/compare/v0.1.0...v0.3.0
 [0.1.0]: https://github.com/epimoni30/epimoni-autofill/releases/tag/v0.1.0

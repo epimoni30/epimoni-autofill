@@ -323,7 +323,7 @@ function collect() {
  * which allowance the AI half is on.
  *
  * The tier line is the honest half of "free fill, paid AI": the AI needs a paired account,
- * a free one is metered at one analysis an hour (the website's own window, not a second
+ * a free one is metered at one analysis a day (the website's own window, not a second
  * allowance), and a paying customer is not metered at all. Saying so here means nobody meets
  * that limit for the first time as a refusal on an advert they were about to apply to.
  */
@@ -502,7 +502,7 @@ async function renderStatus() {
   // request left the page showing no CV list at all: the one thing it exists to show.
   //
   // Without a paired account there is no allowance to describe: the AI is refused outright,
-  // and saying "1 analysis per hour" here would promise what the panel then refuses.
+  // and saying "1 analysis per day" here would promise what the panel then refuses.
   send({ type: 'tier' }).then((tier) => {
     if (!tier.ai) {
       if (!state.paired) line(box, t('opt_ai_needs_account'), 'muted');

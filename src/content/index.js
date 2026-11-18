@@ -12,6 +12,13 @@
   if (window.__epimoniLoaded) return;
   window.__epimoniLoaded = true;
   const DEV = typeof EPIMONI_DEV !== 'undefined' && EPIMONI_DEV;
+  // The free window became a day on 2026-11-18: "1380 min" read as nonsense, so hours lead.
+  const waitLabel = (seconds) => {
+    const left = Math.max(0, Number(seconds) || 0);
+    const h = Math.floor(left / 3600);
+    const m = Math.max(1, Math.ceil((left % 3600) / 60));
+    return h > 0 ? `${h} h ${String(Math.min(m, 59)).padStart(2, '0')}` : `${m} min`;
+  };
   if (DEV) console.log('[epimoni] content script active on', location.href);
 
   const resolver = createResolver({
@@ -891,7 +898,7 @@
       wrap.textContent = '';
       if (!res.ok) {
         const WHY = {
-          quota: () => t('panel_quota', [String(Math.ceil((res.seconds || 0) / 60))]),
+          quota: () => t('panel_quota', [waitLabel(res.seconds)]),
           expired: () => t('panel_stale'),
           'no-cv': () => t('panel_no_cv'),
           'too-long': () => t('panel_too_long'),
@@ -1069,7 +1076,7 @@
 
     const failed = (res, again) => {
       const WHY = {
-        quota: () => t('panel_quota', [String(Math.ceil((res.seconds || 0) / 60))]),
+        quota: () => t('panel_quota', [waitLabel(res.seconds)]),
         expired: () => t('panel_stale'),
         'no-cv': () => t('panel_no_cv'),
         'too-long': () => t('panel_too_long'),
@@ -1244,7 +1251,7 @@
    * LLM call, and spending somebody's hourly quota because they opened a page is both a cost
    * and a consent problem. One click, and only after they ask.
    *
-   * It needs a paired account. A free account gets one analysis an hour, the website's own
+   * It needs a paired account. A free account gets one analysis a day, the website's own
    * window, and a paying customer is not metered at all. The cost is named *before* the
    * button, not discovered as a refusal afterwards.
    */
@@ -1298,7 +1305,7 @@
         if (tier.paid) note.textContent = t('panel_tier_paid');
         else if (tier.rate_limited) {
           note.textContent = t('panel_tier_spent', [String(Math.ceil((tier.reset_seconds || 0) / 60))]);
-          // The free hour is spent: the way past the wait is a plan, said before the click
+          // The free daily run is spent: the way past the wait is a plan, said before the click
           // rather than only after a refused one.
           cta(note, plans, t('panel_quota_cta')).style.display = 'block';
         } else note.textContent = t('panel_tier_free');
@@ -1350,7 +1357,7 @@
       // Each refusal means something different, and a single "ça n'a pas marché" would hide
       // the only one the user can act on.
       const WHY = {
-        quota: () => t('panel_quota', [String(Math.ceil((res.seconds || 0) / 60))]),
+        quota: () => t('panel_quota', [waitLabel(res.seconds)]),
         expired: () => t('panel_stale'),
         'no-cv': () => t('panel_no_cv'),
         'too-long': () => t('panel_too_long'),
