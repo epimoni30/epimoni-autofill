@@ -492,7 +492,7 @@ async function meteredCall(state, msg, path, body) {
  * then reach the network.
  *
  * It needs a paired account. A free account is metered by the backend at one model-backed
- * call an hour, the website's own window, not a second allowance, and a paying customer is
+ * call a day, the website's own window, not a second allowance, and a paying customer is
  * not metered at all. So the tiering already exists server-side; the extension's job is to
  * send the account's token and say plainly which tier the person is on.
  */

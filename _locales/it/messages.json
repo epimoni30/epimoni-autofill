@@ -340,7 +340,7 @@
     "message": "Vedi l'analisi completa →"
   },
   "panel_quota": {
-    "message": "Nessuna analisi rimasta in quest'ora. Riprova tra $MINUTES$ min.",
+    "message": "Nessuna analisi rimasta oggi. Riprova tra $MINUTES$.",
     "placeholders": {
       "minutes": {
         "content": "$1"
@@ -449,7 +449,7 @@
     "message": "Analisi illimitate con il tuo piano."
   },
   "panel_tier_free": {
-    "message": "1 analisi all'ora con l'account gratuito."
+    "message": "1 analisi al giorno con l'account gratuito."
   },
   "panel_tier_spent": {
     "message": "Analisi già usata. La prossima tra $MINUTES$ min.",
@@ -490,7 +490,7 @@
     "message": "Analisi illimitate"
   },
   "popup_tier_free": {
-    "message": "1 analisi all'ora (account gratuito)"
+    "message": "1 analisi al giorno (account gratuito)"
   },
   "popup_tier_spent": {
     "message": "Analisi usata. La prossima tra $MINUTES$ min.",
@@ -723,7 +723,7 @@
     "message": "Analisi degli annunci illimitate con il tuo piano."
   },
   "opt_tier_free": {
-    "message": "1 analisi di annuncio all'ora con l'account gratuito."
+    "message": "1 analisi di annuncio al giorno con l'account gratuito."
   },
   "opt_ai_needs_account": {
     "message": "L'analisi degli annunci e la lettera di presentazione richiedono un account Epimoni collegato."

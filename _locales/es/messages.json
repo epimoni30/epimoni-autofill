@@ -340,7 +340,7 @@
     "message": "Ver el análisis completo →"
   },
   "panel_quota": {
-    "message": "Sin análisis disponible esta hora. Inténtalo de nuevo en $MINUTES$ min.",
+    "message": "Sin análisis disponible hoy. Inténtalo de nuevo en $MINUTES$.",
     "placeholders": {
       "minutes": {
         "content": "$1"
@@ -449,7 +449,7 @@
     "message": "Análisis ilimitados con su plan."
   },
   "panel_tier_free": {
-    "message": "1 análisis por hora con la cuenta gratuita."
+    "message": "1 análisis al día con la cuenta gratuita."
   },
   "panel_tier_spent": {
     "message": "Análisis ya utilizado. El próximo en $MINUTES$ min.",
@@ -490,7 +490,7 @@
     "message": "Análisis ilimitados"
   },
   "popup_tier_free": {
-    "message": "1 análisis por hora (cuenta gratuita)"
+    "message": "1 análisis al día (cuenta gratuita)"
   },
   "popup_tier_spent": {
     "message": "Análisis utilizado. El próximo en $MINUTES$ min.",
@@ -723,7 +723,7 @@
     "message": "Análisis de ofertas ilimitados con su plan."
   },
   "opt_tier_free": {
-    "message": "1 análisis de oferta por hora con la cuenta gratuita."
+    "message": "1 análisis de oferta al día con la cuenta gratuita."
   },
   "opt_ai_needs_account": {
     "message": "El análisis de ofertas y la carta de presentación requieren una cuenta de Epimoni conectada."
